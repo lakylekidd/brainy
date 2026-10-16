@@ -1,0 +1,7 @@
+id: coolify
+name: Coolify
+description: Manage application deployments, restart services, and read deployment status.
+provider: mcp
+tags: [deployment, production]
+permissions: [deployment.read, deployment.write]
+capabilities: [deploy_service, restart_service, get_deployment_status]

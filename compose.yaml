@@ -1,0 +1,69 @@
+name: homelab-brain
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: brain
+      POSTGRES_USER: brain
+      POSTGRES_PASSWORD: ${BRAIN_DATABASE_PASSWORD:?Run scripts/Initialize-Development.ps1 first}
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - brain-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brain -d brain"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  api:
+    build:
+      context: .
+      dockerfile: docker/Brain.Dockerfile
+      args:
+        PROJECT: Brain.Api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Brain: Host=postgres;Database=brain;Username=brain;Password=${BRAIN_DATABASE_PASSWORD}
+      Database__MigrateOnStartup: "true"
+      Database__SeedDevelopment: "true"
+      Registry__RootPath: /agent-platform
+      Knowledge__VaultPath: /vault
+      Authentication__AgentTokenHashes__willem-de-jong: ${BRAIN_WILLEM_TOKEN_HASH:?Initialize development credentials first}
+      Authentication__AgentTokenHashes__codex: ${BRAIN_CODEX_TOKEN_HASH:?Initialize development credentials first}
+    ports:
+      - "127.0.0.1:5080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ${BRAIN_VAULT_PATH:-./.local/vault}:/vault:ro
+      - ./agent-platform:/agent-platform:ro
+  worker:
+    user: "${BRAIN_WRITER_UID:-1654}:${BRAIN_WRITER_GID:-1654}"
+    build:
+      context: .
+      dockerfile: docker/Brain.Dockerfile
+      args:
+        PROJECT: Brain.Worker
+    environment:
+      ConnectionStrings__Brain: Host=postgres;Database=brain;Username=brain;Password=${BRAIN_DATABASE_PASSWORD}
+      Worker__CleanupIntervalSeconds: "30"
+      Registry__RootPath: /agent-platform
+      Worker__RegistryScanIntervalSeconds: "30"
+      Worker__KnowledgeScanIntervalSeconds: "30"
+      Knowledge__VaultPath: /vault
+      Knowledge__WriterEnabled: "true"
+      Worker__WriteQueueIntervalSeconds: "5"
+      Metadata__Enabled: "true"
+      Metadata__SemanticEnabled: "false"
+      Worker__MetadataScanIntervalSeconds: "300"
+    volumes:
+      - ${BRAIN_VAULT_PATH:-./.local/vault}:/vault:rw
+      - ./agent-platform:/agent-platform:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+volumes:
+  brain-postgres:

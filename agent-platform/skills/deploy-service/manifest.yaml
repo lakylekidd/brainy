@@ -1,0 +1,8 @@
+id: deploy-service
+name: Deploy Service
+description: >
+  Deploy an application to the homelab production environment using a verified
+  GitLab release, Coolify deployment, and Infisical secret references.
+tags: [deployment, production]
+required_tools: [gitlab, coolify, infisical]
+required_permissions: [deployment.production]

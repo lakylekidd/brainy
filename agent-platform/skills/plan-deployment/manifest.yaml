@@ -1,0 +1,6 @@
+id: plan-deployment
+name: Plan an Application Deployment
+description: Plan an application deployment by identifying its release, target environment, health checks, and rollback procedure.
+tags: [deployment, planning]
+required_tools: []
+required_permissions: [knowledge.read]

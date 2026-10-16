@@ -1,0 +1,7 @@
+id: gitlab
+name: GitLab
+description: Read release pipelines and publish application releases for deployment.
+provider: http
+tags: [deployment, release]
+permissions: [deployment.read, deployment.write]
+capabilities: [read_pipeline, create_release]

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:homelab-brain:frontmatter:v1",
+  "title": "Brain frontmatter, default schema version 1",
+  "$comment": "Runtime configuration may override document types and schema version. Path, filename and body hash are also checked against the canonical snapshot. Unknown human fields are preserved.",
+  "type": "object",
+  "required": ["id", "title", "metadata_version"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "maxLength": 100, "pattern": "^[a-z0-9][a-z0-9-]{0,99}$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "type": { "enum": ["procedure", "architecture", "service", "incident", "decision", "project", "reference", "note", "runbook"] },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "tags": { "$ref": "#/$defs/labels" },
+    "domains": { "$ref": "#/$defs/labels" },
+    "systems": { "$ref": "#/$defs/labels" },
+    "services": { "$ref": "#/$defs/labels" },
+    "projects": { "$ref": "#/$defs/labels" },
+    "related_concepts": { "$ref": "#/$defs/labels" },
+    "environment": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "filename": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "path": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "modified_at": { "type": "string", "format": "date-time" },
+    "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "git_revision": { "type": "string", "pattern": "^[a-f0-9]{40,64}$" },
+    "metadata_version": { "const": 1 },
+    "metadata_generated": { "type": "boolean" }
+  },
+  "$defs": {
+    "labels": { "type": "array", "maxItems": 30, "uniqueItems": true, "items": { "type": "string", "minLength": 1, "maxLength": 100 } }
+  }
+}

@@ -1,93 +1,142 @@
 # Homelab Brain
 
+A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application, not an agent runtime.
 
+**Milestones 1–6.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only.
 
-## Getting started
+## Run locally
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Requires the .NET 10 SDK, PowerShell 7, Git, and Docker with Linux containers.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.vlachos.nl/engineering/homelab-brain.git
-git branch -M main
-git push -uf origin main
+```powershell
+./scripts/Initialize-Development.ps1
+./scripts/Initialize-DevelopmentVault.ps1
+docker compose up --build -d
+./scripts/Test-Development.ps1
 ```
 
-## Integrate with your tools
+Initialization creates random development credentials in ignored `.env`; it refuses to replace an existing file. The Compose API receives only SHA-256 token digests. Never commit `.env`. The database password is deployment configuration, not an external homelab secret stored in the Brain.
 
-* [Set up project integrations](https://git.vlachos.nl/engineering/homelab-brain/-/settings/integrations)
+If `.env` already exists from an earlier milestone, keep it and run only the vault initializer before starting Compose.
 
-## Collaborate with your team
+The vault initializer copies `sample-vault` into ignored `.local/vault`, creates a dedicated Git repository and initial commit, and preserves existing initialized vaults. It never commits changes to the application repository. `BRAIN_VAULT_PATH` may override the Compose mount source. On Linux, set `BRAIN_WRITER_UID`/`BRAIN_WRITER_GID` in `.env` to the owner of the writable vault (the credential initializer sets these for new Linux environments).
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+The API listens on `http://localhost:5080`, PostgreSQL on `localhost:55432`. Both published ports bind to loopback. PostgreSQL data persists in `brain-postgres`. Stop with `docker compose down`; this preserves that volume.
 
-## Test and Deploy
+Compose applies EF migrations and seeds `willem-de-jong` (administrator) and `codex` (agent), both in the `platform` team. The worker removes expired memories and scans the vault/registry every 30 seconds, and processes approved proposals every 5 seconds. Write processing is enabled explicitly in Compose and defaults to disabled in other hosts. API expiry filtering takes effect immediately regardless of worker timing. The limited agent can discover deployment planning, while production deployment and tool dependencies require explicit grants.
 
-Use the built-in continuous integration in GitLab.
+Compose also enables deterministic metadata scanning every 300 seconds. A seeded `metadata-enrichment-worker` identity has only knowledge read/propose grants and no credential. It queues pending frontmatter proposals for explicit review; semantic model calls are disabled and metadata always requires explicit review. See [metadata enrichment](docs/metadata-enrichment.md) for schema, issues, configuration and review.
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+To exercise writes in the development environment, run `./scripts/Test-Development.ps1 -TestKnowledgeWrites`. This explicitly approves a test proposal and leaves one new test Markdown document, proposal/audit records and a Git commit in the development vault. The default smoke test only reads knowledge and tests disposable memory operations.
 
-***
+## Use the API
 
-# Editing this README
+Load local client credentials without executing `.env` contents:
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+```powershell
+$credentials = @{}
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^([A-Z_]+)=(.+)$') { $credentials[$Matches[1]] = $Matches[2] }
+}
+$headers = @{ 'X-Agent-Id' = 'codex'; Authorization = "Bearer $($credentials['BRAIN_CODEX_TOKEN'])" }
+$baseUrl = 'http://localhost:5080'
 
-## Suggestions for a good README
+$memory = Invoke-RestMethod "$baseUrl/api/memories" -Method Post -Headers $headers -ContentType 'application/json' -Body (@{
+    memoryType = 'incident'
+    subject = 'Proxmox cluster'
+    content = 'Corosync configuration is missing on nacht-02.'
+    importance = 0.9
+    confidence = 0.95
+    visibility = 'private'
+    source = 'troubleshooting'
+    metadata = @{ host = 'nacht-02' }
+} | ConvertTo-Json)
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Invoke-RestMethod "$baseUrl/api/memories/$($memory.id)" -Headers $headers
+Invoke-RestMethod "$baseUrl/api/memories/search" -Method Post -Headers $headers -ContentType 'application/json' -Body (@{
+    query = 'Proxmox corosync cluster'
+    memoryType = 'incident'
+    minimumImportance = 0.8
+    limit = 5
+} | ConvertTo-Json)
+```
 
-## Name
-Choose a self-explaining name for your project.
+All data endpoints, readiness and OpenAPI require **both** `X-Agent-Id` and a bearer token bound to that identity. `/health/live` is the sole anonymous process liveness endpoint. Wrong credentials return 401; missing operation permissions return 403; invisible or nonexistent memories both return 404. Unknown JSON fields and integer/unknown enum values return 400.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+| Endpoint | Permission / behavior |
+| --- | --- |
+| `GET /api/agents/me` | Authenticated identity and effective permissions |
+| `GET /api/agents` | `agents.read`, up to 1,000 agents |
+| `POST /api/agents` | `agents.admin`, register identity and known grants |
+| `PUT /api/agents/{id}/access` | `agents.admin`, replace roles/direct grants and enable/disable another agent |
+| `POST /api/memories` | `memory.write`; shared visibility also needs `memory.share` |
+| `GET /api/memories/{id}` | `memory.read` plus visibility scope |
+| `POST /api/memories/search` | `memory.read` plus visibility scope |
+| `DELETE /api/memories/{id}` | `memory.delete` and ownership |
+| `GET /api/audit?limit=100` | `audit.read`, maximum 1,000 events |
+| `POST /api/knowledge/search` | `knowledge.read`, query with optional `pathPrefix` and `limit` |
+| `GET /api/knowledge/documents/{id}` | `knowledge.read`, canonical document by indexed ID |
+| `GET /api/knowledge/document?path=Infrastructure/Proxmox/nacht-02.md` | `knowledge.read`, canonical document by relative path |
+| `POST /api/knowledge/scan` | `knowledge.admin`, immediate scan of the configured vault |
+| `GET /api/knowledge/metadata/issues` | `knowledge.read` + `knowledge.admin`, persisted frontmatter issues |
+| `POST /api/knowledge/metadata/scan` | Also `knowledge.propose`, generate pending validated metadata patches |
+| `POST /api/knowledge/proposals` | `knowledge.read` + `knowledge.propose`, queue a pending change |
+| `GET /api/knowledge/proposals` | `knowledge.read`, own proposals; admins can see all; optional `status`/`limit` |
+| `GET /api/knowledge/proposals/{id}` | Same proposal visibility rules |
+| `GET /api/knowledge/proposals/{id}/preview` | Before/after content and revision compatibility |
+| `POST /api/knowledge/proposals/{id}/approve` | `knowledge.read` + `knowledge.admin`, versioned explicit review |
+| `POST /api/knowledge/proposals/{id}/reject` | `knowledge.read` + `knowledge.admin`, versioned explicit review |
+| `GET /api/skills`, `GET /api/skills/{id}` | `registry.read` plus skill/dependency grants; get includes instructions |
+| `POST /api/skills/search` | Permission-filtered skill similarity search |
+| `GET /api/tools`, `GET /api/tools/{id}` | `registry.read` plus all tool grants |
+| `POST /api/tools/search` | Permission-filtered tool similarity search |
+| `POST /api/capabilities/search` | Allowed skills and related allowed tools |
+| `POST /api/registry/scan` | `registry.admin`, immediate atomic registry refresh |
+| `POST /api/search` | Unified search across granted modules with existing visibility rules |
+| `/mcp` | Authenticated Streamable HTTP MCP tools; same bound credentials and permissions |
+| `GET /openapi/v1.json` | Authenticated generated OpenAPI document |
+| `GET /health/ready` | Authenticated database connectivity check |
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Memory types: `observation`, `fact`, `decision`, `task_context`, `incident`, `preference`, `discovery`. Visibility: `private` (default), `team`, `organization`. Importance/confidence range from 0 to 1. `expiresAt` is an optional future ISO 8601 timestamp. Metadata is a JSON object up to 16,384 characters.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Search accepts `query`, optional `agentId`, `memoryType`, case-insensitive subject substring, `minimumImportance`, `minimumConfidence` and `limit` (1–100). Results contain type, ID, title, natural-language content, cosine similarity score, source and structured memory metadata. An agent filter never grants access. Reads/searches increment reference counts and record last access; they do not promote memories.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Register another agent using the administrator credential with `POST /api/agents`:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```json
+{"id":"hermes","name":"Hermes","teamId":"platform","roles":["agent"],"permissions":[]}
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Provision a distinct random bearer token out of band and configure its SHA-256 digest at `Authentication:AgentTokenHashes:hermes`, then restart the API. Registration does not issue a credential. Access updates replace grants; revocations and disabling take effect on the next request. Administrators cannot change their own access through this endpoint.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Build and test
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+```powershell
+dotnet tool restore
+dotnet build HomelabBrain.sln
+dotnet test HomelabBrain.sln
+```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Unit tests run without a database/network; Git writer tests require the Git CLI and use temporary repositories. By default, integration tests create isolated PostgreSQL 17 + pgvector containers through Docker; they apply real EF migrations and clean up afterward. They never truncate the Compose database. Docker failures fail the tests instead of silently skipping them.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+Alternatively, set `BRAIN_TEST_POSTGRES` to an operator-supplied PostgreSQL connection string whose role can create databases and install pgvector. Tests create randomly named `brain_test_*` databases on that server and drop only those databases afterward. No tables in the supplied connection's database are modified. This allows real PostgreSQL testing when Docker is unavailable.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+For host-based development, start PostgreSQL with `docker compose up -d postgres`, then set `ConnectionStrings__Brain`, `ASPNETCORE_ENVIRONMENT=Development`, `Database__MigrateOnStartup=true`, `Database__SeedDevelopment=true`, `Knowledge__VaultPath` to the absolute dedicated vault directory, and the `Authentication__AgentTokenHashes__...` variables from `.env`. Run `dotnet run --project src/Brain.Api --urls http://localhost:5080` and the worker separately with the same connection string/vault configuration. Set `Knowledge__WriterEnabled=true` on the worker to process approved proposals. Without a configured vault, memory APIs still work; knowledge calls return 503 and the worker skips indexing.
 
-## License
-For open source projects, say how it is licensed.
+The EF tooling manifest is `dotnet-tools.json`. Add migrations with:
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```powershell
+dotnet ef migrations add Name --project src/Brain.Infrastructure --output-dir Migrations
+```
+
+## Design and limits
+
+For host-based registry discovery, set `Registry__RootPath` to the absolute `agent-platform` directory in both API and worker. Missing registry configuration disables only that module. Both the sample registry and a separate operator-managed Git checkout are supported. The default smoke test expects the included sample manifests.
+
+Connect an MCP client to `http://localhost:5080/mcp` using Streamable HTTP and the same `X-Agent-Id`/`Authorization` headers. The eight tools cover unified search, memories, canonical reads, pending proposals, skills and capabilities. The default development smoke script now checks MCP too. See [MCP setup, tools and verification](docs/mcp.md); no separate process or port is required.
+
+See [the foundation design](docs/foundation.md), [knowledge search](docs/knowledge.md), [safe knowledge writes and recovery](docs/knowledge-writes.md), [skills/tools discovery](docs/skills-and-tools.md), [MCP](docs/mcp.md), [metadata enrichment](docs/metadata-enrichment.md), and [verification](docs/verification.md).
+
+The included `IEmbeddingProvider` uses deterministic 384-dimensional token hashing. It exercises the entire pgvector path without a key, but **is not a learned semantic model**: it primarily finds word overlap and cannot reliably match paraphrases. A real provider and explicit re-embedding are needed before relying on semantic recall. Provider/model/dimension filters prevent incompatible vectors being compared.
+
+Compose is for local development. Production needs operator-provisioned initial identities/roles, external credential configuration, TLS, restricted database access and backups. Automatic development seeding is rejected outside Development. Runtime migrations default to off; apply reviewed migrations as an operator in production. No external secret retrieval is implemented.

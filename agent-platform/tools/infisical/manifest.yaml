@@ -1,0 +1,7 @@
+id: infisical
+name: Infisical Production References
+description: Resolve production secret references for deployment tools without storing secret values in Brain.
+provider: mcp
+tags: [secrets, production]
+permissions: [secrets.production.read]
+capabilities: [resolve_secret_reference]
