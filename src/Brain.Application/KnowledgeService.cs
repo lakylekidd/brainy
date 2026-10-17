@@ -3,7 +3,7 @@ using Brain.Domain;
 namespace Brain.Application;
 
 public sealed class KnowledgeService(IKnowledgeVault vault, IKnowledgeIndex index, IMarkdownChunker chunker,
-    IEmbeddingProvider embeddings, IAuditLog audit, TimeProvider time)
+    IEmbeddingProvider embeddings, IAuditLog audit, TimeProvider time, IGraphReferenceExtractor graphReferences)
 {
     public async Task<KnowledgeDocumentView> ReadAsync(AgentContext agent, Guid id, CancellationToken ct = default)
     {
@@ -84,7 +84,8 @@ public sealed class KnowledgeService(IKnowledgeVault vault, IKnowledgeIndex inde
                 var source = await vault.ReadAsync(path, ct);
                 byPath.TryGetValue(path, out var document);
                 if (document is not null && document.ContentHash == source.ContentHash &&
-                    document.ChunkerVersion == chunker.Version && MatchesModel(document))
+                    document.ChunkerVersion == chunker.Version && MatchesModel(document) &&
+                    document.GraphVersion == 1)
                 { unchanged++; continue; }
                 var parsed = chunker.Chunk(path, source.Content);
                 var chunks = new List<EmbeddedKnowledgeChunk>();
@@ -98,7 +99,8 @@ public sealed class KnowledgeService(IKnowledgeVault vault, IKnowledgeIndex inde
                     Id = document?.Id ?? Guid.NewGuid(), Path = source.Path, Title = parsed.Title,
                     ContentHash = source.ContentHash, RevisionToken = source.RevisionToken, ModifiedAt = source.ModifiedAt,
                     IndexedAt = time.GetUtcNow(), EmbeddingProvider = embeddings.Model.Provider,
-                    EmbeddingModel = embeddings.Model.Model, EmbeddingDimensions = embeddings.Model.Dimensions, ChunkerVersion = chunker.Version
+                    EmbeddingModel = embeddings.Model.Model, EmbeddingDimensions = embeddings.Model.Dimensions, ChunkerVersion = chunker.Version,
+                    GraphReferences = graphReferences.Extract(source.Content), GraphVersion = 1
                 };
                 await index.ReplaceAsync(document, chunks, Event(actor, "brain.knowledge.indexed", path), ct);
                 indexed++;

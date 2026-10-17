@@ -144,7 +144,7 @@ public sealed class KnowledgeApiTests(BrainFixture fixture) : IClassFixture<Brai
         var service = new KnowledgeService(scope.ServiceProvider.GetRequiredService<IKnowledgeVault>(),
             scope.ServiceProvider.GetRequiredService<IKnowledgeIndex>(), new MarkdownChunker(),
             new MutatingProvider(() => File.WriteAllText(path, "# Changing\nLatest state.")),
-            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System);
+            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System, new GraphReferenceExtractor());
         var result = await service.ScanCoreAsync("brain-worker");
         Assert.Equal(0, result.Indexed);
         Assert.Single(result.Failures);
@@ -186,7 +186,8 @@ public sealed class KnowledgeApiTests(BrainFixture fixture) : IClassFixture<Brai
         using var scope = fixture.Factory.Services.CreateScope();
         var unavailable = new FileSystemKnowledgeVault(new() { VaultPath = Path.Combine(fixture.VaultPath, "not-mounted") });
         var service = new KnowledgeService(unavailable, scope.ServiceProvider.GetRequiredService<IKnowledgeIndex>(),
-            new MarkdownChunker(), new DevelopmentEmbeddingProvider(), scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System);
+            new MarkdownChunker(), new DevelopmentEmbeddingProvider(), scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System,
+            new GraphReferenceExtractor());
         Assert.Equal(503, (await Assert.ThrowsAsync<BrainException>(() => service.ScanCoreAsync("brain-worker"))).StatusCode);
         Assert.Equal(1, await scope.ServiceProvider.GetRequiredService<BrainDbContext>().KnowledgeDocuments.CountAsync());
         Assert.False((await Scan(admin)).AlreadyRunning); // Failed scans release their advisory lease too.

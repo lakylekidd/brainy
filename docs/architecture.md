@@ -107,6 +107,7 @@ files against a local editor.
 | Agents, roles and grants | PostgreSQL | `agents`, `roles`, `permissions` and join tables |
 | Agent memories | PostgreSQL | `memories` and model-labelled `memory_embeddings` |
 | Canonical knowledge | Markdown files and their dedicated Git history | Rebuildable `knowledge_documents` metadata and `knowledge_chunks` text/vectors |
+| Graph entities and relationships | Existing knowledge, registry and identity sources | No separate graph catalog; indexed document reference arrays support bounded reverse lookup |
 | Skills, instructions and tool definitions | Operator-managed registry files | Rebuildable `registry_entries` metadata/vectors; not skill instruction bodies |
 | Proposed changes and review/recovery state | PostgreSQL | `knowledge_write_proposals`, including durable prepared Git/file intent |
 | Metadata inspection and deduplication state | PostgreSQL | `metadata_scan_states`, linked to generated proposals |
@@ -192,6 +193,23 @@ Calls run sequentially because the services share a scoped `DbContext`.
 
 See [knowledge](knowledge.md) and [skills/tools](skills-and-tools.md) for indexing,
 freshness, schema and permission details.
+
+**Graph exploration.** `GraphService` composes bounded global/search/detail and
+depth-limited neighborhood queries through `IGraphSource`. The adapter filters
+database candidates before limits, rechecks canonical document revisions and
+uses live manifest/dependency authorization shared with registry discovery.
+Documents, skills/tools and identities require their existing source grants;
+roles/permission nodes require `agents.read`. Both endpoints must be visible
+and loaded before an edge is returned. Source references and allowlisted scalar
+metadata replace bodies or arbitrary source metadata in graph responses.
+
+Only explicit document `graph_references` are added to the rebuildable knowledge
+index. The existing scanner versions/replaces these with the document; a GIN
+index supports reverse lookup. Dependencies and grants derive from their current
+sources on each graph request, not a synchronized second database. The UI's
+isolated Sigma/Graphology feature progressively loads up to 200 nodes/400 edges;
+server neighborhood depth is capped at two hops. See [UI graph contracts](ui.md#knowledge-graph).
+Semantic graph queries, WebObsidian links and live overlays are not implemented.
 
 ## Reviewed canonical changes
 

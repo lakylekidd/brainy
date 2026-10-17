@@ -102,6 +102,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseBrainRequestActivity();
 app.MapBrainActivity();
+app.MapBrainGraph();
 
 // Process-only liveness for infrastructure; all data and schema endpoints require identity.
 app.MapGet("/health/live", () => Results.Ok(new { status = "alive" })).AllowAnonymous();

@@ -51,7 +51,7 @@ test("token-only login loads real dashboard data and sign-out clears access", as
   await expect(page.getByRole("heading", { name: "Knowledge graph" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Switch to light mode" }).click();
-  await page.getByRole("button", { name: "Back to dashboard" }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   await expect(page.locator(".panel").first()).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await page.setViewportSize({ width: 375, height: 812 });
   await page.getByRole("button", { name: "Switch to dark mode" }).click();

@@ -49,7 +49,7 @@ describe("Brain UI shell", () => {
     expect(screen.getByRole("button", { name: "Switch to light mode" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Knowledge graph" }));
-    expect(screen.getByText(/This area is reserved for a later Brain UI milestone/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Knowledge graph" })).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByTitle("Sign out")[0]);
     expect(await screen.findByText("A clearer view of your Brain.")).toBeInTheDocument();

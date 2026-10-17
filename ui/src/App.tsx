@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { ApiError, authenticate, Credentials, DashboardData, loadDashboard } from "./api/client";
 import AppShell, { PageId } from "./components/AppShell";
 import SignIn from "./components/SignIn";
 import Dashboard from "./features/dashboard/Dashboard";
 import { useTheme } from "./hooks/useTheme";
+
+const KnowledgeGraph = lazy(() => import("./features/graph/KnowledgeGraph"));
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
@@ -81,12 +83,16 @@ export default function App() {
           onNavigate={setPage}
           onRefresh={() => setRefreshVersion((version) => version + 1)}
         />
+      ) : page === "graph" ? (
+        <Suspense fallback={<p role="status">Loading graph feature…</p>}>
+          <KnowledgeGraph credentials={credentials} theme={theme} onUnauthorized={() => signOut("Your credentials are no longer valid. Connect again.")} />
+        </Suspense>
       ) : (
         <section className="placeholder-page">
-          <span className="placeholder-icon">{page === "graph" ? "◎" : "◌"}</span>
+          <span className="placeholder-icon">◌</span>
           <span className="eyebrow">MILESTONE 1 · SHELL + DASHBOARD</span>
           <h1>{pageTitle(page)}</h1>
-          <p>This area is reserved for a later Brain UI milestone. The dashboard is the only feature implemented in this release.</p>
+          <p>This area is reserved for a later Brain UI milestone.</p>
           <button className="secondary-button" onClick={() => setPage("dashboard")}>Back to dashboard</button>
         </section>
       )}

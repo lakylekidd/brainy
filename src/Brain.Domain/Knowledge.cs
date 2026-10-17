@@ -13,4 +13,6 @@ public sealed class KnowledgeDocument
     public string EmbeddingModel { get; set; } = "";
     public int EmbeddingDimensions { get; set; }
     public string ChunkerVersion { get; set; } = "";
+    public string[] GraphReferences { get; set; } = [];
+    public int GraphVersion { get; set; }
 }

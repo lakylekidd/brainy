@@ -314,6 +314,17 @@ namespace Brain.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("embedding_provider");
 
+                    b.PrimitiveCollection<string[]>("GraphReferences")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("graph_references")
+                        .HasDefaultValueSql("ARRAY[]::text[]");
+
+                    b.Property<int>("GraphVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("graph_version");
+
                     b.Property<DateTimeOffset>("IndexedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("indexed_at");
@@ -341,6 +352,10 @@ namespace Brain.Infrastructure.Migrations
                         .HasColumnName("title");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GraphReferences");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("GraphReferences"), "gin");
 
                     b.HasIndex("Path")
                         .IsUnique();

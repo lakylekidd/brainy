@@ -107,6 +107,8 @@ public sealed class BrainDbContext(DbContextOptions<BrainDbContext> options) : D
             e.Property(d => d.EmbeddingProvider).HasMaxLength(200);
             e.Property(d => d.EmbeddingModel).HasMaxLength(200);
             e.Property(d => d.ChunkerVersion).HasMaxLength(100);
+            e.Property(d => d.GraphReferences).HasDefaultValueSql("ARRAY[]::text[]");
+            e.HasIndex(d => d.GraphReferences).HasMethod("gin");
             e.HasIndex(d => d.Path).IsUnique();
         });
         b.Entity<KnowledgeChunk>(e =>

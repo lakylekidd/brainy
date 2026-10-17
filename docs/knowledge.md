@@ -16,6 +16,15 @@ Each scan enumerates `.md` files, hashes raw UTF-8 bytes and compares content ha
 
 The scanner reads a file again after embedding generation. If it changed, that file's update is deferred to the next scan. Provider/database failures abort the scan with already committed documents intact. Per-file missing/invalid/oversized content is reported in `failures`, preserving any previous indexed version; search independently rejects stale hits. If the vault is unavailable or directory enumeration fails, pruning is never attempted. A truly empty mounted vault is authoritative and clears old rows; deployers must distinguish an empty directory from a missing mount.
 
+UI Milestone 2 also indexes an optional standalone top-level `graph_references`
+frontmatter list (up to 100 explicit stable graph IDs). It does not infer links
+from body text or copy arbitrary frontmatter into responses. Invalid reference
+metadata is a per-file scan failure; unrelated malformed YAML without this
+field remains indexable as before. The `KnowledgeGraph` migration adds the
+rebuildable reference array, parser version and reverse-lookup GIN index.
+Existing files are refreshed once after migration even if their content/model
+has not changed. See [graph references and source behavior](ui.md#sources-relationships-and-synchronization).
+
 ## Read and search
 
 Using the `$headers` and `$baseUrl` setup from the README:

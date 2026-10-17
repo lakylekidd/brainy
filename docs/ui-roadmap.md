@@ -35,15 +35,15 @@ behavior and current API coverage.
 | Milestone | Status | Current position |
 | --- | --- | --- |
 | 1. Shell + Dashboard | Complete | Authenticated shell, API-backed dashboard, responsive layout, and system-aware light/dark themes are implemented. |
-| 2. Knowledge Graph | Planned | Graph page is a placeholder. No generic graph model or graph API exists. |
+| 2. Knowledge Graph | Complete | Stable source-derived entities/edges, bounded authorized graph APIs, Sigma/Graphology exploration, search/filters, independent details, focus and progressive expansion are implemented. |
 | 3. WebObsidian Integration | Planned | No configured WebObsidian URL or document deep link exists. |
-| 4. Agents + Permissions | Partial foundations | Existing authenticated agent and registry APIs feed dashboard data. Dedicated agent, role, and permission-management pages are not implemented. |
-| 5. Skills + Tools | Partial foundations | Existing registry APIs feed dashboard data. Dedicated detail, safe Git-backed management, and dependency-graph experiences are not implemented. |
+| 4. Agents + Permissions | Partial foundations | Existing APIs feed dashboard data; agents, roles and grants can be explored in the generic graph. Dedicated agent, role, and permission-management pages are not implemented. |
+| 5. Skills + Tools | Partial foundations | Registry APIs feed the dashboard and the generic graph shows authorized dependencies. Dedicated lists/detail and safe Git-backed management remain unimplemented. |
 | 6. Connections | Planned | No connection catalog, configuration, health, or test UI/API is established. |
 | 7. Proposals + Metadata | Partial foundations | The dashboard reads pending proposals and metadata issues. Review diffs, conflict handling, approval, and a dedicated review experience remain to be built against the safe writer workflow. |
 | 8. Operations + Audit | Partial foundations | The dashboard shows bounded recent audit and trace activity. Job/sync diagnostics and a full audit experience are not implemented. |
-| 9. Semantic Graph | Planned | Knowledge search exists, but there is no graph semantic-query or temporary semantic-subgraph API. |
-| 10. Live Activity Graph | Planned; backend dependency exists | Brain Milestone 7 provides activity tracing and retained trace inspection. Confirm an authorized live stream and graph-entity correlation contract before implementation. |
+| 9. Semantic Graph | Planned | Knowledge semantic search and deterministic graph exploration exist, but there is no graph semantic-query or temporary semantic-subgraph API. |
+| 10. Live Activity Graph | Planned; graph and backend foundations exist | Milestone 2 provides the static renderer; Brain Milestone 7 provides activity tracing and retained trace inspection. Confirm an authorized live stream and graph-entity correlation contract before implementation. |
 
 “Partial foundations” means only the stated data or backend foundations exist;
 it does not mean the corresponding management UI is complete. See [the UI
@@ -51,6 +51,19 @@ guide](ui.md#existing-api-coverage-and-gaps) for current dashboard endpoints and
 known gaps.
 
 ## Milestone 2 — Knowledge Graph
+
+**Status: Complete (17 October 2026).** The implementation derives graph views
+from current sources rather than maintaining another canonical graph catalog.
+Documents cache only explicit reference IDs in the existing versioned index.
+Four authenticated graph routes enforce existing source permissions, a maximum
+of 200 entities/400 relationships and depth 0-2. The isolated graph feature adds
+global/search/focused views, independent allowlisted details, filters and
+progressive expansion, with keyboard/no-WebGL access and explicit error states.
+The graph uses the full available width and a viewport-scaled canvas, with the
+inspector below it and a compact accessible selector instead of a node list.
+See [usage and contracts](ui.md#knowledge-graph) and
+[verification evidence](verification.md#ui-knowledge-graph-17-october-2026).
+WebObsidian links, semantic subgraphs and live overlays remain out of scope.
 
 **Goal:** Let users explore Brain entities and their relationships in an
 interactive, bounded graph.

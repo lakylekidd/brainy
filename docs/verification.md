@@ -1,5 +1,67 @@
 # Implementation verification
 
+## Graph layout refinement (17 October 2026)
+
+- The graph now spans the available page width without the dashboard width cap.
+  Its canvas uses 75% of viewport height on desktop and 70% on small screens,
+  with minimum heights of 480/420 pixels respectively and a desktop cap of
+  1200 pixels. The inspector is below the canvas, not alongside it.
+- Removed the always-visible node list. A compact toolbar selector retains
+  keyboard selection and no-WebGL inspection without consuming canvas space.
+- Frontend tests and the production build pass. Live Chromium checks assert
+  the graph exceeds the old 1540-pixel page cap at a 1920-pixel viewport,
+  fills its container, keeps the inspector below it, and preserves mobile width,
+  keyboard/no-WebGL access, search, filters and focused exploration.
+  The development UI container was rebuilt with this layout.
+
+## UI knowledge graph (17 October 2026)
+
+- UI Milestone 2 is implemented on `feat/knowledge-graph`. The .NET solution
+  builds with zero warnings/errors; the TypeScript/Vite production build passes.
+- The focused backend regression run passes **156 cases**: 79 unit/Git cases
+  covering graph, knowledge, registry-source and metadata behavior, and 77
+  HTTP/MCP/PostgreSQL cases covering graph, knowledge, registry, metadata,
+  authentication/UI admin and MCP parity. These are focused selections, not a
+  claim that the entire solution test suite was rerun. A final 24-case
+  graph/knowledge integration rerun also passes after making the graph-reference
+  parser a required scanner dependency.
+- Eleven graph unit cases cover explicit references, malformed/ambiguous input,
+  stable relationship IDs, source grants and traversal work/result bounds.
+  Fifteen graph integration cases cover every route, source-grant filtering,
+  hidden dependency/permission nodes, live revocation/manifest changes,
+  directed/reverse relationships, canonical freshness/deletion, depth 0/1/2,
+  invalid limits/types/IDs, empty/invalid sources and bounded queries over 450
+  real indexed files. Synthetic private-field/body markers do not reach graph
+  responses.
+- **28 frontend tests** pass, including graph node/edge construction,
+  browser node/edge budgets, server filters/search, independent details,
+  expansion/focus/depth, stale response cancellation, explicit failure states,
+  no-WebGL handling, renderer disposal and dynamic reduced-motion settings.
+- **Four Chromium end-to-end cases** pass against the rebuilt Compose stack,
+  without replacing graph API/data with mocks. Graph verification checks actual
+  Sigma/WebGL canvases, dependency edges, keyboard selection, detail requests,
+  expansion/focus/depth/search/filter requests, both themes, reduced-motion
+  operation and mobile width. An aborted graph request verifies offline feedback
+  while dashboard navigation remains usable. A separate no-WebGL case verifies
+  that the list and inspector still work. Existing login/storage/sign-out and
+  theme/CSP browser checks remain passing. Credentials/traces are not recorded.
+- The local PostgreSQL 17/pgvector, API, worker and Nginx/UI containers run
+  together; the UI health check passes. Visual inspection used a local
+  authenticated preview with 38 nodes/48 relationships and identified/fixed
+  selected-label contrast in dark mode.
+- The generated `KnowledgeGraph` migration adds document reference arrays,
+  parser version and a reverse-reference GIN index. Actual test hosts and the
+  Compose API apply it; EF reports no pending model changes. Existing source
+  data and the dedicated vault are preserved. No graph write API, direct
+  canonical edit, WebObsidian link, semantic query or activity overlay was added.
+
+Reproduce with the commands in [the UI guide](ui.md), plus:
+
+```powershell
+dotnet test .\tests\Brain.UnitTests --filter "FullyQualifiedName~GraphTests|FullyQualifiedName~KnowledgeTests|FullyQualifiedName~RegistrySourceTests|FullyQualifiedName~MetadataTests"
+dotnet test .\tests\Brain.IntegrationTests --filter "FullyQualifiedName~GraphApiTests|FullyQualifiedName~KnowledgeApiTests|FullyQualifiedName~RegistryApiTests|FullyQualifiedName~MetadataApiTests|FullyQualifiedName~McpTests|FullyQualifiedName~UiAdminApiTests|FullyQualifiedName~ApiContractTests"
+```
+
 ## UI admin login and Docker development stack (17 October 2026)
 
 - The complete Compose environment was built and run using PostgreSQL 17 with

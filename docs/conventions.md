@@ -204,6 +204,16 @@ in manifests do not grant access. Registry files stay operator-managed and
 read-only to both hosts. See [skills/tools](skills-and-tools.md) for required
 fields, limits and supported providers.
 
+Graph projections reuse existing source grants and `RegistryAccess` for
+manifest/dependency filtering. Never expose an edge unless both endpoints are
+authorized and loaded. Stable graph IDs reference canonical records rather than
+cached text; document IDs use the portable path. Graph metadata is an explicit
+allowlist, not a copy of source JSON/YAML. Keep filters and bounded database
+candidates server-side, preserve the two-hop/200-node/400-edge response limits,
+and update [the graph contract](ui.md#graph-contracts-and-authorization) alongside
+any changes. Document `graph_references` remain rebuildable index data and must
+only change through existing canonical knowledge workflows.
+
 Metadata patches use structured, validated JSON, not model-generated YAML.
 Preserve valid human fields, comments, unknown fields and the Markdown body.
 Do not auto-approve based on confidence or accept generic caller-created

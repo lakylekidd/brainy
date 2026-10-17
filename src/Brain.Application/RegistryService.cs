@@ -120,11 +120,11 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
 
     private async Task<IReadOnlyList<RegistryDefinition>> AuthorizeAsync(AgentContext actor, IReadOnlyList<RegistryDefinition> entries, CancellationToken ct)
     {
-        var tools = entries.Where(e => e.Kind == RegistryKind.Tool && e.RequiredPermissions.All(actor.Has)).Select(e => e.Id).ToHashSet(StringComparer.Ordinal);
+        var keys = RegistryAccess.AllowedKeys(actor, entries);
         var allowed = new List<RegistryDefinition>();
         foreach (var entry in entries)
         {
-            if (entry.RequiredPermissions.All(actor.Has) && entry.RequiredTools.All(tools.Contains)) allowed.Add(entry);
+            if (keys.Contains(entry.Key)) allowed.Add(entry);
             else
             {
                 await audit.WriteAsync(Event(actor.Id, "brain.capability.denied", entry.Key, "denied"), ct);

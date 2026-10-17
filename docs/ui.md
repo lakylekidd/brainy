@@ -4,7 +4,7 @@ The Brain UI is an operations and exploration surface, not a Markdown editor.
 WebObsidian remains the place to create and edit canonical knowledge documents;
 the Brain UI must link out to it rather than copy editing functionality.
 
-## Current scope: UI Milestone 1
+## Current scope: UI Milestones 1-2
 
 The frontend is a React + TypeScript + Vite application under `ui/`. Its current
 structure is:
@@ -14,11 +14,12 @@ ui/src/
   api/client.ts
   components/
   features/dashboard/
+  features/graph/
   App.tsx
   styles.css
 ```
 
-The shell exposes the planned navigation, while later milestone routes are
+The shell exposes the dashboard and knowledge graph; later milestone routes are
 explicit placeholders. The dashboard reads existing authenticated API endpoints
 for agent, skill, tool, pending-proposal, metadata-issue, audit, trace, and
 readiness data. Counts reflect the API response visible to the current identity;
@@ -140,31 +141,140 @@ Use `BRAIN_UI_URL` to select a different development UI URL.
 isolation, and OpenAPI security alternatives. `UiAdminApiTests` use actual
 PostgreSQL to verify current grants and immediate revocation/disablement.
 
-## Proposed graph model and loading strategy
+## Knowledge graph
 
-There is no generic graph entity model or graph API in the current backend.
-When that milestone is approved, use stable `entities` and `relationships`
-records with IDs, extensible type/relationship strings, JSON metadata and
-references to source records. Existing source-of-truth data should remain
-canonical: document entities reference indexed knowledge documents, skill/tool
-entities derive from the operator-managed manifests, and agent/role entities
-derive from the Brain database. Do not duplicate Markdown or manifest bodies in
-a graph store. Deterministic relationships (manifest tool dependencies,
-permissions, and explicit metadata references) should be generated from their
-source data.
+Choose **Knowledge graph** in the navigation. The isolated, lazy-loaded
+`features/graph` feature uses Graphology and Sigma.js for a directed graph with
+typed nodes, arrow edges, selection highlighting, panning, zoom and fit controls.
+The initial global overview contains at most 80 entities, interleaved by type.
+It is not a complete inventory. Type filters and case-insensitive name/source-ID
+search run on the server, rather than loading a full graph to filter in the
+browser. This is deterministic substring search, not semantic search.
 
-The anticipated API surface is `GET /api/graph`, entity detail and neighbors
-routes, and graph-specific search/semantic routes. Return bounded subgraphs:
-filter and search server-side, cap depth and result size, then load neighbors
-on demand. A global graph should never require sending every entity to the
-browser. Any eventual graph query must apply the caller's authorization before
-returning nodes, edges, or metadata.
+The graph fills the available page width (without the dashboard's width cap)
+and uses a viewport-scaled canvas, with the entity inspector below it.
+There is no always-visible entity list beneath the canvas. Select a graph node
+or use the compact, keyboard-accessible **Inspect entity** selector in the
+toolbar to fetch its detail independently. **Expand neighbors** adds a one-hop neighborhood to the loaded
+view. **Focus entity** replaces the overview with that entity's neighborhood;
+the depth selector supports 0 (entity only), 1 or 2 hops. Relationships are
+traversed in either direction but retain their original direction/type.
+**Global graph** exits focus/search. Entity filters also constrain traversal;
+the selected focus root is retained even if its type is unchecked.
+
+The inspector shows only stable ID, type, canonical source reference, and
+allowlisted document path/index time, agent enabled state or tool provider.
+Loaded incoming/outgoing relationships support selection of their other endpoint.
+Document bodies, skill instructions, arbitrary frontmatter, agent metadata,
+registry descriptions and credentials are never graph payloads.
+
+Loading, empty, source-invalid/unavailable, connection-error, forbidden and
+no-longer-visible detail states are explicit. A 401 clears the application
+session. Changing filters aborts pending loads/expansion and clears the old view;
+stale responses cannot replace the new view. The browser retains at most 200
+entities and 400 relationships across expansions and shows a bounded-view
+notice when a source or browser budget is reached. Narrow a search or start
+another focused view to explore beyond that budget.
+
+Both themes and responsive layouts are supported. The accessible entity selector
+and inspector remain usable without WebGL2; a visible message explains that
+the visualization is unavailable. Reduced-motion preference removes camera
+inertia and reduces wheel/double-click transitions; explicit camera buttons
+and layout updates do not animate. There is no automatic animated layout or
+live-activity overlay.
+
+### Graph contracts and authorization
+
+| Route | Contract |
+| --- | --- |
+| `GET /api/graph?types=document,skill&limit=80` | Bounded global overview; optional `query` substring |
+| `GET /api/graph/search?query=deploy&types=skill,tool&limit=40` | Same projection and authorization, with a required query |
+| `GET /api/graph/entity?id=skill:deploy-service` | One authorized entity, no neighborhood/body |
+| `GET /api/graph/neighbors?id=skill:deploy-service&depth=1&limit=80` | Bounded neighborhood, including the root; optional type filter |
+
+All routes require authentication and at least one source grant. No new graph
+grant or administrator bypass exists. Documents require `knowledge.read`;
+skills/tools require `registry.read` plus all current manifest/dependency
+grants, using the same authorization helper as registry discovery.
+Agents, roles and permission entities require `agents.read`. Without that grant,
+registry requirements do not reveal permission nodes or their edges. Inaccessible
+or nonexistent detail/expansion roots both return 404. Current identity/grants
+are re-resolved on every HTTP request.
+
+The wire model is `{ entities, relationships, truncated, depth }`. An entity has
+`id`, extensible `type`, `label`, `source: { kind, id }`, and an allowlisted
+string-valued `metadata` object. Stable IDs are `document:<vault-relative-path>`,
+`skill:<id>`, `tool:<id>`, `agent:<id>`, `role:<id>` and `permission:<id>`.
+Document IDs survive rebuilding the database index but change when the canonical
+path changes. Encode IDs as query parameters; document paths use `/`, not host
+filesystem paths. Relationship IDs hash source/type/target, with `type`,
+`source` and `target` fields. Both endpoints must be visible and included in the
+returned view.
+
+`limit` must be 1-200 and includes the root for neighborhood queries; `depth`
+must be 0-2, and query text is at most 200 characters. Types are a nonempty
+comma-separated subset of the six supported types. Invalid values return 400.
+At most 400 relationships are returned. `truncated` indicates a source,
+traversal or relationship budget was reached, not a total count. The database
+filters documents and identities before taking bounded candidate batches;
+registry loading retains its existing 500-definition source bound.
+
+### Sources, relationships and synchronization
+
+There is no separately maintained graph catalog or graph writer. Graph
+application services derive views from indexed knowledge, live read-only
+manifests and current agent/role/permission data. The `KnowledgeGraph` migration
+adds only rebuildable document reference arrays, a reference-parser version and
+a GIN index for reverse-reference lookup. Apply it to an existing deployment
+before running the updated hosts; Compose development startup applies it
+automatically. The next knowledge scan populates references even for otherwise
+unchanged indexed files.
+
+Deterministic edges are `requires_tool` (skill to tool),
+`requires_permission` (skill/tool to permission), `has_role` (agent to role),
+`grants_permission` (agent direct grant or role to permission), and `references`
+(document to explicitly referenced entity). Role-derived agent access is
+represented by the agent/role/permission path, not a fabricated direct grant.
+Registry changes and permission changes take effect on the next graph request
+without a registry scan. Knowledge graph projection checks canonical revisions,
+omitting stale/deleted/invalid files until indexing catches up.
+
+To add explicit relationships, use a standalone top-level frontmatter field:
+
+```yaml
+---
+graph_references:
+  - document:Infrastructure/Proxmox/nacht-02.md
+  - skill:deploy-service
+  - tool:coolify
+---
+```
+
+The field is optional, contains at most 100 valid stable-ID strings, and is
+deduplicated. Unknown/inaccessible target records are omitted rather than
+materialized as placeholder nodes. Nested fields, body text and inferred model
+relationships do not generate edges. Invalid or duplicate reference fields,
+aliases/tags in the reference list, and invalid reference IDs produce an
+explicit knowledge-scan failure and preserve the previous index. Graph queries
+still reject that now-stale index. Unrelated invalid YAML without the standalone
+reference field does not prevent ordinary knowledge indexing.
+Adding/editing references follows the existing canonical knowledge rules:
+human filesystem/WebObsidian edits or agent proposals with explicit review and
+the Brain Writer, never a direct graph/UI write.
+
+Graph unit and PostgreSQL integration tests cover authorization across every
+route, stable source identities, explicit references, stale/deleted sources,
+depth/result bounds and large sources. Frontend tests cover the rendering
+model, edge/node budgets, filtering, search, independent detail loads, focus,
+expansion, stale responses and explicit failures. Chromium graph checks use the
+real Compose API/data, including actual WebGL rendering, keyboard selection,
+both themes, mobile layout, reduced-motion operation and the no-WebGL inspector.
 
 ## WebObsidian linking
 
 No link is currently generated because the WebObsidian deployment URL and its
-document route are not configured in this repository. The graph milestone
-should accept an operator-configured `WebObsidianBaseUrl`, build links from the
+document route are not configured in this repository. UI Milestone 3 will
+accept an operator-configured `WebObsidianBaseUrl`, build links from the
 canonical relative vault path using the documented WebObsidian route, and
 encode path segments safely. Do not hard-code a hostname or allow document
 metadata to supply an arbitrary link origin.

@@ -110,7 +110,7 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
             </button>
           </div>
         </header>
-        <div className="page-content">
+        <div className={`page-content${page === "graph" ? " page-content-graph" : ""}`}>
           {children}
         </div>
         <footer className="app-footer">

@@ -29,6 +29,9 @@ public static class ServiceRegistration
         services.AddSingleton<IMarkdownChunker, MarkdownChunker>();
         services.AddScoped<IKnowledgeIndex, KnowledgeIndex>();
         services.AddScoped<KnowledgeService>();
+        services.AddSingleton<IGraphReferenceExtractor, GraphReferenceExtractor>();
+        services.AddScoped<IGraphSource, GraphSource>();
+        services.AddScoped<GraphService>();
         services.AddScoped<IKnowledgeProposalStore, KnowledgeProposalStore>();
         services.AddScoped<KnowledgeProposalService>();
         services.AddSingleton(_ => configuration.GetSection("Registry").Get<RegistryOptions>() ?? new RegistryOptions());

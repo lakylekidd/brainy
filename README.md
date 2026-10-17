@@ -2,7 +2,7 @@
 
 A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application, not an agent runtime.
 
-**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. The initial Brain UI milestone provides an authenticated operations dashboard; canonical Markdown editing remains in WebObsidian.
+**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-2 provide an authenticated operations dashboard and a permission-filtered interactive knowledge graph; canonical Markdown editing remains in WebObsidian.
 
 ## Run locally
 
@@ -22,6 +22,17 @@ private; it is a shared administrator credential, not a personal SSO account.
 Use the sun/moon button on the sign-in screen or in the dashboard header to
 switch between light and dark mode. The UI follows your system preference until
 you choose a mode, then remembers only that appearance preference in this browser.
+
+Choose **Knowledge graph** to search/filter documents, skills, tools, agents,
+roles and permissions, inspect canonical source references, focus an entity and
+progressively expand its neighbors. Graph queries are bounded server-side and
+the full-width graph keeps its inspector below the canvas; a compact
+**Inspect entity** selector provides keyboard access without a node list.
+Graph payloads
+exclude document/instruction bodies and arbitrary metadata. Document edges can
+use explicit `graph_references` frontmatter; dependencies and grants derive from
+their existing sources. See [graph usage and contracts](docs/ui.md#knowledge-graph).
+WebObsidian deep links, semantic graphs and live overlays remain later milestones.
 
 Startup preserves existing credentials, database volumes, and the dedicated vault.
 It creates `.env` only if absent and uses `Initialize-UiAdmin.ps1` to append a
@@ -120,6 +131,8 @@ return 404. Unknown JSON fields and integer/unknown enum values return 400.
 | Endpoint | Permission / behavior |
 | --- | --- |
 | `GET /api/agents/me` | Authenticated identity and effective permissions |
+| `GET /api/graph`, `GET /api/graph/search` | Bounded, source-permission-filtered graph overview/substring search; up to 200 entities and 400 relationships |
+| `GET /api/graph/entity?id=...`, `GET /api/graph/neighbors?id=...` | Independent entity details / progressive expansion; server depth 0-2 and source visibility checks |
 | `GET /api/agents` | `agents.read`, up to 1,000 agents |
 | `POST /api/agents` | `agents.admin`, register identity and known grants |
 | `PUT /api/agents/{id}/access` | `agents.admin`, replace roles/direct grants and enable/disable another agent |
@@ -193,7 +206,9 @@ npm run test:e2e
 The browser check reads the local token from `.env` without printing it, rejects
 an invalid login, signs in through the UI, verifies every dashboard request
 against the actual backend, checks that credentials are not stored, and signs
-out. `BRAIN_UI_URL` overrides the local UI URL. Traces are disabled to avoid
+out. Graph browser checks also exercise actual Sigma/WebGL rendering, search,
+filters, expansion, focus/depth and keyboard inspection, with a separate
+no-WebGL accessibility case. `BRAIN_UI_URL` overrides the local UI URL. Traces are disabled to avoid
 recording credentials. `.\scripts\Test-Development.ps1` separately exercises
 memory/knowledge round trips, pgvector, registry discovery, and MCP.
 
