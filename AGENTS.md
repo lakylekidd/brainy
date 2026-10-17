@@ -182,3 +182,5 @@ leave it incomplete and record the completed scope and remaining work. Keep
 roadmap status and implementation notes accurate; do not mark unrelated or
 future work complete. If roadmap names, scope, or acceptance criteria conflict,
 ask me which one to follow before proceeding.
+
+When implementing milestones, always implement them in a new branch.
