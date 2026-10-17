@@ -51,7 +51,7 @@ public sealed class BrainFixture : IAsyncLifetime
     {
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BrainDbContext>();
-        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE agents, roles, permissions, memories, memory_embeddings, knowledge_documents, knowledge_chunks, knowledge_write_proposals, registry_entries, metadata_scan_states, audit_events CASCADE");
+        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE agents, roles, permissions, memories, memory_embeddings, knowledge_documents, knowledge_chunks, knowledge_write_proposals, registry_entries, metadata_scan_states, audit_events, activity_traces, activity_events CASCADE");
         await DatabaseInitializer.InitializeAsync(db, true);
         Directory.Delete(RegistryPath, true);
         Directory.CreateDirectory(Path.Combine(RegistryPath, "skills"));

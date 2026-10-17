@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Brain.Application;
+using Brain.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -33,15 +35,27 @@ public static class McpRegistration
             .WithTools<BrainTools>(json)
             .WithRequestFilters(filters => filters.AddCallToolFilter(next => async (context, ct) =>
             {
-                // The SDK binds declared arguments but can otherwise ignore extra root-level properties.
-                // Enforce the advertised schema before a caller can accidentally supply identity or review fields.
-                if (context.MatchedPrimitive is McpServerTool tool && context.Params?.Arguments is { } arguments)
+                var services = context.Services ?? throw new InvalidOperationException("MCP request services are required.");
+                var publisher = services.GetRequiredService<IActivityPublisher>();
+                var actor = services.GetRequiredService<ICurrentAgent>().Context;
+                using var activity = publisher.Start(new("mcp.call_tool", "mcp.request.started", "mcp.request.completed",
+                    "mcp.request.failed", $"agent:{actor.Id}", "brain", actor.Id));
+                try
                 {
-                    var properties = tool.ProtocolTool.InputSchema.GetProperty("properties");
-                    if (arguments.Keys.Any(key => !properties.TryGetProperty(key, out _)))
-                        throw new McpProtocolException("Unknown tool argument.", McpErrorCode.InvalidParams);
+                    // The SDK binds declared arguments but can otherwise ignore extra root-level properties.
+                    // Enforce the advertised schema before a caller can accidentally supply identity or review fields.
+                    if (context.MatchedPrimitive is McpServerTool tool && context.Params?.Arguments is { } arguments)
+                    {
+                        var properties = tool.ProtocolTool.InputSchema.GetProperty("properties");
+                        if (arguments.Keys.Any(key => !properties.TryGetProperty(key, out _)))
+                            throw new McpProtocolException("Unknown tool argument.", McpErrorCode.InvalidParams);
+                    }
+                    var result = await next(context, ct);
+                    if (result.IsError == true) activity.Fail(new BrainException(422, "MCP tool failed."));
+                    return result;
                 }
-                return await next(context, ct);
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { activity.Cancel(); throw; }
+                catch (Exception error) { activity.Fail(error); throw; }
             }));
         return services;
     }

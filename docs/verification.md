@@ -1,6 +1,40 @@
 # Implementation verification
 
-## Current result — Milestones 1–6
+## Current result — Milestone 7 (17 October 2026)
+
+- The solution builds with zero warnings/errors. The full regression suite passes:
+  **199 tests, zero failed/skipped** (104 unit/Git tests and 95 integration tests).
+- Database verification used an isolated native PostgreSQL **16.15** instance
+  with pgvector **0.8.6**, installed under ignored task-local artifacts. Tests
+  created/dropped only their own randomly named scratch databases. Docker was
+  unavailable; this is not a Docker/Compose deployment verification.
+- The new `ActivityTracing` migration was applied by the actual HTTP test hosts.
+  EF reports no pending model changes; whitespace checks pass.
+- Ten tracing unit tests cover W3C context creation/propagation, nested
+  agent/skill/tool/service spans, cancellation/failure, concurrent contexts,
+  filtering, ownership-safe redaction and actual exporter suppression of
+  unsafe immutable OTel event payloads.
+- Eighteen tracing integration cases cover sampled/unsampled incoming context,
+  concurrent HTTP traces, skill and dependency graph references, MCP parentage,
+  child-failure aggregation, shared trace IDs across owners, sensitive-pattern
+  owner IDs, explicit permissions and live grant revocation, SSE framing and
+  filters across independent database connections, disabled retention, bounded
+  slow subscribers, query filters and retention cascades. The real retention
+  background service and worker failure wrapper run against the database.
+  Native loopback HTTP verifies outbound W3C propagation and failure correlation
+  without exposing authorization headers or URL query secrets.
+- Existing HTTP/MCP, memory, knowledge, registry, metadata and reviewed Git writer
+  regression cases remain passing. Trace data remains separate from audit data.
+  No UI animation, skill executor, deployment or live LLM call was introduced.
+- External OTLP collector deployment was not exercised. Optional export uses
+  the standard OTel exporter; sanitization/export filtering is checked locally.
+  Default operation and all acceptance tests require no external telemetry
+  collector.
+
+See [activity tracing](activity-tracing.md) for APIs, permissions, configuration,
+delivery limits and reproduction commands.
+
+## Previous verification — Milestones 1–6
 
 - `dotnet build HomelabBrain.sln`: passed, zero warnings/errors.
 - Automated suites: **171 passed, zero failed/skipped** (94 unit/Git tests; 77 HTTP/MCP/database/Git integration tests). The full regression run passed, followed by focused reruns for metadata rendering, lowercase proposal-status binding and related proposal/MCP behavior.

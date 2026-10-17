@@ -24,6 +24,70 @@ namespace Brain.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Brain.Domain.ActivityTrace", b =>
+                {
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("trace_id");
+
+                    b.Property<string>("AgentId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("agent_id");
+
+                    b.Property<int>("ActiveRoots")
+                        .HasColumnType("integer")
+                        .HasColumnName("active_roots");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<double?>("DurationMs")
+                        .HasColumnType("double precision")
+                        .HasColumnName("duration_ms");
+
+                    b.Property<bool>("HasCancellations")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_cancellations");
+
+                    b.Property<bool>("HasFailures")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_failures");
+
+                    b.Property<string>("RootAction")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("root_action");
+
+                    b.Property<string>("RootSpanId")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("root_span_id");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.HasKey("TraceId", "AgentId");
+
+                    b.HasIndex("CompletedAt");
+
+                    b.HasIndex("StartedAt");
+
+                    b.HasIndex("AgentId", "StartedAt");
+
+                    b.ToTable("activity_traces", (string)null);
+                });
+
             modelBuilder.Entity("Brain.Domain.Agent", b =>
                 {
                     b.Property<string>("Id")
@@ -533,6 +597,101 @@ namespace Brain.Infrastructure.Migrations
                     b.ToTable("permissions", (string)null);
                 });
 
+            modelBuilder.Entity("Brain.Domain.RetainedActivityEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("AgentId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("agent_id");
+
+                    b.Property<double?>("DurationMs")
+                        .HasColumnType("double precision")
+                        .HasColumnName("duration_ms");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("error_message");
+
+                    b.Property<string>("ErrorType")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("error_type");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("event_type");
+
+                    b.Property<bool>("IsRoot")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_root");
+
+                    b.Property<string>("MetadataJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("metadata_json");
+
+                    b.Property<string>("ParentSpanId")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("parent_span_id");
+
+                    b.Property<string>("SourceEntityId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("source_entity_id");
+
+                    b.Property<string>("SpanId")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("span_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TargetEntityId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("target_entity_id");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
+
+                    b.Property<string>("TraceId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("trace_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceEntityId");
+
+                    b.HasIndex("TargetEntityId");
+
+                    b.HasIndex("TraceId", "AgentId", "Timestamp");
+
+                    b.ToTable("activity_events", (string)null);
+                });
+
             modelBuilder.Entity("Brain.Domain.Role", b =>
                 {
                     b.Property<string>("Id")
@@ -826,6 +985,15 @@ namespace Brain.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ProposalId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Brain.Domain.RetainedActivityEvent", b =>
+                {
+                    b.HasOne("Brain.Domain.ActivityTrace", null)
+                        .WithMany()
+                        .HasForeignKey("TraceId", "AgentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Brain.Infrastructure.KnowledgeChunk", b =>

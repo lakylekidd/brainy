@@ -18,6 +18,7 @@ public static class ServiceRegistration
             options.UseNpgsql(connection, o => o.UseVector());
         });
         services.AddSingleton(TimeProvider.System);
+        services.AddBrainActivity(configuration);
         services.AddSingleton<IEmbeddingProvider, DevelopmentEmbeddingProvider>();
         services.AddScoped<IMemoryStore, MemoryStore>();
         services.AddScoped<IAgentDirectory, AgentDirectory>();

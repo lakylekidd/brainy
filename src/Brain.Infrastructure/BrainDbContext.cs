@@ -28,6 +28,8 @@ public sealed class BrainDbContext(DbContextOptions<BrainDbContext> options) : D
     public DbSet<KnowledgeWriteProposal> KnowledgeWriteProposals => Set<KnowledgeWriteProposal>();
     public DbSet<RegistryIndexEntry> RegistryEntries => Set<RegistryIndexEntry>();
     public DbSet<MetadataScanState> MetadataScanStates => Set<MetadataScanState>();
+    public DbSet<ActivityTrace> ActivityTraces => Set<ActivityTrace>();
+    public DbSet<RetainedActivityEvent> ActivityEvents => Set<RetainedActivityEvent>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -184,6 +186,39 @@ public sealed class BrainDbContext(DbContextOptions<BrainDbContext> options) : D
             e.Property(x => x.LastError).HasMaxLength(2000);
             e.Property(x => x.IssuesJson).HasColumnType("jsonb");
             e.HasOne<KnowledgeWriteProposal>().WithMany().HasForeignKey(x => x.ProposalId).OnDelete(DeleteBehavior.SetNull);
+        });
+        b.Entity<ActivityTrace>(e =>
+        {
+            e.ToTable("activity_traces");
+            e.HasKey(x => new { x.TraceId, x.AgentId });
+            e.Property(x => x.TraceId).HasMaxLength(32);
+            e.Property(x => x.AgentId).HasMaxLength(200);
+            e.Property(x => x.RootSpanId).HasMaxLength(16);
+            e.Property(x => x.RootAction).HasMaxLength(200);
+            e.Property(x => x.Status).HasConversion(v => EnumName(v), v => ParseEnum<ActivityStatus>(v));
+            e.HasIndex(x => new { x.AgentId, x.StartedAt });
+            e.HasIndex(x => x.StartedAt);
+            e.HasIndex(x => x.CompletedAt);
+        });
+        b.Entity<RetainedActivityEvent>(e =>
+        {
+            e.ToTable("activity_events"); e.HasKey(x => x.Id);
+            e.HasOne<ActivityTrace>().WithMany().HasForeignKey(x => new { x.TraceId, x.AgentId }).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.TraceId).HasMaxLength(32);
+            e.Property(x => x.AgentId).HasMaxLength(200);
+            e.Property(x => x.SpanId).HasMaxLength(16);
+            e.Property(x => x.ParentSpanId).HasMaxLength(16);
+            e.Property(x => x.SourceEntityId).HasMaxLength(200);
+            e.Property(x => x.TargetEntityId).HasMaxLength(200);
+            e.Property(x => x.EventType).HasMaxLength(200);
+            e.Property(x => x.Action).HasMaxLength(200);
+            e.Property(x => x.ErrorType).HasMaxLength(200);
+            e.Property(x => x.ErrorMessage).HasMaxLength(200);
+            e.Property(x => x.MetadataJson).HasColumnType("jsonb");
+            e.Property(x => x.Status).HasConversion(v => EnumName(v), v => ParseEnum<ActivityStatus>(v));
+            e.HasIndex(x => new { x.TraceId, x.AgentId, x.Timestamp });
+            e.HasIndex(x => x.SourceEntityId);
+            e.HasIndex(x => x.TargetEntityId);
         });
         // Keep the PostgreSQL schema readable without an extra conventions package.
         foreach (var entity in b.Model.GetEntityTypes())

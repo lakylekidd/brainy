@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Brain.Application;
 using Brain.Domain;
+using Brain.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -68,7 +69,12 @@ public sealed class ContractFactory : WebApplicationFactory<Program>
             ["Authentication:AgentTokenHashes:codex"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Token))),
             ["Logging:LogLevel:Default"] = "Warning"
         }));
-        builder.ConfigureServices(services => services.AddSingleton<IAgentDirectory, ContractDirectory>());
+        builder.ConfigureServices(services =>
+        {
+            services.AddSingleton<IAgentDirectory, ContractDirectory>();
+            var dispatch = services.Single(d => d.ImplementationType == typeof(ActivityDispatchService));
+            services.Remove(dispatch);
+        });
     }
     public HttpClient Agent()
     {

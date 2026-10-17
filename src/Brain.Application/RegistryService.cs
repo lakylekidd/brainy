@@ -4,9 +4,13 @@ using Brain.Domain;
 namespace Brain.Application;
 
 public sealed class RegistryService(IRegistrySource source, IRegistryIndex index, IEmbeddingProvider embeddings,
-    IAuditLog audit, TimeProvider time)
+    IAuditLog audit, TimeProvider time, IActivityPublisher activity)
 {
-    public async Task<IReadOnlyList<RegistryResult>> ListAsync(AgentContext actor, RegistryKind kind, CancellationToken ct = default)
+    public Task<IReadOnlyList<RegistryResult>> ListAsync(AgentContext actor, RegistryKind kind, CancellationToken ct = default) =>
+        activity.RunAsync(new("brain.registry.list", "brain.registry.started", "brain.registry.completed", "brain.registry.failed",
+            $"agent:{actor.Id}", "brain", actor.Id), () => ListCoreAsync(actor, kind, ct), ct);
+
+    private async Task<IReadOnlyList<RegistryResult>> ListCoreAsync(AgentContext actor, RegistryKind kind, CancellationToken ct)
     {
         actor.Require(Permissions.RegistryRead);
         var entries = await source.ReadAsync(ct);
@@ -16,14 +20,20 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
         return results;
     }
 
-    public async Task<SkillView> GetSkillAsync(AgentContext actor, string id, CancellationToken ct = default)
-    {
-        var entry = await GetAsync(actor, RegistryKind.Skill, id, ct);
-        return new(View(entry), entry.Instructions!);
-    }
+    public Task<SkillView> GetSkillAsync(AgentContext actor, string id, CancellationToken ct = default) =>
+        activity.RunAsync(new("brain.skill.read", "brain.skill.read.started", "brain.skill.read.completed", "brain.skill.read.failed",
+            $"agent:{actor.Id}", $"skill:{id}", actor.Id), async () =>
+        {
+            var entry = await GetAsync(actor, RegistryKind.Skill, id, ct);
+            activity.Publish("skill.selected", ActivityStatus.Succeeded, $"agent:{actor.Id}", entry.Key);
+            foreach (var tool in entry.RequiredTools)
+                activity.Publish("brain.capability.discovered", ActivityStatus.Succeeded, entry.Key, $"tool:{tool}");
+            return new SkillView(View(entry), entry.Instructions!);
+        }, ct);
 
-    public async Task<RegistryResult> GetToolAsync(AgentContext actor, string id, CancellationToken ct = default) =>
-        View(await GetAsync(actor, RegistryKind.Tool, id, ct));
+    public Task<RegistryResult> GetToolAsync(AgentContext actor, string id, CancellationToken ct = default) =>
+        activity.RunAsync(new("brain.tool.read", "brain.registry.started", "brain.registry.completed", "brain.registry.failed",
+            $"agent:{actor.Id}", $"tool:{id}", actor.Id), async () => View(await GetAsync(actor, RegistryKind.Tool, id, ct)), ct);
 
     private async Task<RegistryDefinition> GetAsync(AgentContext actor, RegistryKind kind, string id, CancellationToken ct)
     {
@@ -37,7 +47,12 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
         return entry;
     }
 
-    public async Task<IReadOnlyList<RegistryResult>> SearchAsync(AgentContext actor, RegistryKind kind,
+    public Task<IReadOnlyList<RegistryResult>> SearchAsync(AgentContext actor, RegistryKind kind,
+        RegistrySearchRequest request, CancellationToken ct = default) =>
+        activity.RunAsync(new("brain.registry.search", "brain.search.started", "brain.search.completed", "brain.search.failed",
+            $"agent:{actor.Id}", "brain", actor.Id), () => SearchResultsAsync(actor, kind, request, ct), ct);
+
+    private async Task<IReadOnlyList<RegistryResult>> SearchResultsAsync(AgentContext actor, RegistryKind kind,
         RegistrySearchRequest request, CancellationToken ct = default)
     {
         var catalog = await SearchCoreAsync(actor, request, ct);
@@ -49,7 +64,11 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
         return results;
     }
 
-    public async Task<CapabilitySearchResult> FindCapabilitiesAsync(AgentContext actor, RegistrySearchRequest request, CancellationToken ct = default)
+    public Task<CapabilitySearchResult> FindCapabilitiesAsync(AgentContext actor, RegistrySearchRequest request, CancellationToken ct = default) =>
+        activity.RunAsync(new("brain.capabilities.search", "brain.search.started", "brain.search.completed", "brain.search.failed",
+            $"agent:{actor.Id}", "brain", actor.Id), () => FindCoreAsync(actor, request, ct), ct);
+
+    private async Task<CapabilitySearchResult> FindCoreAsync(AgentContext actor, RegistrySearchRequest request, CancellationToken ct)
     {
         var catalog = await SearchCoreAsync(actor, request, ct);
         var vector = await EmbedAsync(request.Query, ct);
@@ -106,7 +125,11 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
         foreach (var entry in entries)
         {
             if (entry.RequiredPermissions.All(actor.Has) && entry.RequiredTools.All(tools.Contains)) allowed.Add(entry);
-            else await audit.WriteAsync(Event(actor.Id, "brain.capability.denied", entry.Key, "denied"), ct);
+            else
+            {
+                await audit.WriteAsync(Event(actor.Id, "brain.capability.denied", entry.Key, "denied"), ct);
+                activity.Publish("brain.capability.denied", ActivityStatus.Failed, $"agent:{actor.Id}", entry.Key);
+            }
         }
         return allowed;
     }
@@ -146,9 +169,14 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
         return vector;
     }
 
-    private async Task DiscoveredAsync(AgentContext actor, IEnumerable<string> keys, CancellationToken ct) =>
+    private async Task DiscoveredAsync(AgentContext actor, IEnumerable<string> keys, CancellationToken ct)
+    {
+        var ids = keys.ToArray();
         await audit.WriteAsync(new AuditEvent { AgentId = actor.Id, Action = "brain.capability.discovered", Resource = "registry",
-            Timestamp = time.GetUtcNow(), MetadataJson = JsonSerializer.Serialize(new { capabilities = keys.ToArray() }) }, ct);
+            Timestamp = time.GetUtcNow(), MetadataJson = JsonSerializer.Serialize(new { capabilities = ids }) }, ct);
+        foreach (var id in ids)
+            activity.Publish("brain.capability.discovered", ActivityStatus.Succeeded, $"agent:{actor.Id}", id);
+    }
 
     private AuditEvent Event(string actor, string action, string resource, string result = "success") =>
         new() { AgentId = actor, Action = action, Resource = resource, Result = result, Timestamp = time.GetUtcNow() };

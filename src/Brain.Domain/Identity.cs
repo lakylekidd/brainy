@@ -41,8 +41,13 @@ public static class Permissions
     public const string KnowledgePropose = "knowledge.propose";
     public const string RegistryRead = "registry.read";
     public const string RegistryAdmin = "registry.admin";
+    public const string ActivityRead = "activity.read";
+    public const string ActivityLive = "activity.live";
+    public const string TracesRead = "traces.read";
+    public const string TracesReadAll = "traces.read.all";
     public static readonly string[] All = [MemoryRead, MemoryWrite, MemoryDelete, MemoryShare, AgentsRead, AgentsAdmin, AuditRead,
         KnowledgeRead, KnowledgeAdmin, KnowledgePropose, RegistryRead, RegistryAdmin,
+        ActivityRead, ActivityLive, TracesRead, TracesReadAll,
         "infrastructure.read", "infrastructure.write", "deployment.read", "deployment.write", "deployment.staging",
         "deployment.production", "secrets.dev.read", "secrets.production.read"];
 }
