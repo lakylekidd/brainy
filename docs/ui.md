@@ -26,6 +26,10 @@ the UI does not fabricate counts for missing data. The current API has no
 dedicated totals for knowledge documents or memories and no connection catalog
 or job-status endpoint, so those metrics are identified as unavailable.
 
+The status of later UI milestones, their scope, acceptance criteria,
+dependencies, and safety constraints are tracked in the
+[Brain UI roadmap](ui-roadmap.md).
+
 Run the complete development stack with `scripts\Start-Development.ps1`.
 Compose builds the UI and serves it on loopback port 5173 through Nginx,
 which proxies `/api` and `/health` to the API container. Its health check

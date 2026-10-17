@@ -168,3 +168,17 @@ Before inventing a new pattern:
 
 ## Skills
 Reusable workflows are located in `.agents/skills/`.
+
+## Roadmap
+
+Before implementing roadmap work, read the relevant roadmap and its acceptance
+criteria. The active UI roadmap is `docs/ui-roadmap.md`; other roadmaps may
+exist under `docs/` and must be followed in the same way.
+
+When a task implements roadmap work, update the relevant roadmap in the same
+change. Mark an item or milestone **Complete** only when its acceptance
+criteria are met and relevant verification passes. If only part is implemented,
+leave it incomplete and record the completed scope and remaining work. Keep
+roadmap status and implementation notes accurate; do not mark unrelated or
+future work complete. If roadmap names, scope, or acceptance criteria conflict,
+ask me which one to follow before proceeding.
