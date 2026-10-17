@@ -1,0 +1,252 @@
+# Architecture
+
+This is the current architecture of the Milestones 1-6 implementation. The
+[foundation design](foundation.md) records the initial slice; the feature guides
+describe individual modules in more detail. See [conventions](conventions.md)
+for rules to preserve when extending the system.
+
+## Purpose and boundaries
+
+Homelab Brain is a self-hosted, shared information platform for independent AI
+agents. It provides authenticated identities, deterministic permissions, scoped
+memories, canonical knowledge retrieval, reviewed knowledge changes, and
+permission-filtered skill/tool discovery.
+
+Brain is not an agent runtime or an external tool executor. A skill supplies
+instructions and a tool manifest describes an integration; neither causes Brain
+to execute deployments, contact those systems, or retrieve secrets. Models can
+suggest metadata, but cannot grant access or approve changes.
+
+## Code organization
+
+The solution is a modular .NET 10 application with two executable hosts and one
+shared PostgreSQL database, not a set of independently owned microservices.
+
+| Project | Responsibility | Direct project references |
+| --- | --- | --- |
+| `Brain.Domain` | Entities, identity context, permission constants, lifecycle enums and controlled exceptions | None; no package dependencies |
+| `Brain.Application` | Request/result records, boundary interfaces, validation, use cases, chunking and change planning | Domain |
+| `Brain.Infrastructure` | EF Core/PostgreSQL, pgvector, filesystem and Git adapters, YAML processing, optional metadata HTTP provider and shared registration | Application |
+| `Brain.Mcp` | Typed MCP tools, strict argument binding and transport registration | Application |
+| `Brain.Api` | HTTP endpoints, authentication, request-scoped identity, OpenAPI, error translation and API composition | Infrastructure, Mcp |
+| `Brain.Worker` | Database readiness and scheduled background jobs, including the canonical writer | Infrastructure |
+
+Dependencies point inward through Application to Domain. MCP has no persistence
+or filesystem implementation. HTTP routes and MCP tools reuse the same
+application services; they do not implement separate memory, proposal or
+discovery logic. The shared composition root is
+[`ServiceRegistration`](../src/Brain.Infrastructure/ServiceRegistration.cs).
+Only the worker calls `AddKnowledgeWriter()` in normal hosting.
+
+Other repository surfaces are `agent-platform` (sample registry), `sample-vault`
+(development knowledge templates), `scripts` (initialization and smoke checks),
+`docker` and `compose.yaml` (local deployment), and `tests` (unit/Git and
+HTTP/MCP/PostgreSQL coverage). The running development vault is a separate Git
+repository under ignored `.local`, not the application repository.
+
+## Runtime topology
+
+```mermaid
+flowchart LR
+    Agents["Independent agents / harnesses"]
+    Api["Brain.Api: HTTP + /mcp"]
+    Worker["Brain.Worker"]
+    Db[("PostgreSQL + pgvector")]
+    Vault["Dedicated Markdown + Git vault"]
+    Registry["Operator-managed agent-platform"]
+    Model["Optional metadata model endpoint"]
+
+    Agents -->|"Bound agent credentials"| Api
+    Api --> Db
+    Worker --> Db
+    Api -->|"Read only"| Vault
+    Worker -->|"Read; apply reviewed writes"| Vault
+    Api -->|"Read only"| Registry
+    Worker -->|"Read only"| Registry
+    Api -.->|"Opt-in semantic scan"| Model
+    Worker -.->|"Opt-in semantic scan"| Model
+```
+
+Compose starts PostgreSQL 17 with pgvector, an API container and a worker
+container. The API publishes HTTP on loopback port 5080; the database publishes
+on loopback port 55432. MCP uses the existing API process and port. Both hosts
+mount the registry read-only. The API mounts the vault read-only, while the worker
+mounts it read-write and owns canonical publication.
+
+Before starting jobs, the worker waits for all EF migrations and pgvector, then
+refreshes PostgreSQL type metadata. It does not apply migrations. The API can
+apply migrations and development seeds when explicitly configured; production
+migrations and initial identities are operator responsibilities.
+
+Each job runs immediately and then on its configured interval, with a fresh
+service scope per iteration. Failures are logged and retried; cancellation stops
+the work.
+
+| Job / configuration key | Default interval | Compose interval |
+| --- | --- | --- |
+| Expired memories / `Worker:CleanupIntervalSeconds` | 300 seconds | 30 seconds |
+| Knowledge index / `Worker:KnowledgeScanIntervalSeconds` | 60 seconds | 30 seconds |
+| Registry index / `Worker:RegistryScanIntervalSeconds` | 60 seconds | 30 seconds |
+| Approved writes / `Worker:WriteQueueIntervalSeconds` | 10 seconds | 5 seconds |
+| Metadata scan / `Worker:MetadataScanIntervalSeconds` | 300 seconds | 300 seconds |
+
+Knowledge and registry indexing require their source paths. Write processing
+requires `Knowledge:WriterEnabled=true`; scheduled metadata scanning requires
+`Metadata:Enabled=true`. Both flags default to false outside Compose. PostgreSQL
+session advisory leases coordinate knowledge, registry and metadata scans and
+the writer separately across processes. These leases do not lock canonical
+files against a local editor.
+
+## Data ownership and persistence
+
+| Data | Authoritative source | PostgreSQL representation |
+| --- | --- | --- |
+| Agents, roles and grants | PostgreSQL | `agents`, `roles`, `permissions` and join tables |
+| Agent memories | PostgreSQL | `memories` and model-labelled `memory_embeddings` |
+| Canonical knowledge | Markdown files and their dedicated Git history | Rebuildable `knowledge_documents` metadata and `knowledge_chunks` text/vectors |
+| Skills, instructions and tool definitions | Operator-managed registry files | Rebuildable `registry_entries` metadata/vectors; not skill instruction bodies |
+| Proposed changes and review/recovery state | PostgreSQL | `knowledge_write_proposals`, including durable prepared Git/file intent |
+| Metadata inspection and deduplication state | PostgreSQL | `metadata_scan_states`, linked to generated proposals |
+| Audit history | PostgreSQL | `audit_events` |
+
+The database is not disposable just because search indexes are rebuildable:
+memories, grants, reviews, recovery state and audits are durable application data.
+Proposal content is proposed text, not a canonical document body.
+
+[`BrainDbContext`](../src/Brain.Infrastructure/BrainDbContext.cs) owns explicit
+EF mappings, relationships, database checks and `vector(384)` columns. Checked-in
+migrations live beside it. JSONB holds flexible metadata, while permissions,
+ownership and lifecycle fields remain typed. Multi-record state changes and
+their audit events are committed together; read-access telemetry can use
+separate commits.
+
+## Identity and request flow
+
+The API authenticates each request using both `X-Agent-Id` and a bearer token
+bound to that ID. Configuration contains distinct SHA-256 token digests, not raw
+client tokens. Authentication checks the digest in constant time and resolves
+the enabled agent plus its role/direct grants from PostgreSQL. Effective grants
+are an exact, case-sensitive union with no wildcard or implicit administrator
+bypass.
+
+HTTP supplies `RequestAgent.Context`; MCP consumes the same scoped context
+through `ICurrentAgent`. Callers cannot choose ownership, roles or review state
+through a memory/tool input. Operation checks and visibility rules remain active
+regardless of transport. `/health/live` is the only anonymous endpoint; readiness,
+OpenAPI and every MCP request require authentication.
+
+MCP uses the official SDK's stateless Streamable HTTP transport at `/mcp`. It
+exposes eight information/proposal tools, no approval or direct writer tool.
+Requests with an `Origin` header are rejected. Detailed connection, tool and
+error contracts are in [the MCP guide](mcp.md).
+
+## Retrieval and indexing
+
+**Memories.** Creation validates content, scores, expiry and sharing permission,
+then persists the memory, embedding and audit atomically. Private visibility is
+the default. Reads/searches apply owner, stored team or organization visibility
+and expiry in SQL; administrator roles do not bypass privacy. Caller filters
+only narrow that scope. Access counts and last-access times support telemetry,
+not automatic promotion.
+
+**Knowledge.** Reads return live canonical UTF-8 content, a raw-byte content hash
+and an opaque path-bound `v1.<sha256>` revision token. Scanning chunks Markdown
+with heading/line context, embeds it, rechecks the source revision, and replaces
+one document's index atomically. Unchanged file/model/chunker combinations are
+skipped. Pruning requires a complete directory enumeration. Search verifies
+candidate revisions against live files and omits stale hits, so it may return
+fewer results until indexing catches up.
+
+**Registry.** List/get operations read current manifests and skill instructions.
+Search uses matching indexed fingerprints and embedding identity. Every tool
+requires all manifest grants; a skill also requires every tool dependency and
+its grants. Filtering precedes ranking/limit. Registry refresh replaces the
+bounded catalog atomically, preserving the previous index on failure. Search
+rechecks live sources before returning results.
+
+All vector searches use pgvector exact cosine ranking and matching
+provider/model/dimension descriptors. The registered development provider uses
+deterministic 384-dimensional token hashing, not a learned semantic model.
+Changing model identity requires re-embedding; changing dimensions also requires
+a schema migration.
+
+`SearchService` powers both `POST /api/search` and `brain_search`. It queries only
+granted modules and returns separate knowledge, memory, skill and tool arrays;
+there is no global score normalization. Limits apply per source, and capability
+results include required tools even beyond the tool limit. Known unavailable or
+invalid optional sources are reported in `failures`; unexpected errors propagate.
+Calls run sequentially because the services share a scoped `DbContext`.
+
+See [knowledge](knowledge.md) and [skills/tools](skills-and-tools.md) for indexing,
+freshness, schema and permission details.
+
+## Reviewed canonical changes
+
+Canonical writes cross PostgreSQL, Git and filesystem boundaries; there is no
+single transaction covering all three.
+
+1. An authenticated agent reads current knowledge and submits a revision-bound
+   proposal (or requests creation of a missing document). Submission queues
+   `pending` state and does not edit files.
+2. A reviewer previews the exact result and approves/rejects using the proposal's
+   current integer version. Approval changes database state only.
+3. The worker acquires the writer lease, reloads proposer/reviewer access, checks
+   the dedicated clean Git checkout and canonical revision, and prepares exact
+   result bytes and a Git commit. It retains a recovery ref and persists
+   `validating` state with the prepared intent.
+4. The writer publishes with an expected-parent Git reference update, materializes
+   only expected old/result bytes, and updates only the target Git index entry.
+   It then records `applied` plus audit and clears the temporary recovery body.
+5. Interrupted prepared operations resume the same intent rather than repeating
+   an append. Unexpected file/history changes conflict; repository conditions
+   such as a dirty checkout defer work. Search indexing catches up separately
+   through the scanner.
+
+Supported caller operations are `append`, `replace_section` and
+`create_document`. There is no auto-approval, force-apply or automatic merge.
+All writers for a vault must use the same Brain database. Pause the writer for
+direct human filesystem/Git maintenance and resume with a clean checkout.
+Recovery details and supported repository constraints are documented in
+[safe knowledge writes](knowledge-writes.md).
+
+## Metadata enrichment
+
+`MetadataService` inspects frontmatter through the read-only vault interface.
+It combines deterministic missing-field repairs with optional structured model
+suggestions, validates a JSON patch and its rendered document, then stores scan
+state, a pending proposal and generation audits atomically. Revision and policy
+fingerprints prevent duplicate proposals for unchanged inspected sources.
+
+Valid human fields, comments, unknown fields and Markdown body content are
+preserved. Ambiguous YAML requires manual repair. Metadata proposals use the
+same preview, explicit review and Git writer as ordinary changes; confidence is
+never authorization. Generic HTTP/MCP proposal submission cannot create this
+scanner-only operation.
+
+Semantic enrichment is disabled by default, including in Compose. Enabling it
+sends a bounded body excerpt and metadata context to an operator-selected
+OpenAI-compatible endpoint. This provider is separate from `IEmbeddingProvider`;
+it does not improve vector recall. See [metadata enrichment](metadata-enrichment.md)
+for schema, provider and cache behavior.
+
+## Operational constraints and limits
+
+`ConnectionStrings:Brain` is required. `Knowledge:VaultPath` and
+`Registry:RootPath` configure optional source modules; absent configuration
+disables their jobs and returns controlled errors for their operations without
+disabling memories. Configure both hosts against the same sources, database,
+embedding identity and metadata policy.
+
+Vault access rejects unsafe paths and linked files/directories, but assumes
+trusted local operators rather than an OS sandbox against hostile filesystem
+swaps. Knowledge currently has one shared vault and no per-document ACLs.
+Multi-organization tenancy, remote Git synchronization, automatic memory
+promotion and approximate vector indexing are not implemented.
+
+Compose is a development environment, not a production security/deployment
+profile. Production requires explicit identities/grants, external credential
+configuration, TLS, restricted database access, reviewed migrations and backups
+of both durable database state and canonical repositories. External secret
+retrieval is not implemented; clients must not submit secret values. Use the
+[README](../README.md) for setup and [verification](verification.md) for recorded
+implementation evidence and reproduction guidance.
