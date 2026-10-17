@@ -143,6 +143,15 @@ credentials still require the bound ID/token pair, and MCP rejects the UI token.
 The browser retains its token only in page memory. This shared-token flow does
 not provide personal human identities or SSO. See [the UI guide](ui.md).
 
+Identity inspection reuses `IAgentDirectory`: agents, independent details,
+roles and permission catalogs require `agents.read`; agent responses distinguish
+direct grants from the effective role/direct union. The UI exposes only existing
+`agents.admin` registration/full-access replacement operations with explicit
+review and server-side validation/self-edit protection. Role definitions and
+credentials remain operator-managed. Access replacement has no revision token;
+coordinate concurrent operator edits rather than treating it as a merge. See
+[identity contracts and boundaries](ui.md#agents-and-permissions).
+
 HTTP supplies `RequestAgent.Context`; MCP consumes the same scoped context
 through `ICurrentAgent`. Callers cannot choose ownership, roles or review state
 through a memory/tool input. Operation checks and visibility rules remain active
@@ -215,6 +224,17 @@ This public UI build-time setting never comes from document metadata; no Brain
 credential or body is forwarded. Brain does not synchronize or edit the external
 vault. See [WebObsidian linking](ui.md#webobsidian-linking).
 Semantic graph queries and live overlays are not implemented.
+
+**PAV OS demo.** A separate lazy-loaded UI page uses D3.js with HTML Canvas
+to explore six layouts of the fictional `ui/demo-vault` fixture. Raw Markdown
+imports supply its files, creation dates and explicit relative links; there is
+no second graph catalog or backend multi-vault support. Named capability rings,
+temporary node dragging, directed-reference particles and automatic 3D rotation
+are client-side visualization only, not live activity or external execution.
+The fixture is public
+static build content, contains no private/live data, and is not mounted into the
+API or worker. Existing authorization, canonical sources and writer workflows
+are unchanged. See [the demo boundary and layouts](ui.md#pav-os-demo-dashboard).
 
 ## Reviewed canonical changes
 

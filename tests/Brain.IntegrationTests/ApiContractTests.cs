@@ -150,6 +150,9 @@ public sealed class ContractFactory : WebApplicationFactory<Program>
         public Task<AgentContext?> ResolveAsync(string id, CancellationToken ct) => Task.FromResult<AgentContext?>(
             id == "disabled-admin" ? null : new(id, "platform", new HashSet<string> { Permissions.MemoryWrite }));
         public Task<IReadOnlyList<AgentView>> ListAsync(AgentContext actor, CancellationToken ct) => throw new NotSupportedException();
+        public Task<AgentView> GetAsync(AgentContext actor, string id, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyList<RoleView>> ListRolesAsync(AgentContext actor, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyList<PermissionView>> ListPermissionsAsync(AgentContext actor, CancellationToken ct) => throw new NotSupportedException();
         public Task<AgentView> CreateAsync(AgentContext actor, CreateAgentRequest request, CancellationToken ct) => throw new NotSupportedException();
         public Task<AgentView> UpdateAccessAsync(AgentContext actor, string id, UpdateAccessRequest request, CancellationToken ct) => throw new NotSupportedException();
     }

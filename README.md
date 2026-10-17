@@ -2,7 +2,7 @@
 
 A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application, not an agent runtime.
 
-**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-3 provide an authenticated operations dashboard, a permission-filtered interactive knowledge graph, and configured document links to WebObsidian; canonical Markdown editing remains in WebObsidian.
+**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-4 provide an authenticated operations dashboard, a permission-filtered interactive knowledge graph, configured document links to WebObsidian, and agent/permission inspection and supported access management; canonical Markdown editing remains in WebObsidian.
 
 ## Run locally
 
@@ -42,6 +42,32 @@ Missing or invalid configuration shows an explicit message in the document
 inspector without disabling graph exploration. Native Vite development uses
 `VITE_WEB_OBSIDIAN_BASE_URL` instead. See [configuration and safety](docs/ui.md#webobsidian-linking).
 Semantic graphs and live overlays remain later milestones.
+
+Choose **PAV OS** for a separate D3.js + HTML Canvas demo dashboard with
+**Ring, Circle, Areas, Links, Timeline, and 3D Orbit** views. It explores
+30 real Markdown files in [`ui/demo-vault`](ui/demo-vault/AGENTS.md), with
+`AGENTS.md` as the entry point, five interest areas (business, personal,
+YouTube, content, career), and shared skills, memory, routines and applications.
+Select dots or use **Jump to file** to read documents and follow their links.
+Named **Skills, Knowledge, Memory, Routines, and Applications** rings group
+files by kind, with area colors and distinct node shapes. Drag nodes around
+their ring (or freely in other views); arrow keys and **Reset node positions**
+provide keyboard placement and recovery. Links animate from their source file
+toward the referenced file, and **3D Orbit** spins slowly by default.
+**Pause motion** stops both effects; reduced-motion preferences disable them.
+Search, area filters, zoom/pan and labels remain available.
+This is fictional, read-only example data, not the live Brain vault;
+no database, mount, credentials or existing knowledge is changed. See
+[the demo guide](docs/ui.md#pav-os-demo-dashboard) for extending the example.
+
+Choose **Agents** to search/filter the returned identity list, inspect roles,
+direct grants and effective permissions, or open an agent-focused graph.
+**Permissions** adds role inspection and a role-by-permission matrix, including
+roles without members. Inspection requires `agents.read`; registration and
+reviewed full access replacement additionally require `agents.admin`.
+Self-access changes are prohibited. Credentials, role definitions and permission
+catalog entries remain operator-managed. Registration does not issue a token.
+See [identity management and its replacement semantics](docs/ui.md#agents-and-permissions).
 
 Startup preserves existing credentials, database volumes, and the dedicated vault.
 It creates `.env` only if absent and uses `Initialize-UiAdmin.ps1` to append a
@@ -143,6 +169,8 @@ return 404. Unknown JSON fields and integer/unknown enum values return 400.
 | `GET /api/graph`, `GET /api/graph/search` | Bounded, source-permission-filtered graph overview/substring search; up to 200 entities and 400 relationships |
 | `GET /api/graph/entity?id=...`, `GET /api/graph/neighbors?id=...` | Independent entity details / progressive expansion; server depth 0-2 and source visibility checks |
 | `GET /api/agents` | `agents.read`, up to 1,000 agents |
+| `GET /api/agents/{id}/details` | `agents.read`, independent details including direct and effective grants |
+| `GET /api/roles`, `GET /api/permissions` | `agents.read`, role grants/descriptions and known permission catalog, including unassigned entries |
 | `POST /api/agents` | `agents.admin`, register identity and known grants |
 | `PUT /api/agents/{id}/access` | `agents.admin`, replace roles/direct grants and enable/disable another agent |
 | `POST /api/memories` | `memory.write`; shared visibility also needs `memory.share` |

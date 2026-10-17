@@ -2,6 +2,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App";
 
+vi.mock("./features/pav/PavDashboard", () => ({
+  default: () => <h1>PAV OS demo vault</h1>,
+}));
+
 describe("Brain UI shell", () => {
   it("authenticates, loads the dashboard, and keeps credentials out of browser storage", async () => {
     const responses: Record<string, unknown> = {
@@ -50,6 +54,9 @@ describe("Brain UI shell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Knowledge graph" }));
     expect(await screen.findByRole("heading", { name: "Knowledge graph" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "PAV OS" }));
+    expect(await screen.findByRole("heading", { name: "PAV OS demo vault" })).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByTitle("Sign out")[0]);
     expect(await screen.findByText("A clearer view of your Brain.")).toBeInTheDocument();

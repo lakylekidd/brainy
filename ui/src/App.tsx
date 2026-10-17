@@ -6,6 +6,8 @@ import Dashboard from "./features/dashboard/Dashboard";
 import { useTheme } from "./hooks/useTheme";
 
 const KnowledgeGraph = lazy(() => import("./features/graph/KnowledgeGraph"));
+const Agents = lazy(() => import("./features/agents/Agents"));
+const PavDashboard = lazy(() => import("./features/pav/PavDashboard"));
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
@@ -17,6 +19,7 @@ export default function App() {
   const [dashboardError, setDashboardError] = useState<string | null>(null);
   const [signInError, setSignInError] = useState<string | null>(null);
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const [graphFocus, setGraphFocus] = useState<string | undefined>();
 
   async function signIn(nextCredentials: Credentials) {
     setSignInError(null);
@@ -68,7 +71,7 @@ export default function App() {
 
   return (
     <AppShell
-      onNavigate={setPage}
+      onNavigate={(next) => { setGraphFocus(undefined); setPage(next); }}
       onSignOut={() => signOut()}
       page={page}
       profile={profile}
@@ -83,9 +86,19 @@ export default function App() {
           onNavigate={setPage}
           onRefresh={() => setRefreshVersion((version) => version + 1)}
         />
+      ) : page === "pav" ? (
+        <Suspense fallback={<p role="status">Loading demo vault...</p>}>
+          <PavDashboard theme={theme} />
+        </Suspense>
       ) : page === "graph" ? (
         <Suspense fallback={<p role="status">Loading graph feature…</p>}>
-          <KnowledgeGraph credentials={credentials} theme={theme} onUnauthorized={() => signOut("Your credentials are no longer valid. Connect again.")} />
+          <KnowledgeGraph credentials={credentials} theme={theme} initialFocus={graphFocus} onUnauthorized={() => signOut("Your credentials are no longer valid. Connect again.")} />
+        </Suspense>
+      ) : page === "agents" || page === "permissions" ? (
+        <Suspense fallback={<p role="status">Loading identity feature...</p>}>
+          <Agents credentials={credentials} profile={profile} mode={page}
+            onUnauthorized={() => signOut("Your credentials are no longer valid. Connect again.")}
+            onFocus={(id) => { setGraphFocus(id); setPage("graph"); }} />
         </Suspense>
       ) : (
         <section className="placeholder-page">
@@ -103,6 +116,7 @@ export default function App() {
 function pageTitle(page: PageId): string {
   return {
     dashboard: "Dashboard",
+    pav: "PAV OS",
     graph: "Knowledge graph",
     agents: "Agents",
     skills: "Skills",

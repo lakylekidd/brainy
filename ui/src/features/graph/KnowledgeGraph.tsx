@@ -11,14 +11,14 @@ import { typeColors } from "./model";
 import { webObsidianDocumentLink } from "./webObsidian";
 import "./graph.css";
 
-export default function KnowledgeGraph({ credentials, theme, onUnauthorized }: {
-  credentials: Credentials; theme: Theme; onUnauthorized: () => void;
+export default function KnowledgeGraph({ credentials, theme, onUnauthorized, initialFocus }: {
+  credentials: Credentials; theme: Theme; onUnauthorized: () => void; initialFocus?: string;
 }) {
   const [data, setData] = useState<GraphResult>(emptyGraph);
   const [types, setTypes] = useState<EntityType[]>([...entityTypes]);
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
-  const [focus, setFocus] = useState<string | null>(null);
+  const [focus, setFocus] = useState<string | null>(initialFocus ?? null);
   const [depth, setDepth] = useState(1);
   const [selected, setSelected] = useState<string | null>(null);
   const [detail, setDetail] = useState<GraphEntity | null>(null);

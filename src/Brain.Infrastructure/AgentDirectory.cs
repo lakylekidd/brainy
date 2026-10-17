@@ -20,6 +20,28 @@ public sealed partial class AgentDirectory(BrainDbContext db, TimeProvider time)
         return (await FullAgents().AsNoTracking().OrderBy(a => a.Id).Take(1000).ToListAsync(ct)).Select(View).ToArray();
     }
 
+    public async Task<AgentView> GetAsync(AgentContext actor, string id, CancellationToken ct)
+    {
+        actor.Require(Permissions.AgentsRead);
+        var agent = await FullAgents().AsNoTracking().SingleOrDefaultAsync(a => a.Id == id, ct)
+            ?? throw new BrainException(404, "Agent not found.");
+        return View(agent);
+    }
+
+    public async Task<IReadOnlyList<RoleView>> ListRolesAsync(AgentContext actor, CancellationToken ct)
+    {
+        actor.Require(Permissions.AgentsRead);
+        var roles = await db.Roles.AsNoTracking().Include(r => r.Permissions).OrderBy(r => r.Id).ToListAsync(ct);
+        return roles.Select(r => new RoleView(r.Id, r.Description, r.Permissions.Select(p => p.Id).Order().ToArray())).ToArray();
+    }
+
+    public async Task<IReadOnlyList<PermissionView>> ListPermissionsAsync(AgentContext actor, CancellationToken ct)
+    {
+        actor.Require(Permissions.AgentsRead);
+        return await db.Permissions.AsNoTracking().OrderBy(p => p.Id)
+            .Select(p => new PermissionView(p.Id, p.Description)).ToArrayAsync(ct);
+    }
+
     public async Task<AgentView> CreateAsync(AgentContext actor, CreateAgentRequest request, CancellationToken ct)
     {
         actor.Require(Permissions.AgentsAdmin);
@@ -69,7 +91,8 @@ public sealed partial class AgentDirectory(BrainDbContext db, TimeProvider time)
     private static IEnumerable<string> Effective(Agent agent) => agent.Permissions.Select(p => p.Id).Concat(agent.Roles.SelectMany(r => r.Permissions.Select(p => p.Id))).Distinct(StringComparer.Ordinal);
     private static AgentView View(Agent a) => new(a.Id, a.Name, a.Description, a.TeamId, a.Enabled,
         a.Roles.Select(r => r.Id).Order().ToArray(), Effective(a).Order().ToArray(),
-        JsonSerializer.Deserialize<JsonElement>(a.MetadataJson), a.CreatedAt, a.UpdatedAt);
+        JsonSerializer.Deserialize<JsonElement>(a.MetadataJson), a.CreatedAt, a.UpdatedAt,
+        a.Permissions.Select(p => p.Id).Order().ToArray());
     private void Audit(string actor, string action, string id) => db.AuditEvents.Add(new AuditEvent
     { AgentId = actor, Action = action, Resource = id, Timestamp = time.GetUtcNow() });
     [GeneratedRegex(@"\A[a-z0-9][a-z0-9-]{0,99}\z")]

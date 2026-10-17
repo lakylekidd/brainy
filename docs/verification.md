@@ -1,5 +1,114 @@
 # Implementation verification
 
+## PAV OS demo dashboard (18 October 2026)
+
+- Added a separate D3.js + HTML Canvas page without replacing the existing
+  dashboard or live Sigma graph. The fictional `ui/demo-vault` contains
+  **30 real Markdown files and 84 directed links** across nine folders, with
+  `AGENTS.md` as the entry point. The fixture is bundled public example content,
+  not a second configured canonical vault, registered capability catalog,
+  database memory store or live integration.
+- **132 frontend tests** pass across 14 files, including 42 cases across
+  five demo-specific files. They verify real fixture discovery, reference
+  resolution/reachability, malformed dates/documents, broken/escaping links,
+  root-preserving filters, loaded endpoints, six distinct deterministic
+  arrangements, finite/non-coincident positions, ring membership, actual
+  timeline dates and same-day separation, depth projection, source immutability,
+  root-only/narrow layouts, selection/inspection, theme changes, Canvas
+  fallback, camera controls, live reduced-motion changes and renderer cleanup.
+  The reference-style refinement additionally covers five named capability
+  tracks, ring-constrained placement, normalized free placement, temporary
+  positions across resize, shared directional edge/particle geometry,
+  source-to-target flow progress/wrapping, automatic orbit and guide rotation,
+  frame-driven particles, keyboard placement/reset, unnecessary-loop avoidance,
+  hidden-page suspension, pointer-release selection without compatibility
+  clicks and cancelled-touch handling.
+  The existing shell case additionally checks navigation to the new page.
+- The TypeScript/Vite production build and Docker UI build pass.
+  **Eleven Chromium browser cases** pass against the real Compose UI/API,
+  including all existing login, identity, graph, WebObsidian and theme checks.
+  Five demo cases verify all six actual Canvas outputs differ, real dot
+  selection, linked file/body inspection, filters/no-match states, keyboard
+  navigation, camera/rotation controls, reduced motion, color updates, both
+  themes, mobile overflow, no-Canvas inspection and absence of graph API calls
+  from this demo. Native mouse drags remain selectable on their ring after
+  background panning and zooming; free placement, arrow-key movement and reset
+  work in Links view. A touch-enabled mobile context uses real touch input to
+  drag along the portrait ring and then tap the moved node. Controlled browser
+  time verifies changing pixels for directed flow and automatic orbit, stable
+  pixels when paused/reduced, and manual rotation with reduced motion.
+  No browser exceptions or CSP violations are reported.
+- Desktop light/dark and mobile screenshots were inspected. Portrait Ring
+  ellipses preserve readable label spacing on narrow screens; a unit case
+  asserts at least 14 pixels between labels at a 300-pixel canvas width.
+  The rebuilt UI is served by the existing healthy Nginx container.
+  No database schema, canonical vault, registry, credentials or backend
+  contracts were changed; backend suites were not rerun for this frontend-only
+  addition. Existing uncommitted identity work was preserved.
+
+Reproduce against the initialized development stack:
+
+```powershell
+npm --prefix .\ui test
+npm --prefix .\ui run build
+docker compose up -d --build --no-deps ui
+npm --prefix .\ui run test:e2e
+```
+
+## UI agents and permissions (17 October 2026)
+
+- UI Milestone 4 is implemented on `feat/ui-agents-permissions`. The .NET
+  solution builds with zero warnings/errors; the TypeScript/Vite production
+  build passes. No database schema, new permission or MCP management operation
+  was needed.
+- **115 unit/Git cases** and **47 focused HTTP/PostgreSQL cases** pass. The
+  integration selection covers agent inspection/management, memory permission
+  regression, UI administrator authentication, API contracts and graph access.
+  These are focused integration checks, not a full integration-suite claim.
+  Nine new identity cases verify direct versus inherited/effective grants,
+  unassigned role/catalog inspection, authentication/read checks before lookup,
+  live revocation, read-only mutation denial, invalid grants, self-edit
+  protection, duplicate creation, disabled identity details/authentication and
+  transactional management audits. An identity named `me` is independently
+  readable through `/api/agents/{id}/details` without shadowing current identity.
+- **90 frontend tests** pass across nine files. New cases cover dedicated
+  identity/role matrices, independent lookup and status/search filtering,
+  read-only/self-edit states, reviewed registration/full-access replacement,
+  correct direct-grant initialization, current-grant refresh/revocation,
+  400/401/403/404/409/service/offline failures, explicit empty states, arbitrary
+  metadata exclusion, stale response cancellation and direct bounded graph
+  focus. Failures do not produce success notices or leak server diagnostics.
+- Rebuilt and started the API/UI images against the existing development
+  PostgreSQL/worker stack. **Six Chromium cases** pass against the real Nginx
+  proxy, API and data, including the new identity case and all prior login,
+  theme, graph/WebGL/no-WebGL and WebObsidian checks. Identity verification
+  checks actual direct/effective grants, reviews then cancels an enabled-state
+  replacement, loads the authorized focused graph, inspects role matrices and
+  exercises both themes, mobile overflow and offline navigation recovery.
+  No existing agent was changed and no persistent test identity was created by
+  the browser case; mutation cases use isolated disposable test databases.
+- Documentation and the roadmap describe the supported replacement boundary:
+  access updates have no concurrency token and do not merge simultaneous
+  operator changes. Credentials, role definitions and permission catalog
+  definitions remain operator-managed. No token input/issuance or raw-secret
+  management was added.
+
+Reproduce from the repository root:
+
+```powershell
+dotnet build HomelabBrain.sln
+dotnet test .\tests\Brain.UnitTests
+dotnet test .\tests\Brain.IntegrationTests --filter "FullyQualifiedName~AgentApiTests|FullyQualifiedName~MemoryApiTests|FullyQualifiedName~UiAdminApiTests|FullyQualifiedName~ApiContractTests|FullyQualifiedName~GraphApiTests"
+npm --prefix .\ui test
+npm --prefix .\ui run build
+docker compose up -d --build --no-deps api ui
+npm --prefix .\ui run test:e2e
+```
+
+Use the already-initialized development stack and ignored credentials described
+in [the UI guide](ui.md). Integration tests use isolated PostgreSQL 17/pgvector
+containers; they do not target the application's database.
+
 ## UI WebObsidian integration (17 October 2026)
 
 - UI Milestone 3 is implemented on `feat/webobsidian-integration`. The confirmed

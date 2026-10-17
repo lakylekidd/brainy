@@ -9,11 +9,12 @@ import { Theme } from "../hooks/useTheme";
 import ThemeToggle from "./ThemeToggle";
 
 export type PageId =
-  | "dashboard" | "graph" | "agents" | "skills" | "tools" | "connections"
+  | "dashboard" | "pav" | "graph" | "agents" | "skills" | "tools" | "connections"
   | "permissions" | "proposals" | "metadata" | "operations" | "audit" | "settings";
 
 const navigation: { id: PageId; label: string; icon: typeof Gauge; group: string }[] = [
   { id: "dashboard", label: "Dashboard", icon: Gauge, group: "Workspace" },
+  { id: "pav", label: "PAV OS", icon: BrainCircuit, group: "Workspace" },
   { id: "graph", label: "Knowledge graph", icon: Layers3, group: "Workspace" },
   { id: "agents", label: "Agents", icon: Bot, group: "Control plane" },
   { id: "skills", label: "Skills", icon: BrainCircuit, group: "Control plane" },
@@ -110,7 +111,7 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
             </button>
           </div>
         </header>
-        <div className={`page-content${page === "graph" ? " page-content-graph" : ""}`}>
+        <div className={`page-content${page === "graph" ? " page-content-graph" : page === "pav" ? " page-content-pav" : ""}`}>
           {children}
         </div>
         <footer className="app-footer">

@@ -1,0 +1,37 @@
+.identity-feature { display: grid; gap: 18px; }
+.identity-feature .page-heading { margin-bottom: 0; }
+.identity-panel { padding: 22px; min-width: 0; }
+.identity-panel h2 { font-size: 18px; color: var(--ink); }
+.identity-panel p { margin: 10px 0; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+.identity-panel label { display: grid; gap: 8px; font-size: 12px; min-width: 0; }
+.identity-panel input:not([type="checkbox"]), .identity-panel select, .identity-panel textarea {
+  width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--line);
+  border-radius: 8px; color: var(--ink); background: var(--page); font: inherit;
+}
+.identity-panel :is(select, textarea):focus-visible, .identity-table-scroll:focus-visible {
+  outline: 3px solid rgba(67, 167, 211, .4); outline-offset: 2px;
+}
+.identity-fields, .identity-grants { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+.identity-actions, .identity-lookup { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.identity-lookup label { flex: 1; }
+.identity-panel dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px; font-size: 12px; }
+.identity-panel dt { font-weight: 600; }
+.identity-panel dd { margin: 0; overflow-wrap: anywhere; line-height: 1.6; }
+.identity-form > fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.identity-grants fieldset { min-width: 0; border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+.identity-grants legend { padding: 0 5px; font-size: 12px; font-weight: 600; }
+.identity-panel .identity-check { display: flex; align-items: center; margin: 10px 0; overflow-wrap: anywhere; }
+.identity-check input { flex-shrink: 0; }
+.identity-table-scroll { overflow: auto; max-height: 540px; margin-top: 18px; }
+.identity-panel table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.identity-panel caption { text-align: left; padding: 10px 0; font-weight: 600; }
+.identity-panel th, .identity-panel td { border-bottom: 1px solid var(--line); padding: 12px; white-space: nowrap; }
+.identity-panel thead th { position: sticky; top: 0; background: var(--panel); }
+.identity-panel .inline-error { margin: 12px 0; }
+.identity-review { margin: 16px 0; }
+@media (max-width: 700px) {
+  .identity-fields, .identity-grants { grid-template-columns: minmax(0, 1fr); }
+  .identity-panel { padding: 16px; }
+  .identity-panel dl { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .identity-panel dd { margin-bottom: 8px; }
+}

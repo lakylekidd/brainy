@@ -4,7 +4,7 @@ The Brain UI is an operations and exploration surface, not a Markdown editor.
 WebObsidian remains the place to create and edit canonical knowledge documents;
 the Brain UI must link out to it rather than copy editing functionality.
 
-## Current scope: UI Milestones 1-3
+## Current scope: UI Milestones 1-4
 
 The frontend is a React + TypeScript + Vite application under `ui/`. Its current
 structure is:
@@ -15,12 +15,15 @@ ui/src/
   components/
   features/dashboard/
   features/graph/
+  features/agents/
+  features/pav/
   App.tsx
   styles.css
 ```
 
-The shell exposes the dashboard and knowledge graph, including configured
-WebObsidian links for document nodes; later milestone routes are
+The shell exposes the dashboard, knowledge graph, agents, permissions and a
+separate PAV OS demo dashboard,
+including configured WebObsidian links for document nodes; later milestone routes are
 explicit placeholders. The dashboard reads existing authenticated API endpoints
 for agent, skill, tool, pending-proposal, metadata-issue, audit, trace, and
 readiness data. Counts reflect the API response visible to the current identity;
@@ -67,6 +70,93 @@ A small same-origin external script applies the initial theme before styles
 load, avoiding a light-theme flash without loosening the Nginx content security
 policy. Native form controls and browser theme color follow the selected mode;
 the existing reduced-motion behavior is preserved.
+
+## PAV OS demo dashboard
+
+**PAV OS** is an additional authenticated-shell page, not a replacement for
+the operations dashboard or the authorized Sigma knowledge graph. It is an
+explicitly fictional, read-only example of a personal operating system named
+Studio North. It makes no graph API calls, does not change the configured
+canonical vault, and adds no multi-vault backend or write capability.
+
+The separate `ui/demo-vault/` contains 30 real Markdown documents:
+`AGENTS.md`, three documents each in `business`, `personal`, `youtube`,
+`content` and `career`, four skills, four routines, three memory/context notes,
+and three application descriptions. These are all demo documents, not registered
+executable skills, live application connections, or database memories. The
+entry-point file explains where the other files live.
+
+Vite imports only this fixture directory as raw text into the lazy-loaded
+feature. Every dot corresponds to exactly one file; every directed relationship
+comes from a relative Markdown `.md` link in its body. Reciprocal links remain
+separate directed references in counts; the inspector distinguishes outgoing,
+incoming and two-way connections. There are no invented semantic or folder
+membership edges. Missing entry points, unsupported folders, invalid dates or
+broken/escaping local links produce explicit errors rather than phantom nodes.
+Document bodies render as plain text, never as HTML or executable Markdown.
+**This bundled fixture is public static build content**, even though the page
+is behind sign-in: never put private vault content, credentials or secrets here.
+Live permission-filtered data continues to use the existing graph APIs.
+
+The six views use D3 layouts/forces/scales and a high-DPI HTML Canvas 2D renderer:
+
+| View | Arrangement |
+| --- | --- |
+| Ring | Anchored `AGENTS.md` at the center of five named tracks: Skills, Knowledge, Memory, Routines and Applications; all files of a kind stay on their track. Knowledge files form colored interest sectors. Portrait ellipses preserve mobile label spacing. |
+| Circle | Documents around a common perimeter, with the entry point at the center |
+| Areas | D3 hierarchical packing groups files into labeled folder neighborhoods |
+| Links | A deterministic, bounded-tick D3 force layout emphasizes actual links |
+| Timeline | Folder lanes and a UTC date scale use each document's `created` frontmatter, not fabricated file activity; same-day files stack within their lane |
+| 3D Orbit | Depth-sorted perspective projection onto Canvas 2D; nodes, connections and projected orbital guides slowly rotate together by default (roughly 74 seconds per revolution), with manual rotation and pause controls; not a WebGL renderer |
+
+Search matches names/paths; area selectors and legend buttons filter dots and
+retain only links with visible endpoints. `AGENTS.md` remains visible as a
+context anchor, including explicit no-match states. Selecting a dot or using
+the keyboard-accessible **Jump to file** selector opens its source path, date,
+body and actual connected files. Following a connected file outside a filter
+clears the filter to reveal it. The chart uses an orange entry-point hexagon,
+skill diamonds, ordinary file/memory dots, double-ring routines and application
+hexagons; folder/area colors and the legend complement these shapes.
+
+Drag a node to rearrange it. In **Ring**, dragging changes only its angle:
+skills stay on the Skills ring, routines on Routines, and so on. The central
+`AGENTS.md` stays anchored. Other views allow free placement. Drag empty
+space to pan; scroll/button zoom keeps hit-testing and dragging in graph
+coordinates. Select a file using **Jump to file**, focus the canvas and use
+arrow keys for keyboard placement (rotation in Ring). **Reset node positions**
+restores the current view's layout and camera; **Fit vault** resets only the
+camera. Positions are temporary, per-view page state: filters, resizing and
+theme changes preserve them, while leaving/reloading the page clears them.
+Dragging never edits a file or its creation date/relationships.
+
+Links retain static arrowheads and, by default, animate small particles from
+the source document toward the referenced document along the same curved path.
+Reciprocal references follow their own directed paths. This is an illustrative
+view of Markdown references, **not live calls, runs, tool execution, or an
+activity stream**. Turning **Links** off hides both edges and their particles.
+**Pause motion** freezes link flow and automatic orbit; the orbit's own pause
+control stops only rotation. Animation uses a bounded Canvas frame loop at
+about 30 redraws per second, not React state updates for every frame, and
+stops when hidden, unmounted or unnecessary. Orbit rotation pauses during
+node dragging to keep the grabbed file stable.
+
+Panning, scroll/button zoom, fit, and link/label toggles need no additional data.
+The inspector remains usable
+if Canvas is unavailable. The page supports both themes and responsive layouts.
+Reduced-motion preferences disable all automatic flow/rotation, including
+changes while the page is open; static arrows, dragging, keyboard placement and
+manual orbit rotation remain available. The normal enabled motion preference
+resumes when reduced motion is turned off.
+
+To extend this **demo**, add a Markdown file under one of its nine folders with
+an H1 heading and a valid `created: YYYY-MM-DD` field inside YAML frontmatter.
+Connect it with ordinary relative Markdown links such as
+`[Weekly review](../routines/weekly-review.md)`. File creation or edits here are
+repository fixture maintenance, not writes to a running canonical vault.
+Rebuild the UI container with `docker compose up -d --build --no-deps ui` (or
+use Vite). No second JSON graph or generated node list needs maintenance.
+The intentionally small fixture parser supports this documented format; it is
+not a general-purpose Markdown/YAML vault importer.
 
 ## Authentication and safety
 
@@ -142,6 +232,12 @@ the configured WebObsidian target, keyboard activation, new-tab isolation and
 absence of Brain authorization/referrer headers. Only the external navigation
 is intercepted; Brain API/data remain real. It does not sign into WebObsidian
 or verify that a separately deployed instance contains the document.
+The identity browser case reads actual agent/role/permission data, verifies
+direct versus inherited grants, reviews and cancels an access replacement,
+opens a bounded agent-focused graph, and checks role matrices, both themes,
+mobile layout and offline recovery. It does not save changes to existing agents
+or create persistent test identities. Actual mutations and denial/revocation
+cases run against isolated PostgreSQL integration databases.
 
 `ApiContractTests` cover invalid/unconfigured credentials, identity binding, MCP
 isolation, and OpenAPI security alternatives. `UiAdminApiTests` use actual
@@ -275,6 +371,97 @@ model, edge/node budgets, filtering, search, independent detail loads, focus,
 expansion, stale responses and explicit failures. Chromium graph checks use the
 real Compose API/data, including actual WebGL rendering, keyboard selection,
 both themes, mobile layout, reduced-motion operation and the no-WebGL inspector.
+
+## Agents and permissions
+
+**Agents** lists up to 1,000 enabled/disabled identities with name, ID, team,
+status and roles. Search and status filters narrow the returned inventory, not
+the entire database. A limit notice avoids implying a complete inventory;
+**Look up agent ID** fetches a record independently even beyond the list.
+Selection loads authorized details independently before exposing controls.
+Details explicitly render description, team, enabled state, roles, direct
+grants, effective permissions and update time, never arbitrary agent metadata.
+
+The agent permission matrix distinguishes grants inherited through each role,
+direct grants, and the effective union reported by the backend. A permission
+can be both direct and inherited without being counted twice. An enabled
+identity, exact permission IDs and each operation's visibility/ownership rules
+still apply: role names confer no implicit authority, disabling prevents
+authentication, and grants do not bypass private memory or source constraints.
+The current identity summary is refreshed with `/api/agents/me` whenever the
+directory refresh succeeds; a failed load explicitly leaves only the sign-in
+snapshot. Reload after newly granting directory access to a session that lacked
+`agents.read` at sign-in.
+
+**Permissions** also includes all configured roles (including unassigned
+roles), their descriptions/grants and a role-by-permission matrix. Tables use
+text rather than color to identify grants, keyboard-focusable scroll regions,
+and horizontally bounded overflow on mobile. Light/dark themes, native keyboard
+controls, loading, empty, offline, forbidden and missing-record states are
+supported. Pending detail requests are cancelled when selection changes;
+stale responses cannot expose another agent's controls. A 401 signs out.
+A 403 clears affected data/forms rather than retaining old management controls.
+
+### Identity read contracts
+
+All catalog/detail operations require `agents.read` in the shared
+`IAgentDirectory` boundary, not just the browser. Authentication and current
+database grants are resolved on each request. Authorization precedes lookup,
+so a caller without the read grant cannot distinguish a missing identity.
+
+| Route | Result |
+| --- | --- |
+| `GET /api/agents` | Existing capped list of `AgentView` records |
+| `GET /api/agents/{id}/details` | Independent `AgentView`, including disabled identities; 404 when missing |
+| `GET /api/roles` | `{ id, description, permissions: string[] }[]`, including roles with no members |
+| `GET /api/permissions` | `{ id, description }[]` from the database catalog, not a hard-coded browser list |
+
+`AgentView.permissions` remains the sorted, deduplicated effective union for
+compatibility. The additive `directPermissions: string[]` field identifies only
+directly assigned grants on list/detail/create/update responses. `roles` retains
+role IDs; the role catalog supplies their grant provenance. Catalogs and details
+are current request snapshots, not an atomic snapshot across multiple requests.
+No database migration, new grant or MCP management tool is introduced.
+The explicit `/details` suffix keeps every valid agent ID (including `me`)
+distinct from the existing `/api/agents/me` current-identity route. Registration
+returns this independently readable resource in its `Location` header.
+
+### Supported management boundaries
+
+Registration uses the existing `POST /api/agents` operation with ID, name,
+optional description/team and selected known roles/direct grants. Access edits
+use the existing `PUT /api/agents/{id}/access` with
+`{ roles, permissions, enabled }`; its `permissions` are **direct grants**, not
+the effective union. Only controls backed by these operations are exposed.
+Both require `agents.admin` server-side; the inspection-based UI additionally
+requires `agents.read`. Role/permission definitions and credentials remain
+operator-managed with no invented write or token-issuance API.
+
+The form first shows an explicit review, exact replacement roles/direct grants,
+enabled state and a catalog-derived effective-access preview. A separate
+confirmation saves; the server revalidates actor access and known grants and
+returns the actual effective union. Each grant collection is limited to 100
+entries. Enabled-state changes affect authentication on the next request.
+The server prevents changing the authenticated actor's own access; the UI
+explains this instead of exposing an unusable self-edit control.
+
+Access updates replace **all** roles, direct grants and enabled state. The
+existing operation has no revision token or optimistic-concurrency protection;
+concurrent access edits are not merged. Coordinate operator changes, refresh
+before editing, and inspect the explicit replacement review before confirming.
+Do not interpret the displayed update time as a concurrency token. Unknown
+outcomes (for example, a dropped save response) are explicit: refresh to inspect
+the actual state before retrying. Duplicate registration returns 409; invalid
+grants return 400; denied/missing operations never report success.
+Successful creates/access updates retain the existing transactional audit.
+
+Registration creates an identity, not a usable credential. An operator must
+provision a distinct token/digest out of band as described in the README.
+There are no credential inputs, generated secrets or credential storage in
+this feature. **Focus agent graph** opens the existing graph in a bounded
+one-hop neighborhood; independent detail/expansion routes retain existing
+source grants, two-hop maximum and 200-node/400-edge limits. Graph visibility
+is based on the current viewer, not the selected agent's grants.
 
 ## WebObsidian linking
 
