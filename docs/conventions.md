@@ -26,16 +26,18 @@ dotnet test HomelabBrain.sln
 For a local Compose environment:
 
 ```powershell
-.\scripts\Initialize-Development.ps1
-.\scripts\Initialize-DevelopmentVault.ps1
-docker compose up --build -d
+.\scripts\Start-Development.ps1
 .\scripts\Test-Development.ps1
 ```
 
 Initialize credentials only when `.env` does not exist; the script intentionally
 refuses to replace them. The vault initializer preserves an existing dedicated
 Git vault and refuses to overwrite a non-repository directory. Do not use the
-application checkout as a writable knowledge vault.
+application checkout as a writable knowledge vault. The startup script also
+initializes the separate UI administrator token only when both UI credential
+settings are absent, then builds/starts PostgreSQL, API, worker, and UI together.
+Existing credentials and volumes are preserved. See [UI setup](ui.md) for the
+token-only login and real-browser verification commands.
 
 There is currently no checked-in `.editorconfig`, dedicated formatter/linter
 configuration, or CI pipeline. Do not describe formatting preferences or a

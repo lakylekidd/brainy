@@ -18,6 +18,8 @@ public sealed class AgentAuthenticationOptions : AuthenticationSchemeOptions
 {
     // SHA-256 digests only; raw client tokens are never persisted by the Brain.
     public Dictionary<string, string> AgentTokenHashes { get; set; } = new(StringComparer.Ordinal);
+    public string? UiAdminAgentId { get; set; }
+    public string? UiAdminTokenHash { get; set; }
 }
 
 public sealed class AgentAuthenticationHandler(
@@ -31,11 +33,30 @@ public sealed class AgentAuthenticationHandler(
         var ids = Request.Headers["X-Agent-Id"];
         var authorization = Request.Headers.Authorization;
         if (ids.Count == 0 && authorization.Count == 0) return AuthenticateResult.NoResult();
-        if (ids.Count != 1 || authorization.Count != 1 || ids[0] is not { Length: > 0 and <= 100 } id ||
-            authorization[0] is not { } header || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        if (authorization.Count != 1 || authorization[0] is not { } header ||
+            !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             return AuthenticateResult.Fail("Invalid agent credentials.");
+        string id;
+        string expected;
+        if (ids.Count == 0)
+        {
+            if (Request.Path.StartsWithSegments("/mcp") ||
+                Options.UiAdminAgentId is not { Length: > 0 } adminId ||
+                Options.UiAdminTokenHash is not { Length: 64 } adminHash)
+                return AuthenticateResult.Fail("Invalid administrator credentials.");
+            id = adminId;
+            expected = adminHash;
+        }
+        else
+        {
+            if (ids.Count != 1 || ids[0] is not { Length: > 0 and <= 100 } agentId ||
+                !Options.AgentTokenHashes.TryGetValue(agentId, out var agentHash))
+                return AuthenticateResult.Fail("Invalid agent credentials.");
+            id = agentId;
+            expected = agentHash;
+        }
         var token = header[7..];
-        if (token.Length is < 32 or > 1024 || !Options.AgentTokenHashes.TryGetValue(id, out var expected))
+        if (token.Length is < 32 or > 1024)
             return AuthenticateResult.Fail("Invalid agent credentials.");
         if (expected.Length != 64 || !expected.All(Uri.IsHexDigit))
             return AuthenticateResult.Fail("Invalid agent credentials.");
@@ -53,6 +74,7 @@ public sealed class AgentAuthenticationHandler(
         Response.StatusCode = 401;
         Response.Headers.WWWAuthenticate = "Bearer";
         return Response.WriteAsJsonAsync(new Microsoft.AspNetCore.Mvc.ProblemDetails
-        { Status = 401, Title = "Agent authentication required.", Detail = "Supply X-Agent-Id and a valid bearer token." });
+        { Status = 401, Title = "Authentication required.",
+            Detail = "Supply an administrator bearer token, or X-Agent-Id and its bound agent bearer token. MCP requires agent credentials." });
     }
 }

@@ -22,6 +22,11 @@ builder.Services.AddOptions<AgentAuthenticationOptions>(AgentAuthenticationHandl
         options.AgentTokenHashes.Values.All(hash => hash is { Length: 64 } && hash.All(Uri.IsHexDigit)) &&
         options.AgentTokenHashes.Values.Distinct(StringComparer.OrdinalIgnoreCase).Count() == options.AgentTokenHashes.Count,
         "Configure a distinct SHA-256 credential digest for every authenticated agent.")
+    .Validate(options => (options.UiAdminAgentId is null && options.UiAdminTokenHash is null) ||
+        (options.UiAdminAgentId is { Length: > 0 and <= 100 } &&
+         options.UiAdminTokenHash is { Length: 64 } hash && hash.All(Uri.IsHexDigit) &&
+         !options.AgentTokenHashes.Values.Contains(hash, StringComparer.OrdinalIgnoreCase)),
+        "UI administrator access requires an identity and a distinct SHA-256 token digest, or neither setting.")
     .ValidateOnStart();
 builder.Services.AddAuthorization(options => options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser().Build());
@@ -29,18 +34,26 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
 {
     document.Info.Title = "Homelab Brain";
-    document.Info.Description = "Identity, permissions, memories, canonical knowledge and skill/tool discovery. Every data request needs both security schemes.";
+    document.Info.Description = "REST requests accept bound agent credentials or the configured UI administrator bearer token. MCP requires both agent credentials.";
     document.Components ??= new OpenApiComponents();
     document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>
     {
         ["agentId"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Agent-Id" },
-        ["agentToken"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer" }
+        ["agentToken"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer" },
+        ["uiAdminToken"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer",
+            Description = "Dedicated UI administrator token; server-side identity mapping. Not accepted by MCP." }
     };
     document.Security = [new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("agentId", document)] = [],
         [new OpenApiSecuritySchemeReference("agentToken", document)] = []
+    }, new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("uiAdminToken", document)] = []
     }];
+    foreach (var path in document.Paths.Where(path => path.Key.StartsWith("/mcp", StringComparison.Ordinal)))
+        if (path.Value.Operations is not null)
+            foreach (var operation in path.Value.Operations.Values) operation.Security = [document.Security[0]];
     if (document.Paths.TryGetValue("/health/live", out var live) && live.Operations is not null)
         foreach (var operation in live.Operations.Values) operation.Security = [];
     return Task.CompletedTask;

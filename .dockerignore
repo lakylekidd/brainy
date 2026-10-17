@@ -5,3 +5,8 @@
 TestResults
 artifacts
 .local
+**/node_modules
+ui/dist
+**/*.tsbuildinfo
+ui/test-results
+ui/playwright-report

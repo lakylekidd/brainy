@@ -8,8 +8,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app .
+ARG PROJECT=Brain.Api
+# Exec the apphost directly: /bin/sh can discard environment keys containing hyphenated agent IDs.
+RUN ln -s /app/${PROJECT} /app/brain-host
 USER $APP_UID
 ENV ASPNETCORE_HTTP_PORTS=8080
-ARG PROJECT=Brain.Api
-ENV BRAIN_PROJECT=${PROJECT}
-ENTRYPOINT ["/bin/sh", "-c", "exec dotnet \"${BRAIN_PROJECT}.dll\""]
+ENTRYPOINT ["/app/brain-host"]

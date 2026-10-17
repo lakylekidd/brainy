@@ -1,5 +1,40 @@
 # Implementation verification
 
+## UI admin login and Docker development stack (17 October 2026)
+
+- The complete Compose environment was built and run using PostgreSQL 17 with
+  pgvector, the real API and worker, and the production-built React UI served by
+  Nginx. The UI is available at `http://localhost:5173`; no browser API mocks or
+  native-database fallback were used for this check.
+- Five frontend tests and the TypeScript/Vite production build pass. The
+  dependency audit reports zero vulnerabilities.
+- One Chromium end-to-end test passes against the running Compose stack:
+  invalid tokens are rejected, token-only administrator login resolves the
+  configured identity, all eight dashboard requests return 200, local/session
+  storage remain empty, and sign-out returns to an empty token input. The test
+  also checks for browser page errors. Credential recording/tracing is disabled.
+- Forty focused backend cases pass, covering `ApiContractTests`,
+  `UiAdminApiTests`, memory authentication/visibility, and MCP regression tests.
+  Real PostgreSQL verifies that revoking grants and disabling the mapped
+  administrator take effect on the next request.
+- The hosted development smoke script passes for authenticated memory
+  round trips, pgvector search, current canonical knowledge reads,
+  permission-filtered registry discovery, OpenAPI, and MCP initialization,
+  eight-tool discovery and unified search. Disposable smoke-test memories were
+  deleted; the reviewed canonical-write opt-in was not run.
+- Container verification exposed shell entrypoint removal of credential
+  environment keys containing hyphenated agent IDs. Direct apphost execution
+  preserves those settings, and the legacy administrator/agent smoke checks
+  pass alongside the new UI token flow.
+- Re-running UI credential initialization preserves existing credentials.
+  `docker compose config --quiet` and `git diff --check` pass.
+
+Reproduce with `scripts\Start-Development.ps1`, then `npm run test:e2e` from
+`ui/` (install Chromium once with `npx playwright install chromium`). See
+[the UI guide](ui.md) for credential provisioning, token-only authentication,
+and the remaining dashboard API gaps. This does not implement the graph,
+connection manager, or later UI milestones.
+
 ## Current result — Milestone 7 (17 October 2026)
 
 - The solution builds with zero warnings/errors. The full regression suite passes:

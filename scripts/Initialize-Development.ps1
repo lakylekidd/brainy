@@ -18,3 +18,4 @@ BRAIN_WRITER_UID=$writerUid
 BRAIN_WRITER_GID=$writerGid
 "@ | Set-Content -LiteralPath $envPath
 Write-Host 'Created ignored .env with random local credentials. Treat this file as a secret; do not commit it.'
+& (Join-Path $PSScriptRoot 'Initialize-UiAdmin.ps1')

@@ -84,6 +84,7 @@ public sealed class BrainFactory(string connection, string vaultPath, string? re
     public const string WillemToken = "integration-willem-credential-000000000000";
     public const string CodexToken = "integration-codex-credential-0000000000000";
     public const string OtherToken = "integration-other-credential-0000000000000";
+    public const string UiAdminToken = "integration-ui-admin-credential-000000000";
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -98,6 +99,8 @@ public sealed class BrainFactory(string connection, string vaultPath, string? re
             ["Authentication:AgentTokenHashes:willem-de-jong"] = Hash(WillemToken),
             ["Authentication:AgentTokenHashes:codex"] = Hash(CodexToken),
             ["Authentication:AgentTokenHashes:other"] = Hash(OtherToken),
+            ["Authentication:UiAdminAgentId"] = "willem-de-jong",
+            ["Authentication:UiAdminTokenHash"] = Hash(UiAdminToken),
             ["Logging:LogLevel:Default"] = "Warning"
         }));
     }

@@ -30,6 +30,8 @@ services:
       Knowledge__VaultPath: /vault
       Authentication__AgentTokenHashes__willem-de-jong: ${BRAIN_WILLEM_TOKEN_HASH:?Initialize development credentials first}
       Authentication__AgentTokenHashes__codex: ${BRAIN_CODEX_TOKEN_HASH:?Initialize development credentials first}
+      Authentication__UiAdminAgentId: ${BRAIN_UI_ADMIN_ID:-willem-de-jong}
+      Authentication__UiAdminTokenHash: ${BRAIN_UI_ADMIN_TOKEN_HASH:?Run scripts/Initialize-UiAdmin.ps1 first}
     ports:
       - "127.0.0.1:5080:8080"
     depends_on:
@@ -65,5 +67,19 @@ services:
         condition: service_healthy
       api:
         condition: service_started
+  ui:
+    build:
+      context: .
+      dockerfile: docker/Ui.Dockerfile
+    ports:
+      - "127.0.0.1:5173:8080"
+    depends_on:
+      api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ && wget -q -O /dev/null http://127.0.0.1:8080/health/live"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
 volumes:
   brain-postgres:

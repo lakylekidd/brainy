@@ -67,9 +67,11 @@ flowchart LR
     Worker -.->|"Opt-in semantic scan"| Model
 ```
 
-Compose starts PostgreSQL 17 with pgvector, an API container and a worker
-container. The API publishes HTTP on loopback port 5080; the database publishes
-on loopback port 55432. MCP uses the existing API process and port. Both hosts
+Compose starts PostgreSQL 17 with pgvector, API/worker containers, and the
+React UI served by Nginx on loopback port 5173. Nginx proxies UI API requests to
+the existing API process on the same browser origin. The API also publishes HTTP
+on loopback port 5080; the database publishes on loopback port 55432. MCP uses
+the existing API process and port. Both .NET hosts
 mount the registry read-only. The API mounts the vault read-only, while the worker
 mounts it read-write and owns canonical publication.
 
@@ -124,12 +126,21 @@ separate commits.
 
 ## Identity and request flow
 
-The API authenticates each request using both `X-Agent-Id` and a bearer token
+Agent clients authenticate API requests using both `X-Agent-Id` and a bearer token
 bound to that ID. Configuration contains distinct SHA-256 token digests, not raw
 client tokens. Authentication checks the digest in constant time and resolves
 the enabled agent plus its role/direct grants from PostgreSQL. Effective grants
 are an exact, case-sensitive union with no wildcard or implicit administrator
 bypass.
+
+The UI additionally accepts a dedicated administrator bearer token with no
+identity input. This opt-in credential has its own SHA-256 digest and maps
+server-side to a configured existing identity (`Authentication:UiAdminAgentId`).
+Current database grants and enabled state are re-resolved on every request;
+there is no administrator bypass or second permission system. Existing agent
+credentials still require the bound ID/token pair, and MCP rejects the UI token.
+The browser retains its token only in page memory. This shared-token flow does
+not provide personal human identities or SSO. See [the UI guide](ui.md).
 
 HTTP supplies `RequestAgent.Context`; MCP consumes the same scoped context
 through `ICurrentAgent`. Callers cannot choose ownership, roles or review state
