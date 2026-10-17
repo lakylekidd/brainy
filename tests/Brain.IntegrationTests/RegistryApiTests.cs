@@ -160,7 +160,7 @@ public sealed class RegistryApiTests(BrainFixture fixture) : IClassFixture<Brain
         }
         var service = new RegistryService(scope.ServiceProvider.GetRequiredService<IRegistrySource>(), index,
             new MutatingProvider(() => File.AppendAllText(Path.Combine(fixture.RegistryPath, "skills/plan-deployment/SKILL.md"), "\nChanged.")),
-            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System);
+            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System, scope.ServiceProvider.GetRequiredService<IActivityPublisher>());
         Assert.Equal(409, (await Assert.ThrowsAsync<BrainException>(() => service.ScanCoreAsync("brain-worker"))).StatusCode);
         Assert.Equal(0, await scope.ServiceProvider.GetRequiredService<BrainDbContext>().RegistryEntries.CountAsync());
         Assert.False((await Scan(admin)).AlreadyRunning);
@@ -177,7 +177,7 @@ public sealed class RegistryApiTests(BrainFixture fixture) : IClassFixture<Brain
         var service = new RegistryService(scope.ServiceProvider.GetRequiredService<IRegistrySource>(),
             scope.ServiceProvider.GetRequiredService<IRegistryIndex>(),
             new MutatingProvider(() => File.WriteAllText(path, File.ReadAllText(path).Replace("deployment.write", "unknown.permission"))),
-            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System);
+            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System, scope.ServiceProvider.GetRequiredService<IActivityPublisher>());
         var actor = (await scope.ServiceProvider.GetRequiredService<IAgentDirectory>().ResolveAsync("willem-de-jong", default))!;
         var result = await service.FindCapabilitiesAsync(actor, new("deployment"));
         Assert.DoesNotContain(result.Skills, s => s.Id == "deploy-service");
@@ -195,7 +195,7 @@ public sealed class RegistryApiTests(BrainFixture fixture) : IClassFixture<Brain
         using var scope = fixture.Factory.Services.CreateScope();
         var service = new RegistryService(scope.ServiceProvider.GetRequiredService<IRegistrySource>(),
             scope.ServiceProvider.GetRequiredService<IRegistryIndex>(), new InvalidProvider(mode),
-            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System);
+            scope.ServiceProvider.GetRequiredService<IAuditLog>(), TimeProvider.System, scope.ServiceProvider.GetRequiredService<IActivityPublisher>());
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.ScanCoreAsync("brain-worker"));
         Assert.Equal(0, await scope.ServiceProvider.GetRequiredService<BrainDbContext>().RegistryEntries.CountAsync());
     }

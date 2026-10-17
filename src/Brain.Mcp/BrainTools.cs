@@ -12,7 +12,8 @@ public sealed record SkillSearchResponse(IReadOnlyList<RegistryResult> Skills);
 
 [McpServerToolType]
 public sealed class BrainTools(ICurrentAgent current, MemoryService memories, KnowledgeService knowledge,
-    KnowledgeProposalService proposals, RegistryService registry, SearchService search, IAuditLog audit, TimeProvider time)
+    KnowledgeProposalService proposals, RegistryService registry, SearchService search, IAuditLog audit, TimeProvider time,
+    IActivityPublisher activity)
 {
     [McpServerTool(Name = "brain_search", ReadOnly = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Search permitted knowledge, visible memories, skills and tools. Unavailable optional sources are reported in failures. Scores are per source; this does not execute external tools.")]
@@ -66,7 +67,11 @@ public sealed class BrainTools(ICurrentAgent current, MemoryService memories, Kn
 
     private async Task<T> InvokeAsync<T>(string tool, Func<Task<T>> invoke, CancellationToken ct)
     {
-        try { return await invoke(); }
+        try
+        {
+            return await activity.RunAsync(new(tool, "tool.invoked", "tool.completed", "tool.failed",
+                "brain", $"tool:{tool}", current.Context.Id), invoke, ct);
+        }
         catch (BrainException e)
         {
             if (e.StatusCode == 403)

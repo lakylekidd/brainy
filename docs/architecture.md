@@ -1,6 +1,6 @@
 # Architecture
 
-This is the current architecture of the Milestones 1-6 implementation. The
+This is the current architecture of the Milestones 1-7 implementation. The
 [foundation design](foundation.md) records the initial slice; the feature guides
 describe individual modules in more detail. See [conventions](conventions.md)
 for rules to preserve when extending the system.
@@ -89,6 +89,7 @@ the work.
 | Registry index / `Worker:RegistryScanIntervalSeconds` | 60 seconds | 30 seconds |
 | Approved writes / `Worker:WriteQueueIntervalSeconds` | 10 seconds | 5 seconds |
 | Metadata scan / `Worker:MetadataScanIntervalSeconds` | 300 seconds | 300 seconds |
+| Retained traces / `ActivityTracing:CleanupIntervalSeconds` | 3600 seconds | 3600 seconds |
 
 Knowledge and registry indexing require their source paths. Write processing
 requires `Knowledge:WriterEnabled=true`; scheduled metadata scanning requires
@@ -108,6 +109,7 @@ files against a local editor.
 | Proposed changes and review/recovery state | PostgreSQL | `knowledge_write_proposals`, including durable prepared Git/file intent |
 | Metadata inspection and deduplication state | PostgreSQL | `metadata_scan_states`, linked to generated proposals |
 | Audit history | PostgreSQL | `audit_events` |
+| Bounded trace history | PostgreSQL | `activity_traces`, `activity_events`; configurable retention, not audit data |
 
 The database is not disposable just because search indexes are rebuildable:
 memories, grants, reviews, recovery state and audits are durable application data.
@@ -230,6 +232,15 @@ it does not improve vector recall. See [metadata enrichment](metadata-enrichment
 for schema, provider and cache behavior.
 
 ## Operational constraints and limits
+
+Application activity uses W3C `ActivitySource`/OpenTelemetry and an
+`IActivityPublisher` boundary. Authenticated requests, search/discovery, skill
+selection, MCP/tool adapters, native HTTP and worker jobs preserve trace/span
+parentage. Sanitized PostgreSQL notifications bridge live worker/API events to
+permission-filtered SSE; bounded retained summaries/events support inspection.
+Visibility is partitioned by authenticated owner even when trace IDs are reused.
+Retention and optional OTLP export are independent of live delivery. See
+[activity tracing](activity-tracing.md) for contracts, limits and safety.
 
 `ConnectionStrings:Brain` is required. `Knowledge:VaultPath` and
 `Registry:RootPath` configure optional source modules; absent configuration

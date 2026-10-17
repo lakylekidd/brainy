@@ -10,6 +10,7 @@ builder.Services.AddHostedService<KnowledgeIndexing>();
 builder.Services.AddHostedService<KnowledgeWriteProcessing>();
 builder.Services.AddHostedService<RegistryIndexing>();
 builder.Services.AddHostedService<MetadataScanning>();
+builder.Services.AddHostedService<ActivityRetentionCleanup>();
 await builder.Build().RunAsync();
 
 public sealed class MetadataScanning(IServiceScopeFactory scopes, IConfiguration configuration,
@@ -28,7 +29,8 @@ public sealed class MetadataScanning(IServiceScopeFactory scopes, IConfiguration
             {
                 using var scope = scopes.CreateScope();
                 var options = scope.ServiceProvider.GetRequiredService<MetadataOptions>();
-                var result = await scope.ServiceProvider.GetRequiredService<MetadataService>().ScanCoreAsync(options.AgentId, stoppingToken);
+                var result = await scope.ServiceProvider.TraceJobAsync("metadata-scan",
+                    () => scope.ServiceProvider.GetRequiredService<MetadataService>().ScanCoreAsync(options.AgentId, stoppingToken), stoppingToken);
                 logger.LogInformation("Metadata scan: {Inspected} inspected, {Skipped} skipped, {Proposed} pending proposals, {Failed} failed, busy={Busy}",
                     result.Inspected, result.Skipped, result.Proposed, result.Failed, result.AlreadyRunning);
             }
@@ -74,7 +76,8 @@ public sealed class RegistryIndexing(IServiceScopeFactory scopes, IConfiguration
             try
             {
                 using var scope = scopes.CreateScope();
-                var result = await scope.ServiceProvider.GetRequiredService<RegistryService>().ScanCoreAsync("brain-worker", stoppingToken);
+                var result = await scope.ServiceProvider.TraceJobAsync("registry-index",
+                    () => scope.ServiceProvider.GetRequiredService<RegistryService>().ScanCoreAsync("brain-worker", stoppingToken), stoppingToken);
                 logger.LogInformation("Registry scan: {Indexed} indexed, {Unchanged} unchanged, {Removed} removed, busy={Busy}",
                     result.Indexed, result.Unchanged, result.Removed, result.AlreadyRunning);
             }
@@ -97,7 +100,8 @@ public sealed class ExpiredMemoryCleanup(IServiceScopeFactory scopes, TimeProvid
             try
             {
                 using var scope = scopes.CreateScope();
-                var count = await scope.ServiceProvider.GetRequiredService<IMemoryStore>().DeleteExpiredAsync(time.GetUtcNow(), stoppingToken);
+                var count = await scope.ServiceProvider.TraceJobAsync("expired-memories",
+                    () => scope.ServiceProvider.GetRequiredService<IMemoryStore>().DeleteExpiredAsync(time.GetUtcNow(), stoppingToken), stoppingToken);
                 if (count > 0) logger.LogInformation("Removed {Count} expired memories", count);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
@@ -121,7 +125,8 @@ public sealed class KnowledgeIndexing(IServiceScopeFactory scopes, IConfiguratio
             try
             {
                 using var scope = scopes.CreateScope();
-                var result = await scope.ServiceProvider.GetRequiredService<KnowledgeService>().ScanCoreAsync("brain-worker", stoppingToken);
+                var result = await scope.ServiceProvider.TraceJobAsync("knowledge-index",
+                    () => scope.ServiceProvider.GetRequiredService<KnowledgeService>().ScanCoreAsync("brain-worker", stoppingToken), stoppingToken);
                 logger.LogInformation("Knowledge scan: {Indexed} indexed, {Unchanged} unchanged, {Removed} removed, {Failed} failed, busy={Busy}",
                     result.Indexed, result.Unchanged, result.Removed, result.Failures.Count, result.AlreadyRunning);
             }
@@ -146,13 +151,51 @@ public sealed class KnowledgeWriteProcessing(IServiceScopeFactory scopes, IConfi
             try
             {
                 using var scope = scopes.CreateScope();
-                var result = await scope.ServiceProvider.GetRequiredService<KnowledgeWriterService>().ProcessAsync(ct: stoppingToken);
+                var result = await scope.ServiceProvider.TraceJobAsync("knowledge-writes",
+                    () => scope.ServiceProvider.GetRequiredService<KnowledgeWriterService>().ProcessAsync(ct: stoppingToken), stoppingToken);
                 if (result.Applied + result.Conflicts + result.Rejected + result.Deferred > 0)
                     logger.LogInformation("Knowledge writer: {Applied} applied, {Conflicts} conflicts, {Rejected} rejected, {Deferred} deferred",
                         result.Applied, result.Conflicts, result.Rejected, result.Deferred);
             }
+
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
             catch (Exception ex) { logger.LogError(ex, "Knowledge writer failed; prepared proposals will be recovered on retry"); }
         } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
+}
+
+public sealed class ActivityRetentionCleanup(IServiceScopeFactory scopes, ActivityTracingOptions options,
+    TimeProvider time, ILogger<ActivityRetentionCleanup> logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(options.CleanupIntervalSeconds));
+        do
+        {
+            try
+            {
+                using var scope = scopes.CreateScope();
+                var count = await scope.ServiceProvider.TraceJobAsync("activity-retention",
+                    () => scope.ServiceProvider.GetRequiredService<IActivityStore>()
+                        .DeleteBeforeAsync(time.GetUtcNow().AddDays(-options.RetentionDays), stoppingToken), stoppingToken);
+                if (count > 0) logger.LogInformation("Removed {Count} expired traces and their events", count);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
+            catch (Exception ex) { logger.LogError(ex, "Activity retention cleanup failed; retrying at the next interval"); }
+        } while (await timer.WaitForNextTickAsync(stoppingToken));
+    }
+}
+
+public static class WorkerActivity
+{
+    public static Task<T> TraceJobAsync<T>(this IServiceProvider services, string job, Func<Task<T>> execute, CancellationToken ct) =>
+        services.GetRequiredService<IActivityPublisher>().RunAsync(new(job, "worker.job.started", "worker.job.completed",
+            "worker.job.failed", "worker:brain-worker", "brain", "brain-worker"), async () =>
+            {
+                var result = await execute();
+                if (result is MetadataScanResult { Failed: > 0 } || result is KnowledgeScanResult { Failures.Count: > 0 })
+                    services.GetRequiredService<IActivityPublisher>().Publish("worker.job.partial_failure", Brain.Domain.ActivityStatus.Failed,
+                        "worker:brain-worker", "brain");
+                return result;
+            }, ct);
 }

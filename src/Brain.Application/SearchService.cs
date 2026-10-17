@@ -13,9 +13,13 @@ public sealed record BrainSearchResult(IReadOnlyList<KnowledgeSearchResult> Know
     IReadOnlyList<MemorySearchResult> Memories, IReadOnlyList<RegistryResult> Skills,
     IReadOnlyList<RegistryResult> Tools, IReadOnlyList<SearchSourceFailure> Failures);
 
-public sealed class SearchService(MemoryService memories, KnowledgeService knowledge, RegistryService registry)
+public sealed class SearchService(MemoryService memories, KnowledgeService knowledge, RegistryService registry, IActivityPublisher activity)
 {
-    public async Task<BrainSearchResult> SearchAsync(AgentContext actor, BrainSearchRequest request, CancellationToken ct = default)
+    public Task<BrainSearchResult> SearchAsync(AgentContext actor, BrainSearchRequest request, CancellationToken ct = default) =>
+        activity.RunAsync(new("brain.search", "brain.search.started", "brain.search.completed", "brain.search.failed",
+            $"agent:{actor.Id}", "brain", actor.Id), () => SearchCoreAsync(actor, request, ct), ct);
+
+    private async Task<BrainSearchResult> SearchCoreAsync(AgentContext actor, BrainSearchRequest request, CancellationToken ct)
     {
         Validation.Text(request.Query, "Query", 4000);
         Validation.Require(request.Limit is >= 1 and <= 100, "Limit must be between 1 and 100.");
@@ -38,6 +42,8 @@ public sealed class SearchService(MemoryService memories, KnowledgeService knowl
             try { capabilities = await registry.FindCapabilitiesAsync(actor, new(request.Query, Limit: request.Limit), ct); }
             catch (BrainException e) when (e.StatusCode is 422 or 503) { failures.Add(new("registry", e.StatusCode, e.Message)); }
         }
+        if (failures.Count > 0)
+            activity.Publish("brain.search.partial_failure", ActivityStatus.Failed, $"agent:{actor.Id}", "brain");
         return new(knowledgeHits, memoryHits, capabilities.Skills, capabilities.Tools, failures);
     }
 }

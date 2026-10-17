@@ -2,7 +2,7 @@
 
 A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application, not an agent runtime.
 
-**Milestones 1–6.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only.
+**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only.
 
 ## Run locally
 
@@ -74,6 +74,8 @@ All data endpoints, readiness and OpenAPI require **both** `X-Agent-Id` and a be
 | `POST /api/memories/search` | `memory.read` plus visibility scope |
 | `DELETE /api/memories/{id}` | `memory.delete` and ownership |
 | `GET /api/audit?limit=100` | `audit.read`, maximum 1,000 events |
+| `GET /api/activity/stream` | `activity.read` + `activity.live`, authenticated SSE; self-only unless `traces.read.all` |
+| `GET /api/traces`, `GET /api/traces/{traceId}`, `GET /api/traces/{traceId}/events` | `traces.read`, own traces; `traces.read.all` grants system-wide visibility |
 | `POST /api/knowledge/search` | `knowledge.read`, query with optional `pathPrefix` and `limit` |
 | `GET /api/knowledge/documents/{id}` | `knowledge.read`, canonical document by indexed ID |
 | `GET /api/knowledge/document?path=Infrastructure/Proxmox/nacht-02.md` | `knowledge.read`, canonical document by relative path |
@@ -135,7 +137,9 @@ For host-based registry discovery, set `Registry__RootPath` to the absolute `age
 
 Connect an MCP client to `http://localhost:5080/mcp` using Streamable HTTP and the same `X-Agent-Id`/`Authorization` headers. The eight tools cover unified search, memories, canonical reads, pending proposals, skills and capabilities. The default development smoke script now checks MCP too. See [MCP setup, tools and verification](docs/mcp.md); no separate process or port is required.
 
-See [the foundation design](docs/foundation.md), [knowledge search](docs/knowledge.md), [safe knowledge writes and recovery](docs/knowledge-writes.md), [skills/tools discovery](docs/skills-and-tools.md), [MCP](docs/mcp.md), [metadata enrichment](docs/metadata-enrichment.md), and [verification](docs/verification.md).
+Tracing is enabled without an external collector. `ActivityTracing__RetentionDays` defaults to 7; the worker removes old retained traces hourly. Setting it to 0 disables retained writes without disabling live events/export. Optional `ActivityTracing__OtlpEndpoint` enables OTLP/gRPC export to an operator-controlled collector. Authenticated operations return `X-Trace-Id` and continue incoming W3C `traceparent`. Development agents can inspect only their own traces; the administrator receives explicit system-wide grants. See [activity tracing](docs/activity-tracing.md) for filters, safety, SSE clients, delivery limits and configuration. No UI animation or external skill execution is included.
+
+See [the foundation design](docs/foundation.md), [knowledge search](docs/knowledge.md), [safe knowledge writes and recovery](docs/knowledge-writes.md), [skills/tools discovery](docs/skills-and-tools.md), [MCP](docs/mcp.md), [metadata enrichment](docs/metadata-enrichment.md), [activity tracing](docs/activity-tracing.md), and [verification](docs/verification.md).
 
 The included `IEmbeddingProvider` uses deterministic 384-dimensional token hashing. It exercises the entire pgvector path without a key, but **is not a learned semantic model**: it primarily finds word overlap and cannot reliably match paraphrases. A real provider and explicit re-embedding are needed before relying on semantic recall. Provider/model/dimension filters prevent incompatible vectors being compared.
 

@@ -40,6 +40,8 @@ public static class DatabaseInitializer
         if (member.Permissions.All(p => p.Id != Permissions.KnowledgePropose)) member.Permissions.Add(knowledgePropose);
         var registryRead = permissions.Single(p => p.Id == Permissions.RegistryRead);
         if (member.Permissions.All(p => p.Id != Permissions.RegistryRead)) member.Permissions.Add(registryRead);
+        foreach (var permission in permissions.Where(p => p.Id is Permissions.ActivityRead or Permissions.ActivityLive or Permissions.TracesRead))
+            if (member.Permissions.All(p => p.Id != permission.Id)) member.Permissions.Add(permission);
         foreach (var (id, name, role) in new[] { ("willem-de-jong", "Willem de Jong", admin), ("codex", "Codex", member) })
             if (!await db.Agents.AnyAsync(a => a.Id == id, ct))
                 db.Agents.Add(new Agent { Id = id, Name = name, TeamId = "platform", Roles = [role],

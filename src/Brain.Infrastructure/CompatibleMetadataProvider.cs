@@ -14,12 +14,19 @@ public sealed class MetadataProviderOptions
 }
 
 // Optional, vendor-neutral Chat Completions JSON adapter. Configuration is never persisted in Brain tables.
-public sealed class CompatibleMetadataProvider(HttpClient http, MetadataProviderOptions options) : IMetadataEnrichmentProvider
+public sealed class CompatibleMetadataProvider(HttpClient http, MetadataProviderOptions options, IActivityPublisher activity) : IMetadataEnrichmentProvider
 {
     public MetadataProviderInfo Info => new("openai-compatible", options.Model ?? "unconfigured",
         MetadataJson.Hash((options.Endpoint ?? "") + "\n" + (options.Model ?? "")));
 
-    public async Task<string> GenerateJsonAsync(MetadataEnrichmentInput input, CancellationToken ct)
+    public Task<string> GenerateJsonAsync(MetadataEnrichmentInput input, CancellationToken ct) =>
+        activity.RunAsync(new("metadata.provider", "tool.invoked", "tool.completed", "tool.failed",
+            "brain", "tool:metadata-provider"), () => activity.RunAsync(
+                new("metadata.http", "external.request.started", "external.request.completed", "external.request.failed",
+                    "tool:metadata-provider", "service:metadata-provider"),
+                () => GenerateCoreAsync(input, ct), ct), ct);
+
+    private async Task<string> GenerateCoreAsync(MetadataEnrichmentInput input, CancellationToken ct)
     {
         if (!Uri.TryCreate(options.Endpoint, UriKind.Absolute, out var endpoint) || endpoint.Scheme is not ("http" or "https") ||
             endpoint.UserInfo.Length > 0 || endpoint.Query.Length > 0 || endpoint.Fragment.Length > 0 || string.IsNullOrWhiteSpace(options.Model))

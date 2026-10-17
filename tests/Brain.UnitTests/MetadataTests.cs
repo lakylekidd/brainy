@@ -178,7 +178,8 @@ public sealed class MetadataTests
     {
         var handler = new ProviderHandler();
         using var client = new HttpClient(handler);
-        var provider = new CompatibleMetadataProvider(client, new() { Endpoint = "http://localhost:11434/v1/chat/completions", Model = "test-model", ApiKey = "test-key" });
+        var provider = new CompatibleMetadataProvider(client, new() { Endpoint = "http://localhost:11434/v1/chat/completions", Model = "test-model", ApiKey = "test-key" },
+            new ActivityHarness().Publisher);
         var json = await provider.GenerateJsonAsync(new("doc.md", "Untrusted document body", new Dictionary<string, JsonElement>(), ["procedure"]), default);
         Assert.Equal("procedure", MetadataJson.ParseSemantic(json, new()).Type);
         Assert.True(handler.Called);
