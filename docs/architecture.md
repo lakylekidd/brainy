@@ -209,7 +209,12 @@ index supports reverse lookup. Dependencies and grants derive from their current
 sources on each graph request, not a synchronized second database. The UI's
 isolated Sigma/Graphology feature progressively loads up to 200 nodes/400 edges;
 server neighborhood depth is capped at two hops. See [UI graph contracts](ui.md#knowledge-graph).
-Semantic graph queries, WebObsidian links and live overlays are not implemented.
+The document inspector can link authorized canonical source paths to an
+operator-configured WebObsidian instance using its `/note/<path>` route.
+This public UI build-time setting never comes from document metadata; no Brain
+credential or body is forwarded. Brain does not synchronize or edit the external
+vault. See [WebObsidian linking](ui.md#webobsidian-linking).
+Semantic graph queries and live overlays are not implemented.
 
 ## Reviewed canonical changes
 

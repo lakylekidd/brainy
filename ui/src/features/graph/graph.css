@@ -33,6 +33,8 @@
 .graph-details dt { color: var(--muted); }
 .graph-details dd { margin: 2px 0; overflow-wrap: anywhere; }
 .graph-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.graph-detail-actions a { text-decoration: none; }
+.graph-detail-actions a:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .graph-relations { padding: 0; list-style: none; max-height: 300px; overflow: auto; }
 .graph-relations li { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 10px; }
 .graph-relations span { display: block; color: var(--muted); }

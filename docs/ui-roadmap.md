@@ -36,7 +36,7 @@ behavior and current API coverage.
 | --- | --- | --- |
 | 1. Shell + Dashboard | Complete | Authenticated shell, API-backed dashboard, responsive layout, and system-aware light/dark themes are implemented. |
 | 2. Knowledge Graph | Complete | Stable source-derived entities/edges, bounded authorized graph APIs, Sigma/Graphology exploration, search/filters, independent details, focus and progressive expansion are implemented. |
-| 3. WebObsidian Integration | Planned | No configured WebObsidian URL or document deep link exists. |
+| 3. WebObsidian Integration | Complete | Document inspection links canonical source paths to an operator-configured WebObsidian `/note/<path>` route, with safe encoding and explicit unavailable configuration states. |
 | 4. Agents + Permissions | Partial foundations | Existing APIs feed dashboard data; agents, roles and grants can be explored in the generic graph. Dedicated agent, role, and permission-management pages are not implemented. |
 | 5. Skills + Tools | Partial foundations | Registry APIs feed the dashboard and the generic graph shows authorized dependencies. Dedicated lists/detail and safe Git-backed management remain unimplemented. |
 | 6. Connections | Planned | No connection catalog, configuration, health, or test UI/API is established. |
@@ -100,6 +100,18 @@ interactive, bounded graph.
   access control, and large-graph loading behavior.
 
 ## Milestone 3 — WebObsidian Integration
+
+**Status: Complete (17 October 2026).** The operator confirmed the document
+route from an existing instance URL: `/note/<vault-relative-path>`.
+The document inspector uses the authorized canonical source path and an
+operator-controlled public `WebObsidianBaseUrl` build setting. Compose/native
+Vite wiring, independent segment encoding, new-tab credential/referrer
+isolation and explicit missing/invalid configuration states are implemented.
+Frontend unit/build and real-backend Chromium checks pass; external navigation
+is intercepted rather than signing into WebObsidian. See
+[configuration and boundaries](ui.md#webobsidian-linking) and
+[verification evidence](verification.md#ui-webobsidian-integration-17-october-2026).
+No canonical editing, vault synchronization or later management UI was added.
 
 **Goal:** Open the canonical Markdown document represented by a graph node in
 WebObsidian.

@@ -8,6 +8,7 @@ import {
   loadEntity, loadGraph, loadNeighbors, maxEntities, mergeGraph,
 } from "./api";
 import { typeColors } from "./model";
+import { webObsidianDocumentLink } from "./webObsidian";
 import "./graph.css";
 
 export default function KnowledgeGraph({ credentials, theme, onUnauthorized }: {
@@ -117,6 +118,9 @@ export default function KnowledgeGraph({ credentials, theme, onUnauthorized }: {
   }
   const related = data.relationships.filter((edge) => edge.source === selected || edge.target === selected);
   const labels = new Map(data.entities.map((node) => [node.id, node.label]));
+  const documentLink = detail?.id === selected && detail.type === "document"
+    ? webObsidianDocumentLink(import.meta.env.VITE_WEB_OBSIDIAN_BASE_URL, detail.source.id)
+    : null;
   return (
     <div className="knowledge-graph">
       <section className="page-heading">
@@ -171,15 +175,20 @@ export default function KnowledgeGraph({ credentials, theme, onUnauthorized }: {
           {!selected && <p>Select a graph node or use Inspect entity above to inspect its canonical reference.</p>}
           {selected && !detail && !detailError && <p role="status">Loading entity…</p>}
           {detailError && <p role="alert">{detailError}</p>}
-          {detail && <>
+          {detail && detail.id === selected && <>
             <span className="graph-detail-type">{detail.type}</span><h2>{detail.label}</h2>
             <dl><dt>Stable ID</dt><dd>{detail.id}</dd><dt>Source type</dt><dd>{detail.source.kind}</dd>
               <dt>Source record</dt><dd>{detail.source.id}</dd>
-              {detail.type === "document" && <><dt>Canonical path</dt><dd>{detail.metadata.path}</dd><dt>Indexed</dt><dd>{detail.metadata.indexedAt}</dd></>}
+              {detail.type === "document" && <><dt>Canonical path</dt><dd>{detail.source.id}</dd><dt>Indexed</dt><dd>{detail.metadata.indexedAt}</dd></>}
               {detail.type === "agent" && <><dt>Enabled</dt><dd>{detail.metadata.enabled === "true" ? "Yes" : "No"}</dd></>}
               {detail.type === "tool" && <><dt>Provider</dt><dd>{detail.metadata.provider}</dd></>}
             </dl>
+            {documentLink?.error && <p role="status">{documentLink.error}</p>}
             <div className="graph-detail-actions">
+              {documentLink?.href && <a className="secondary-button" href={documentLink.href}
+                target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">
+                Open in WebObsidian<span className="sr-only"> (opens in a new tab)</span>
+              </a>}
               <button className="primary-button" disabled={loading || expanding || data.entities.length >= maxEntities || types.length === 0} onClick={expand}>
                 {expanding ? "Expanding…" : "Expand neighbors"}
               </button>

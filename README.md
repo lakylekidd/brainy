@@ -2,7 +2,7 @@
 
 A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application, not an agent runtime.
 
-**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-2 provide an authenticated operations dashboard and a permission-filtered interactive knowledge graph; canonical Markdown editing remains in WebObsidian.
+**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-3 provide an authenticated operations dashboard, a permission-filtered interactive knowledge graph, and configured document links to WebObsidian; canonical Markdown editing remains in WebObsidian.
 
 ## Run locally
 
@@ -32,7 +32,16 @@ Graph payloads
 exclude document/instruction bodies and arbitrary metadata. Document edges can
 use explicit `graph_references` frontmatter; dependencies and grants derive from
 their existing sources. See [graph usage and contracts](docs/ui.md#knowledge-graph).
-WebObsidian deep links, semantic graphs and live overlays remain later milestones.
+To enable **Open in WebObsidian** for selected documents, add
+`BRAIN_WEB_OBSIDIAN_BASE_URL=https://obsidian.example` to the ignored root
+`.env`, replacing the example with your instance URL, then rebuild the UI with
+`docker compose up -d --build --no-deps ui`. The instance must expose the same
+canonical vault-relative paths at `/note/<path>`. Links open a new tab without
+sending Brain credentials; WebObsidian handles its own authentication.
+Missing or invalid configuration shows an explicit message in the document
+inspector without disabling graph exploration. Native Vite development uses
+`VITE_WEB_OBSIDIAN_BASE_URL` instead. See [configuration and safety](docs/ui.md#webobsidian-linking).
+Semantic graphs and live overlays remain later milestones.
 
 Startup preserves existing credentials, database volumes, and the dedicated vault.
 It creates `.env` only if absent and uses `Initialize-UiAdmin.ps1` to append a

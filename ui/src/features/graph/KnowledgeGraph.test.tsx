@@ -27,8 +27,9 @@ function renderGraph() {
 }
 
 describe("knowledge graph exploration", () => {
-  afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
   beforeEach(() => {
+    vi.stubEnv("VITE_WEB_OBSIDIAN_BASE_URL", "");
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const url = new URL(String(input), "http://localhost");
       if (url.pathname === "/api/graph/entity")
@@ -38,6 +39,45 @@ describe("knowledge graph exploration", () => {
       if (url.pathname === "/api/graph/neighbors") return response(graph([root, tool], [edge]));
       return response(graph(url.searchParams.get("types")?.includes("document") ? [root] : [tool]));
     }));
+  });
+
+  it("links only inspected documents using the canonical source, never a metadata destination", async () => {
+    vi.stubEnv("VITE_WEB_OBSIDIAN_BASE_URL", "https://obsidian.example");
+    const document = { ...root, source: { ...root.source, id: "Projects/My note #1.md" },
+      metadata: { path: "https://evil.example/private.md", url: "https://evil.example" } };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(String(input), "http://localhost");
+      if (url.pathname === "/api/graph/entity")
+        return response(url.searchParams.get("id") === root.id ? document : tool);
+      return response(graph([root, tool]));
+    }));
+    renderGraph();
+    await screen.findByRole("option", { name: "Root document (document)" });
+    expect(screen.queryByRole("link", { name: /Open in WebObsidian/ })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Inspect entity"), { target: { value: root.id } });
+    const link = await screen.findByRole("link", { name: /Open in WebObsidian/ });
+    expect(link).toHaveAttribute("href", "https://obsidian.example/note/Projects/My%20note%20%231.md");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link).toHaveAttribute("referrerpolicy", "no-referrer");
+    expect(screen.queryByText(/evil\.example/)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Inspect entity"), { target: { value: tool.id } });
+    await screen.findByRole("heading", { name: "Log explorer" });
+    expect(screen.queryByRole("link", { name: /Open in WebObsidian/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/WebObsidianBaseUrl/)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["", "not configured"],
+    ["javascript:alert(1)", "WebObsidianBaseUrl is invalid"],
+  ])("keeps inspection usable with unavailable configuration (%s)", async (base, message) => {
+    vi.stubEnv("VITE_WEB_OBSIDIAN_BASE_URL", base);
+    renderGraph();
+    await screen.findByRole("option", { name: "Root document (document)" });
+    fireEvent.change(screen.getByLabelText("Inspect entity"), { target: { value: root.id } });
+    expect(await screen.findByText(new RegExp(message))).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Open in WebObsidian/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Focus entity" })).toBeEnabled();
   });
 
   it("loads bounded nodes, inspects one entity independently, and progressively expands relationships", async () => {
@@ -110,12 +150,14 @@ describe("knowledge graph exploration", () => {
   });
 
   it("clears unavailable detail and removes its loaded node instead of retaining stale access", async () => {
+    vi.stubEnv("VITE_WEB_OBSIDIAN_BASE_URL", "https://obsidian.example");
     renderGraph();
     await screen.findByRole("option", { name: "Root document (document)" });
     vi.mocked(fetch).mockResolvedValue(response({}, 404));
     fireEvent.change(screen.getByLabelText("Inspect entity"), { target: { value: root.id } });
     expect(await screen.findByRole("alert")).toHaveTextContent("no longer available or accessible");
     expect(screen.queryByRole("option", { name: "Root document (document)" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Open in WebObsidian/ })).not.toBeInTheDocument();
   });
 
   it("expires authentication instead of treating a 401 as an empty graph", async () => {

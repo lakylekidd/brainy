@@ -1,5 +1,33 @@
 # Implementation verification
 
+## UI WebObsidian integration (17 October 2026)
+
+- UI Milestone 3 is implemented on `feat/webobsidian-integration`. The confirmed
+  external document route is `/note/<vault-relative-path>`, using a public
+  operator-configured `WebObsidianBaseUrl`. Compose passes the ignored `.env`
+  setting through the UI Docker build; native Vite has an equivalent setting.
+- **66 frontend tests** pass across eight files; the TypeScript/Vite production
+  build passes. Link cases cover absent/invalid configuration, deployment
+  prefixes, Unicode/spaces/reserved characters, origin safety, traversal and
+  malformed paths, metadata destination rejection, document-only actions,
+  denied details and external-link attributes. Existing graph/dashboard/theme
+  behavior remains covered.
+- The development UI image was rebuilt with the operator-provided base URL.
+  **Five Chromium end-to-end cases** pass against the running Compose stack,
+  including existing dashboard/login, graph/WebGL/no-WebGL and theme checks.
+  The new case selects an actual accessible document through the real graph
+  API, verifies its `/note/` target, activates the link with the keyboard and
+  checks that the new tab has no opener, authorization, agent-ID or referrer
+  headers. Only the external navigation is intercepted. No Brain credentials
+  are sent to the external instance, and no external login/document-content
+  verification is claimed.
+- No backend contract, database schema, canonical write or CSP relaxation was
+  needed. The UI remains independent of WebObsidian availability and login.
+
+Reproduce with `npm test`, `npm run build` and `npm run test:e2e` from `ui/`,
+after configuring/rebuilding the development UI as described in
+[WebObsidian linking](ui.md#webobsidian-linking).
+
 ## Graph layout refinement (17 October 2026)
 
 - The graph now spans the available page width without the dashboard width cap.

@@ -3,6 +3,12 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { GraphEntity, GraphResult } from "../src/features/graph/api";
 
+function webObsidianBaseUrl() {
+  const line = readFileSync(resolve(import.meta.dirname, "..", "..", ".env"), "utf8")
+    .split(/\r?\n/).find((value) => value.startsWith("BRAIN_WEB_OBSIDIAN_BASE_URL="));
+  return process.env.BRAIN_WEB_OBSIDIAN_BASE_URL ?? line?.slice("BRAIN_WEB_OBSIDIAN_BASE_URL=".length);
+}
+
 function adminToken() {
   const line = readFileSync(resolve(import.meta.dirname, "..", "..", ".env"), "utf8")
     .split(/\r?\n/).find((value) => value.startsWith("BRAIN_UI_ADMIN_TOKEN="));
@@ -115,4 +121,46 @@ test("browsers without WebGL retain keyboard exploration and source details", as
   await page.keyboard.press("Enter");
   await expect(page.getByRole("combobox", { name: "Inspect entity", exact: true })).toHaveValue(entity.id);
   await expect(page.getByRole("complementary", { name: "Entity details" }).getByRole("heading", { name: entity.label, exact: true })).toBeVisible();
+});
+
+test("canonical document inspection links to the configured WebObsidian note without sending Brain credentials", async ({ page, context }) => {
+  await page.goto("/");
+  await page.getByLabel("Admin token").fill(adminToken());
+  await page.getByRole("button", { name: "Sign in to Brain" }).click();
+  await expect(page.getByRole("heading", { name: "Good to see you." })).toBeVisible();
+  const initialResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/graph");
+  await page.getByRole("button", { name: "Knowledge graph", exact: true }).click();
+  const initial = await (await initialResponse).json() as GraphResult;
+  const entity = initial.entities.find((item) => item.type === "document");
+  expect(entity, "Index the development vault before running this browser check.").toBeDefined();
+  await page.getByRole("combobox", { name: "Inspect entity", exact: true }).selectOption(entity!.id);
+  await expect(page.getByRole("complementary", { name: "Entity details" })
+    .getByRole("heading", { name: entity!.label, exact: true })).toBeVisible();
+  const base = webObsidianBaseUrl();
+  if (!base) {
+    await expect(page.getByRole("status")).toContainText("WebObsidian is not configured");
+    await expect(page.getByRole("link", { name: /Open in WebObsidian/ })).toHaveCount(0);
+    return;
+  }
+  const url = new URL(base);
+  const expected = `${url.origin}${url.pathname.replace(/\/+$/, "")}/note/${entity!.source.id.split("/").map(encodeURIComponent).join("/")}`;
+  const link = page.getByRole("link", { name: /Open in WebObsidian/ });
+  await expect(link).toHaveAttribute("href", expected);
+  await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  // Intercept only the external navigation; Brain API/data remain real.
+  await context.route(expected, async (route) => {
+    const headers = route.request().headers();
+    expect(headers.authorization).toBeUndefined();
+    expect(headers["x-agent-id"]).toBeUndefined();
+    expect(headers.referer).toBeUndefined();
+    await route.fulfill({ contentType: "text/html", body: "<title>WebObsidian navigation check</title>" });
+  });
+  await link.focus();
+  const popup = page.waitForEvent("popup");
+  await page.keyboard.press("Enter");
+  const note = await popup;
+  await expect(note).toHaveURL(expected);
+  expect(await note.evaluate(() => window.opener === null)).toBe(true);
+  await note.close();
+  await expect(page.getByRole("button", { name: "Expand neighbors" })).toBeEnabled();
 });

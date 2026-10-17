@@ -4,7 +4,7 @@ The Brain UI is an operations and exploration surface, not a Markdown editor.
 WebObsidian remains the place to create and edit canonical knowledge documents;
 the Brain UI must link out to it rather than copy editing functionality.
 
-## Current scope: UI Milestones 1-2
+## Current scope: UI Milestones 1-3
 
 The frontend is a React + TypeScript + Vite application under `ui/`. Its current
 structure is:
@@ -19,7 +19,8 @@ ui/src/
   styles.css
 ```
 
-The shell exposes the dashboard and knowledge graph; later milestone routes are
+The shell exposes the dashboard and knowledge graph, including configured
+WebObsidian links for document nodes; later milestone routes are
 explicit placeholders. The dashboard reads existing authenticated API endpoints
 for agent, skill, tool, pending-proposal, metadata-issue, audit, trace, and
 readiness data. Counts reflect the API response visible to the current identity;
@@ -136,6 +137,11 @@ and signs out. A separate browser case checks system-theme changes, keyboard
 toggling, reload persistence, mobile layout, and content security policy errors.
 The tests do not enable Playwright traces or log the token.
 Use `BRAIN_UI_URL` to select a different development UI URL.
+The graph browser check also selects a real accessible document and verifies
+the configured WebObsidian target, keyboard activation, new-tab isolation and
+absence of Brain authorization/referrer headers. Only the external navigation
+is intercepted; Brain API/data remain real. It does not sign into WebObsidian
+or verify that a separately deployed instance contains the document.
 
 `ApiContractTests` cover invalid/unconfigured credentials, identity binding, MCP
 isolation, and OpenAPI security alternatives. `UiAdminApiTests` use actual
@@ -272,9 +278,53 @@ both themes, mobile layout, reduced-motion operation and the no-WebGL inspector.
 
 ## WebObsidian linking
 
-No link is currently generated because the WebObsidian deployment URL and its
-document route are not configured in this repository. UI Milestone 3 will
-accept an operator-configured `WebObsidianBaseUrl`, build links from the
-canonical relative vault path using the documented WebObsidian route, and
-encode path segments safely. Do not hard-code a hostname or allow document
-metadata to supply an arbitrary link origin.
+Select an accessible document node (or use **Inspect entity**) to view its
+canonical vault-relative path and index time. **Open in WebObsidian** opens that
+document in a new tab. Other entity types have no document action.
+The link is built only after the independent, authorized entity-detail request
+succeeds. A denied/missing detail does not produce a link.
+
+The deployment contract is `<WebObsidianBaseUrl>/note/<vault-relative-path>`,
+confirmed from the operator's existing WebObsidian note URL. For example,
+`📂Projects/Homelab Brain/ui-prompt.md` becomes
+`/note/%F0%9F%93%82Projects/Homelab%20Brain/ui-prompt.md`.
+Brain and WebObsidian must expose the same canonical vault and relative paths;
+this milestone does not synchronize vaults, translate path prefixes, or deploy
+WebObsidian. An optional deployment prefix in the base URL is preserved.
+
+`WebObsidianBaseUrl` is an operator-controlled, **public build-time setting**:
+
+| Hosting | Configuration |
+| --- | --- |
+| Compose | Set `BRAIN_WEB_OBSIDIAN_BASE_URL=https://obsidian.example` in the ignored root `.env`; Compose passes it as the UI image's `WebObsidianBaseUrl` build argument |
+| Direct image build | Supply `--build-arg WebObsidianBaseUrl=https://obsidian.example` when building `docker/Ui.Dockerfile` |
+| Native Vite | Set `VITE_WEB_OBSIDIAN_BASE_URL` in the process environment or an ignored `ui/.env.local` before starting Vite/building |
+
+For example, from `ui/` in PowerShell:
+
+```powershell
+$env:VITE_WEB_OBSIDIAN_BASE_URL = 'https://obsidian.example'
+npm run dev
+```
+
+After changing the Compose setting, run
+`docker compose up -d --build --no-deps ui`; merely restarting the container
+does not replace a URL compiled into static assets. The setting defaults to
+absent. Missing/invalid configuration shows an explicit inspector message and
+omits the link; the rest of the graph remains usable.
+
+Only absolute HTTP(S) base URLs without credentials, queries or fragments are
+accepted. Use HTTPS outside local development and never put tokens or other
+secrets in this setting. Targets use the canonical `source.id` returned by the
+graph API, not document metadata or an arbitrary URL field. Path segments are
+encoded separately, preserving folder separators and literal special
+characters. Absolute paths, traversal, empty segments, backslashes, control
+characters and malformed Unicode do not produce a link. Document text cannot
+select another origin or add query/fragment parameters.
+
+Links use `noopener`, `noreferrer` and a no-referrer policy. No Brain token,
+identity, document body or shared login is sent to WebObsidian; it enforces its
+own authentication/access. Brain authorization does not grant access there.
+The Brain UI still cannot edit canonical Markdown. Pause the Brain Writer for
+direct human editing/maintenance as described in
+[safe knowledge writes](knowledge-writes.md), then resume with a clean checkout.

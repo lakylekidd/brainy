@@ -3,6 +3,8 @@ WORKDIR /app
 COPY ui/package.json ui/package-lock.json ./
 RUN npm ci
 COPY ui/ ./
+ARG WebObsidianBaseUrl=""
+ENV VITE_WEB_OBSIDIAN_BASE_URL=$WebObsidianBaseUrl
 RUN npm run build
 
 FROM nginx:1.28-alpine

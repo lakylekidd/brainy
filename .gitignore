@@ -8,6 +8,7 @@ artifacts/
 *.user
 ui/node_modules/
 ui/dist/
+ui/.env.local
 ui/*.tsbuildinfo
 ui/test-results/
 ui/playwright-report/
