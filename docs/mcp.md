@@ -33,6 +33,14 @@ operations; clients cannot choose an identity in a tool argument. A harness need
 Streamable HTTP and configurable authentication headers. Browser-only or
 OAuth-only connection flows are not provided in this milestone.
 
+The optional Brain Client adds a separate device connection path. An OIDC
+authenticated human registers a device, whose scoped credential remains in the
+operating system credential store. `brain connect <harness>` configures a named
+stdio MCP entry that starts `brain mcp-proxy`; the proxy forwards authenticated
+Streamable HTTP requests to this same endpoint. It does not place a credential
+in the harness configuration and does not accept a caller-supplied agent ID.
+This client path is described in [client onboarding](client-onboarding.md).
+
 Every request, including initialization/discovery and `tools/list`, is
 authenticated. Permissions and enabled status are resolved from the database on
 each HTTP request, so changing access takes effect without reconnecting. Wrong

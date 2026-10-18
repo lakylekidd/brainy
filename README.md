@@ -1,6 +1,6 @@
 # Homelab Brain
 
-A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application, not an agent runtime.
+A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application. The optional `brain` client runs on enrolled devices and reports local runtime capabilities.
 
 **Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-4 provide an authenticated operations dashboard, a permission-filtered interactive knowledge graph, configured document links to WebObsidian, and agent/permission inspection and supported access management; canonical Markdown editing remains in WebObsidian.
 
@@ -242,6 +242,36 @@ Provision a distinct random bearer token out of band and configure its SHA-256 d
 
 ## Build and test
 
+### Brain Client onboarding (Module 19 in progress)
+
+`src/Brain.Client` builds a standalone `brain` executable for Windows, Linux,
+and macOS x64/ARM64. Publish it for a target runtime ID, for example:
+
+```powershell
+dotnet publish src/Brain.Client -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+```
+
+The separate `scripts/Install-BrainClient.ps1` and
+`scripts/install-brain-client.sh` installers accept a local published binary
+and its expected SHA-256 digest. Configure the API with an OIDC authority,
+audience, public client ID and an explicit subject-to-Brain-agent binding;
+grant that identity `devices.register` and the other operations it needs.
+After installation, run `brain login --server https://<brain-host>`,
+`brain connect <claude-code|codex|hermes>`, `brain skills sync`, and
+`brain doctor`. Headless login uses `--headless`. The client stores its device
+credential in the operating system's credential store, and connected harnesses
+call its local MCP proxy. `brain agent run` runs host inventory, heartbeats and
+skill reconciliation in the foreground; `brain install` configures a systemd
+user service on Linux or launchd agent on macOS.
+
+This milestone is still in progress. Windows Service installation, real OIDC
+and harness end-to-end checks across supported operating systems, non-host
+runtime inspectors, and automatic upgrades remain. See
+[client onboarding and configuration](docs/client-onboarding.md) for the exact
+API, security policy, supported scope and gaps.
+
+### Build and test
+
 ```powershell
 dotnet tool restore
 dotnet build HomelabBrain.sln
@@ -294,7 +324,7 @@ Connect an MCP client to `http://localhost:5080/mcp` using Streamable HTTP and t
 
 Tracing is enabled without an external collector. `ActivityTracing__RetentionDays` defaults to 7; the worker removes old retained traces hourly. Setting it to 0 disables retained writes without disabling live events/export. Optional `ActivityTracing__OtlpEndpoint` enables OTLP/gRPC export to an operator-controlled collector. Authenticated operations return `X-Trace-Id` and continue incoming W3C `traceparent`. Development agents can inspect only their own traces; the administrator receives explicit system-wide grants. See [activity tracing](docs/activity-tracing.md) for filters, safety, SSE clients, delivery limits and configuration. No UI animation or external skill execution is included.
 
-See [the foundation design](docs/foundation.md), [knowledge search](docs/knowledge.md), [safe knowledge writes and recovery](docs/knowledge-writes.md), [skills/tools discovery](docs/skills-and-tools.md), [MCP](docs/mcp.md), [metadata enrichment](docs/metadata-enrichment.md), [activity tracing](docs/activity-tracing.md), and [verification](docs/verification.md).
+See [the foundation design](docs/foundation.md), [knowledge search](docs/knowledge.md), [safe knowledge writes and recovery](docs/knowledge-writes.md), [skills/tools discovery](docs/skills-and-tools.md), [MCP](docs/mcp.md), [client onboarding](docs/client-onboarding.md), [metadata enrichment](docs/metadata-enrichment.md), [activity tracing](docs/activity-tracing.md), and [verification](docs/verification.md).
 The UI milestone scope, API coverage, and security boundaries are in [the UI guide](docs/ui.md); the remaining milestone plan and acceptance criteria are in [the UI roadmap](docs/ui-roadmap.md).
 
 The included `IEmbeddingProvider` uses deterministic 384-dimensional token hashing. It exercises the entire pgvector path without a key, but **is not a learned semantic model**: it primarily finds word overlap and cannot reliably match paraphrases. A real provider and explicit re-embedding are needed before relying on semantic recall. Provider/model/dimension filters prevent incompatible vectors being compared.

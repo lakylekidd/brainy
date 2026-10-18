@@ -13,8 +13,7 @@ public sealed class WorkerReadinessTests(BrainFixture fixture) : IClassFixture<B
     [Fact]
     public async Task Worker_waits_for_migrations_and_refreshes_a_type_cache_opened_before_pgvector_exists()
     {
-        using var scope = fixture.Factory.Services.CreateScope();
-        var parent = scope.ServiceProvider.GetRequiredService<BrainDbContext>().Database.GetConnectionString()!;
+        var parent = fixture.ConnectionString;
         var database = "brain_readiness_" + Guid.NewGuid().ToString("N");
         await using var admin = new NpgsqlConnection(parent);
         await admin.OpenAsync();

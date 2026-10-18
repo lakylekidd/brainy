@@ -18,6 +18,7 @@ public sealed class FileSystemRegistrySource(RegistryOptions options) : IRegistr
     private static readonly Regex Identifier = new(@"\A[a-z0-9][a-z0-9-]{0,99}\z", RegexOptions.CultureInvariant);
     private static readonly Regex PermissionName = new(@"\A[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*\z", RegexOptions.CultureInvariant);
     private static readonly Regex CapabilityName = new(@"\A[a-z][a-z0-9_-]{0,99}\z", RegexOptions.CultureInvariant);
+    private static readonly Regex RuntimeRequirement = new(@"\A(host|container|remote|harness):([a-z][a-z0-9_.-]{0,99})(?:>=(\d+(?:\.\d+){0,3}))?\z", RegexOptions.CultureInvariant);
     private static readonly UTF8Encoding Utf8 = new(false, true);
 
     public async Task<IReadOnlyList<RegistryDefinition>> ReadAsync(CancellationToken ct)
@@ -68,7 +69,7 @@ public sealed class FileSystemRegistrySource(RegistryOptions options) : IRegistr
             var lists = new Dictionary<string, string[]>(StringComparer.Ordinal);
             var fields = new HashSet<string>(StringComparer.Ordinal);
             var scalarKeys = kind == RegistryKind.Skill ? new[] { "id", "name", "description" } : ["id", "name", "description", "provider"];
-            var listKeys = kind == RegistryKind.Skill ? new[] { "tags", "required_tools", "required_permissions" } : ["tags", "permissions", "capabilities"];
+            var listKeys = kind == RegistryKind.Skill ? new[] { "tags", "required_tools", "required_permissions", "runtime_requirements" } : ["tags", "permissions", "capabilities"];
             while (!parser.Accept<MappingEnd>(out _))
             {
                 var key = Scalar(parser, 100);
@@ -92,7 +93,7 @@ public sealed class FileSystemRegistrySource(RegistryOptions options) : IRegistr
             parser.Consume<MappingEnd>();
             parser.Consume<DocumentEnd>();
             parser.Consume<StreamEnd>();
-            Require(scalarKeys.All(text.ContainsKey) && listKeys.Where(k => k != "tags").All(lists.ContainsKey), "Missing required manifest field.");
+            Require(scalarKeys.All(text.ContainsKey) && listKeys.Where(k => k is not ("tags" or "runtime_requirements")).All(lists.ContainsKey), "Missing required manifest field.");
             Require(Identifier.IsMatch(text["id"]) && !IsDeviceName(text["id"]) && text["id"] == directoryId, "Manifest id must match its directory.");
             var tags = lists.GetValueOrDefault("tags", []);
             var permissions = lists[kind == RegistryKind.Skill ? "required_permissions" : "permissions"];
@@ -101,10 +102,13 @@ public sealed class FileSystemRegistrySource(RegistryOptions options) : IRegistr
             Require(tags.All(t => Identifier.IsMatch(t)) && tools.All(t => Identifier.IsMatch(t) && !IsDeviceName(t)), "Invalid tag or tool id.");
             Require(permissions.All(p => p.Length <= 100 && PermissionName.IsMatch(p)), "Invalid permission name.");
             Require(capabilities.All(c => CapabilityName.IsMatch(c)), "Invalid capability name.");
+            var runtimeRequirements = kind == RegistryKind.Skill ? lists.GetValueOrDefault("runtime_requirements", []) : [];
+            Require(runtimeRequirements.All(RuntimeRequirement.IsMatch), "Invalid runtime requirement.");
             var provider = kind == RegistryKind.Tool ? text["provider"] : null;
             Require(provider is null or "mcp" or "http", "Tool provider must be mcp or http.");
             return new(kind, directoryId, text["name"], text["description"], tags, permissions, tools, provider, capabilities,
-                $"{(kind == RegistryKind.Skill ? "skills" : "tools")}/{directoryId}/manifest.yaml", contentHash, instructions);
+                $"{(kind == RegistryKind.Skill ? "skills" : "tools")}/{directoryId}/manifest.yaml", contentHash, instructions,
+                runtimeRequirements);
         }
         catch (YamlException) { throw new BrainException(422, "Invalid manifest YAML; use a single mapping with text and text-list fields, without aliases or tags."); }
     }

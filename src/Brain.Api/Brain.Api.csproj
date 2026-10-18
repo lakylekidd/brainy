@@ -3,5 +3,6 @@
     <ProjectReference Include="../Brain.Infrastructure/Brain.Infrastructure.csproj" />
     <ProjectReference Include="../Brain.Mcp/Brain.Mcp.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
   </ItemGroup>
 </Project>

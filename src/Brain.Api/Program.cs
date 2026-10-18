@@ -6,6 +6,8 @@ using Brain.Domain;
 using Brain.Infrastructure;
 using Brain.Mcp;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 
@@ -16,7 +18,19 @@ builder.Services.AddScoped<ICurrentAgent>(services => services.GetRequiredServic
 builder.Services.AddBrainMcp();
 builder.Services.AddAuthentication(AgentAuthenticationHandler.SchemeName)
     .AddScheme<AgentAuthenticationOptions, AgentAuthenticationHandler>(AgentAuthenticationHandler.SchemeName,
-        options => builder.Configuration.GetSection("Authentication").Bind(options));
+        options => builder.Configuration.GetSection("Authentication").Bind(options))
+    .AddJwtBearer("HumanOidc", options =>
+    {
+        options.Authority = builder.Configuration["Authentication:Oidc:Authority"];
+        options.Audience = builder.Configuration["Authentication:Oidc:Audience"];
+        options.RequireHttpsMetadata = true;
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true,
+            NameClaimType = "sub", ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
 builder.Services.AddOptions<AgentAuthenticationOptions>(AgentAuthenticationHandler.SchemeName)
     .Validate(options => options.AgentTokenHashes.Count > 0 &&
         options.AgentTokenHashes.Values.All(hash => hash is { Length: 64 } && hash.All(Uri.IsHexDigit)) &&
@@ -34,14 +48,18 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
 {
     document.Info.Title = "Homelab Brain";
-    document.Info.Description = "REST requests accept bound agent credentials or the configured UI administrator bearer token. MCP requires both agent credentials.";
+    document.Info.Description = "REST and MCP accept bound agent credentials or scoped device bearer credentials. REST also accepts the configured UI administrator token. Device enrollment and provisioning approval require OIDC human access tokens.";
     document.Components ??= new OpenApiComponents();
     document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>
     {
         ["agentId"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Agent-Id" },
         ["agentToken"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer" },
         ["uiAdminToken"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer",
-            Description = "Dedicated UI administrator token; server-side identity mapping. Not accepted by MCP." }
+            Description = "Dedicated UI administrator token; server-side identity mapping. Not accepted by MCP." },
+        ["deviceToken"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer",
+            Description = "Scoped device credential issued at registration; no X-Agent-Id header." },
+        ["humanOidc"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer",
+            Description = "OIDC access token with brain.device scope and an explicit subject binding; enrollment and provisioning approval only." }
     };
     document.Security = [new OpenApiSecurityRequirement
     {
@@ -50,12 +68,22 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document,
     }, new OpenApiSecurityRequirement
     {
         [new OpenApiSecuritySchemeReference("uiAdminToken", document)] = []
+    }, new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("deviceToken", document)] = []
     }];
     foreach (var path in document.Paths.Where(path => path.Key.StartsWith("/mcp", StringComparison.Ordinal)))
         if (path.Value.Operations is not null)
-            foreach (var operation in path.Value.Operations.Values) operation.Security = [document.Security[0]];
+            foreach (var operation in path.Value.Operations.Values) operation.Security = [document.Security[0], document.Security[2]];
+    foreach (var path in document.Paths.Where(path => path.Key == "/api/devices/register" ||
+        path.Key.EndsWith("/provisioning/{planId}/approve", StringComparison.Ordinal)))
+        if (path.Value.Operations is not null)
+            foreach (var operation in path.Value.Operations.Values) operation.Security =
+                [new OpenApiSecurityRequirement { [new OpenApiSecuritySchemeReference("humanOidc", document)] = [] }];
     if (document.Paths.TryGetValue("/health/live", out var live) && live.Operations is not null)
         foreach (var operation in live.Operations.Values) operation.Security = [];
+    if (document.Paths.TryGetValue("/.well-known/brain-client", out var discovery) && discovery.Operations is not null)
+        foreach (var operation in discovery.Operations.Values) operation.Security = [];
     return Task.CompletedTask;
 }));
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -88,7 +116,7 @@ app.Use(async (context, next) =>
         if (e.StatusCode == 403 && context.User.Identity?.IsAuthenticated == true)
         {
             var actor = context.RequestServices.GetRequiredService<RequestAgent>().Context;
-            await context.RequestServices.GetRequiredService<IAuditLog>().WriteAsync(new AuditEvent
+            if (actor is not null) await context.RequestServices.GetRequiredService<IAuditLog>().WriteAsync(new AuditEvent
             {
                 AgentId = actor.Id, Action = "brain.authorization.denied", Result = "denied",
                 Resource = context.GetEndpoint()?.DisplayName ?? "request", Timestamp = DateTimeOffset.UtcNow
@@ -103,9 +131,18 @@ app.UseAuthorization();
 app.UseBrainRequestActivity();
 app.MapBrainActivity();
 app.MapBrainGraph();
+app.MapBrainDevices(builder.Configuration);
 
 // Process-only liveness for infrastructure; all data and schema endpoints require identity.
 app.MapGet("/health/live", () => Results.Ok(new { status = "alive" })).AllowAnonymous();
+app.MapGet("/.well-known/brain-client", (IConfiguration config) =>
+{
+    var authority = config["Authentication:Oidc:Authority"];
+    var clientId = config["Authentication:Oidc:ClientId"];
+    if (string.IsNullOrWhiteSpace(authority) || string.IsNullOrWhiteSpace(clientId))
+        return Results.StatusCode(503);
+    return Results.Ok(new { authority, clientId, scope = "openid profile brain.device" });
+}).AllowAnonymous();
 app.MapGet("/health/ready", async (BrainDbContext db, CancellationToken ct) =>
     await db.Database.CanConnectAsync(ct) ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
 app.MapOpenApi().RequireAuthorization();

@@ -1,5 +1,30 @@
 # Implementation verification
 
+## Brain Client and device onboarding, partial Module 19 (18 October 2026)
+
+The `codex/module-19-brain-client` branch adds the OIDC/device registration
+path, scoped device credentials, the standalone CLI, harness adapters, local
+skill synchronization, host Runtime Agent reporting, dependency checks and a
+policy-pinned provisioning path. Integration tests cover OIDC subject binding,
+device scope intersection, rotation/revocation, harness connection audit
+transitions, runtime environment separation,
+skill copy status, and provisioning approval/claim/completion. Unit tests cover
+name validation, scope limits, local skill conflicts and service-file escaping.
+
+`dotnet test HomelabBrain.sln --no-restore` passed 121 unit and 131 integration
+tests on Windows with isolated PostgreSQL/pgvector. Self-contained single-file
+publish succeeded for win-x64, win-arm64, linux-x64, linux-arm64, osx-x64 and
+osx-arm64; the win-x64 executable launched locally. The other binaries have
+not been executed on their target operating systems. The tests use an in-memory
+OIDC signing key, not an external identity provider. Actual harness CLI
+configuration has not been exercised in a disposable user profile.
+
+The Module 19 acceptance criteria remain open for Windows Service operation,
+real cross-platform login/harness checks, container/remote/harness runtime
+inspection, automated client upgrades, dedicated harness connection activity
+events and broader approved installers. See
+[client onboarding](client-onboarding.md) for operational limits.
+
 ## PAV OS individual-node deselection (18 October 2026)
 
 - Single-file selection is now nullable rather than implicitly selecting

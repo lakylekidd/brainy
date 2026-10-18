@@ -36,6 +36,7 @@ public static class ActivityEndpoints
             context.Request.Path.StartsWithSegments("/openapi"))
         { await next(context); return; }
         var actor = context.RequestServices.GetRequiredService<RequestAgent>().Context;
+        if (actor is null) { await next(context); return; }
         var publisher = context.RequestServices.GetRequiredService<IActivityPublisher>();
         var route = (context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "request";
         using var activity = publisher.Start(new($"{context.Request.Method} {route}",

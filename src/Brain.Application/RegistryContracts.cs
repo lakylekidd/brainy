@@ -9,10 +9,10 @@ public interface IRegistrySource
 
 public sealed record RegistrySearchRequest(string Query, string[]? Tags = null, int Limit = 10);
 public sealed record RegistryMetadata(string[] Tags, string[] RequiredPermissions, string[] RequiredTools,
-    string? Provider, string[] Capabilities, string ContentHash);
+    string? Provider, string[] Capabilities, string ContentHash, string[]? RuntimeRequirements = null);
 public sealed record RegistryResult(string Type, string Id, string Title, string Content,
     double? Score, string Source, RegistryMetadata Metadata);
-public sealed record SkillView(RegistryResult Skill, string Instructions);
+public sealed record SkillView(RegistryResult Skill, string Instructions, string InstructionsHash);
 public sealed record CapabilitySearchResult(IReadOnlyList<RegistryResult> Skills, IReadOnlyList<RegistryResult> Tools);
 public sealed record RegistryScanResult(int Indexed, int Unchanged, int Removed, bool AlreadyRunning = false);
 public sealed record RegistryIndexStatus(string Fingerprint, EmbeddingModel Model);

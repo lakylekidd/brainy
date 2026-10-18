@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 using Brain.Domain;
 
 namespace Brain.Application;
@@ -28,7 +30,8 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
             activity.Publish("skill.selected", ActivityStatus.Succeeded, $"agent:{actor.Id}", entry.Key);
             foreach (var tool in entry.RequiredTools)
                 activity.Publish("brain.capability.discovered", ActivityStatus.Succeeded, entry.Key, $"tool:{tool}");
-            return new SkillView(View(entry), entry.Instructions!);
+            return new SkillView(View(entry), entry.Instructions!,
+                Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.Instructions!))));
         }, ct);
 
     public Task<RegistryResult> GetToolAsync(AgentContext actor, string id, CancellationToken ct = default) =>
@@ -157,6 +160,9 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
         if (!latest.Select(e => e.Fingerprint).Order().SequenceEqual(entries.Select(e => e.Fingerprint).Order()))
             throw new BrainException(409, "Registry changed during indexing; retry the scan.");
         await index.ReplaceAsync(embedded, embeddings.Model, time.GetUtcNow(), Event(actor, "brain.registry.indexed", "registry"), ct);
+        using (var scope = activity.Start(new("brain.registry.index", "brain.registry.scan.started",
+                   "brain.registry.scan.completed", "brain.registry.scan.failed", "registry", "registry", actor)))
+            activity.Publish("brain.registry.indexed", ActivityStatus.Succeeded, "registry", "registry");
         return new(entries.Count, 0, removed);
     }
 
@@ -183,5 +189,6 @@ public sealed class RegistryService(IRegistrySource source, IRegistryIndex index
 
     private static RegistryResult View(RegistryDefinition entry, double? score = null) => new(
         entry.Kind == RegistryKind.Skill ? "skill" : "tool", entry.Id, entry.Name, entry.Description, score, entry.Source,
-        new(entry.Tags, entry.RequiredPermissions, entry.RequiredTools, entry.Provider, entry.Capabilities, entry.ContentHash));
+        new(entry.Tags, entry.RequiredPermissions, entry.RequiredTools, entry.Provider, entry.Capabilities,
+            entry.ContentHash, entry.RuntimeRequirements ?? []));
 }

@@ -22,6 +22,16 @@ public static class ServiceRegistration
         services.AddSingleton<IEmbeddingProvider, DevelopmentEmbeddingProvider>();
         services.AddScoped<IMemoryStore, MemoryStore>();
         services.AddScoped<IAgentDirectory, AgentDirectory>();
+        services.AddScoped<IDeviceStore, DeviceStore>();
+        services.AddScoped<DeviceService>();
+        services.AddScoped<IRuntimeStore, RuntimeStore>();
+        services.AddScoped<RuntimeService>();
+        services.AddScoped<DependencyService>();
+        services.AddScoped<IDeviceSkillStore, DeviceSkillStore>();
+        services.AddScoped<DeviceSkillService>();
+        services.AddSingleton(_ => configuration.GetSection("Provisioning").Get<ProvisioningOptions>() ?? new ProvisioningOptions());
+        services.AddScoped<IProvisioningStore, ProvisioningStore>();
+        services.AddScoped<ProvisioningService>();
         services.AddScoped<IAuditLog, AuditLog>();
         services.AddScoped<MemoryService>();
         services.AddSingleton(_ => configuration.GetSection("Knowledge").Get<KnowledgeOptions>() ?? new KnowledgeOptions());

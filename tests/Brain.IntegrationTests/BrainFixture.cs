@@ -22,6 +22,7 @@ public sealed class BrainFixture : IAsyncLifetime
     private readonly string scratchDatabase = "brain_test_" + Guid.NewGuid().ToString("N");
     private bool scratchCreated;
     public BrainFactory Factory { get; private set; } = null!;
+    public string ConnectionString { get; private set; } = "";
     public async Task InitializeAsync()
     {
         string connection;
@@ -43,6 +44,7 @@ public sealed class BrainFixture : IAsyncLifetime
         Directory.CreateDirectory(VaultPath);
         Directory.CreateDirectory(Path.Combine(RegistryPath, "skills"));
         Directory.CreateDirectory(Path.Combine(RegistryPath, "tools"));
+        ConnectionString = connection;
         Factory = new BrainFactory(connection, VaultPath, RegistryPath);
         using var client = Factory.CreateClient();
         (await client.GetAsync("/health/live")).EnsureSuccessStatusCode();
@@ -51,7 +53,7 @@ public sealed class BrainFixture : IAsyncLifetime
     {
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BrainDbContext>();
-        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE agents, roles, permissions, memories, memory_embeddings, knowledge_documents, knowledge_chunks, knowledge_write_proposals, registry_entries, metadata_scan_states, audit_events, activity_traces, activity_events CASCADE");
+        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE agents, roles, permissions, devices, memories, memory_embeddings, knowledge_documents, knowledge_chunks, knowledge_write_proposals, registry_entries, metadata_scan_states, audit_events, activity_traces, activity_events CASCADE");
         await DatabaseInitializer.InitializeAsync(db, true);
         Directory.Delete(RegistryPath, true);
         Directory.CreateDirectory(Path.Combine(RegistryPath, "skills"));
