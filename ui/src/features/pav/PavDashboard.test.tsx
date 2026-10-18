@@ -7,15 +7,17 @@ import { filterVault, loadDemoVault } from "./vault";
 const graph = loadDemoVault();
 
 vi.mock("./VaultCanvas", () => ({
-  default: ({ graph, view, selected, onSelect, onInspect, focusedRing, onFocusRing, theme, showLinks, showLabels, dotSize }: {
-    graph: { files: { id: string }[]; links: unknown[] }; view: string; selected: string;
+  default: ({ graph, view, selected, onSelect, onInspect, onClearSelection, focusedRing, onFocusRing, theme, showLinks, showLabels, dotSize }: {
+    graph: { files: { id: string }[]; links: unknown[] }; view: string; selected: string | null;
+    onClearSelection: () => void;
     focusedRing: string | null; onFocusRing: (ring: "skills" | null) => void;
     onSelect: (id: string) => void; onInspect: () => void; theme: string; showLinks: boolean; showLabels: boolean; dotSize: number;
   }) => <div data-testid="vault-canvas" data-view={view} data-count={graph.files.length} data-theme={theme}
-    data-links={String(showLinks)} data-labels={String(showLabels)} data-selected={selected} data-dot-size={dotSize} data-ring={focusedRing ?? ""}>
+    data-links={String(showLinks)} data-labels={String(showLabels)} data-selected={selected ?? ""} data-dot-size={dotSize} data-ring={focusedRing ?? ""}>
     <button onClick={() => { onSelect("skills/research.md"); onInspect(); }}>Select research dot</button>
     <button onClick={() => { onSelect("content/index.md"); onInspect(); }}>Select content hub</button>
     <button onClick={() => onFocusRing(focusedRing === "skills" ? null : "skills")}>Focus skills ring</button>
+    <button onClick={onClearSelection}>Clear graph selection</button>
   </div>,
 }));
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
@@ -29,7 +31,7 @@ describe("PAV OS demo dashboard", () => {
     fireEvent.click(focus);
     expect(canvas).toHaveAttribute("data-ring", "skills");
     expect(canvas).toHaveAttribute("data-count", String(graph.files.length));
-    expect(canvas).toHaveAttribute("data-selected", "AGENTS.md");
+    expect(canvas).toHaveAttribute("data-selected", "");
     expect(screen.queryByRole("complementary", { name: "Demo file details" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Filter file type")).toHaveValue("all");
     fireEvent.click(focus);
@@ -70,6 +72,31 @@ describe("PAV OS demo dashboard", () => {
       expect(screen.getByTestId("vault-canvas")).toHaveAttribute("data-view", view);
       expect(screen.getByRole("button", { name: view })).toHaveAttribute("aria-pressed", "true");
     }
+  });
+
+  it("clears file and ring selection with inspection while keeping explicit document navigation non-toggling", () => {
+    render(<PavDashboard theme="dark" />);
+    const canvas = screen.getByTestId("vault-canvas");
+    const clear = screen.getByRole("button", { name: "Clear graph selection" });
+    const research = screen.getByRole("button", { name: /Research synthesis skills\/research.md/ });
+    expect(canvas).toHaveAttribute("data-selected", "");
+    for (let i = 0; i < 2; i++) {
+      fireEvent.click(research);
+      expect(canvas).toHaveAttribute("data-selected", "skills/research.md");
+      expect(screen.getByRole("complementary", { name: "Demo file details" })).toBeInTheDocument();
+    }
+    fireEvent.click(clear);
+    expect(canvas).toHaveAttribute("data-selected", "");
+    expect(screen.queryByRole("complementary", { name: "Demo file details" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Jump to file")).toHaveValue("AGENTS.md");
+    fireEvent.click(screen.getByRole("button", { name: "Read AGENTS.md" }));
+    expect(canvas).toHaveAttribute("data-selected", "AGENTS.md");
+    expect(screen.getByRole("complementary", { name: "Demo file details" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Focus skills ring" }));
+    fireEvent.click(clear);
+    expect(canvas).toHaveAttribute("data-selected", "");
+    expect(canvas).toHaveAttribute("data-ring", "");
+    expect(screen.queryByRole("complementary", { name: "Demo file details" })).not.toBeInTheDocument();
   });
 
   it("inspects a real initialed hub and distinguishes its area membership from Markdown connections", () => {

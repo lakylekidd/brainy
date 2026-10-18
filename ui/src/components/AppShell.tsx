@@ -69,7 +69,7 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
               aria-expanded={menuOpen} aria-controls="main-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
               {menuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
-            <span className="shell-brand"><BrainCircuit size={16} /><span>HOMELAB <b>BRAIN</b></span></span>
+            <span className="shell-brand"><BrainCircuit size={16} /><span>BRAINY</span></span>
             <span className="shell-context">Shared knowledge / Independent agents</span>
           </div>
           <div className="topbar-actions">

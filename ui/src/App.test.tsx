@@ -31,6 +31,7 @@ describe("Brain UI shell", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     render(<App />);
+    expect(screen.getByText("BRAINY")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Switch to light mode" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Switch to light mode" }));
     fireEvent.click(screen.getByRole("button", { name: "Switch to dark mode" }));
@@ -40,6 +41,7 @@ describe("Brain UI shell", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign in to Brain" }));
 
     expect(await screen.findByText("Incident triage")).toBeInTheDocument();
+    expect(screen.getByText("BRAINY")).toBeInTheDocument();
     expect(screen.getAllByText("codex")).toHaveLength(1);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       "/api/agents/me",

@@ -239,6 +239,92 @@ test("ring labels focus every file on a layer without filtering and remain usabl
   await expect(canvas).toHaveAttribute("data-focused-ring", "");
 });
 
+test("node and background clicks clear selection and actual highlights without interrupting camera gestures or hub framing", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByLabel("Admin token").fill(adminToken());
+  await page.getByRole("button", { name: "Sign in to Brain" }).click();
+  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  const canvas = page.locator(".pav-canvas-host canvas");
+  const inspector = page.getByRole("complementary", { name: "Demo file details" });
+  await page.getByRole("checkbox", { name: "Links", exact: true }).uncheck();
+  await page.getByRole("checkbox", { name: "Membership", exact: true }).uncheck();
+  const graph = demoGraph();
+  let bounds = (await canvas.boundingBox())!;
+  const layout = createLayout(graph, "Ring", bounds.width, bounds.height);
+  const notes = layout.nodes.filter((node) => node.file.kind === "note");
+  const node = notes.find((item) => item.x < bounds.width * 0.4)!;
+  const pixels = () => canvas.evaluate((element, points) => {
+    const bitmap = element as HTMLCanvasElement;
+    const ctx = bitmap.getContext("2d")!;
+    const box = bitmap.getBoundingClientRect();
+    return points.map(({ x, y }) => Array.from(ctx.getImageData(
+      Math.floor(x * bitmap.width / box.width), Math.floor(y * bitmap.height / box.height), 1, 1).data));
+  }, notes.map(({ x, y }) => ({ x, y })));
+  const camera = () => canvas.evaluate((element) => {
+    const transform = (element as HTMLCanvasElement & { __zoom: { k: number; x: number; y: number } }).__zoom;
+    return { k: transform.k, x: transform.x, y: transform.y };
+  });
+  const baseline = await pixels();
+  await expect(canvas).toHaveAttribute("data-selected-file", "");
+  await canvas.click({ position: { x: node.x, y: node.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+  await expect(inspector).toBeVisible();
+  const focused = await pixels();
+  expect(focused).not.toEqual(baseline);
+  await canvas.click({ position: { x: node.x, y: node.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", "");
+  await expect(inspector).toBeHidden();
+  const cleared = await pixels();
+  for (let i = 0; i < baseline.length; i++) {
+    for (let channel = 0; channel < 4; channel++) expect(Math.abs(cleared[i][channel] - baseline[i][channel])).toBeLessThanOrEqual(2);
+  }
+
+  await canvas.click({ position: { x: node.x, y: node.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+  await page.mouse.move(bounds.x + 12, bounds.y + 12);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + 82, bounds.y + 32, { steps: 8 });
+  await page.mouse.up();
+  await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+  expect((await camera()).x).toBeCloseTo(70);
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+  const transformed = await camera();
+  await canvas.click({ position: { x: 5, y: 5 } });
+  await expect(canvas).toHaveAttribute("data-selected-file", "");
+  await expect(inspector).toBeHidden();
+  expect(await camera()).toEqual(transformed);
+  await page.getByRole("button", { name: "Fit vault" }).click();
+  const root = layout.nodes.find((item) => item.id === "AGENTS.md")!;
+  await canvas.click({ position: { x: root.x, y: root.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", root.id);
+  await expect(inspector).toBeVisible();
+  await canvas.click({ position: { x: root.x, y: root.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", "");
+  await expect(inspector).toBeHidden();
+  const skills = page.getByRole("button", { name: "Highlight Skills ring" });
+  await skills.press("Enter");
+  await expect(canvas).toHaveAttribute("data-focused-ring", "skills");
+  await canvas.click({ position: { x: 5, y: 5 } });
+  await expect(canvas).toHaveAttribute("data-focused-ring", "");
+
+  await page.getByRole("button", { name: "Areas", exact: true }).click();
+  bounds = (await canvas.boundingBox())!;
+  const hub = createLayout(graph, "Areas", bounds.width, bounds.height).nodes.find((item) => item.id === "business/index.md")!;
+  await canvas.click({ position: { x: hub.x, y: hub.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", hub.id);
+  const framed = await camera();
+  expect(framed.k).toBeGreaterThan(1);
+  await canvas.click({ position: { x: hub.x * framed.k + framed.x, y: hub.y * framed.k + framed.y } });
+  await expect(canvas).toHaveAttribute("data-selected-file", "");
+  await expect(canvas).toHaveAttribute("data-focused-area", "");
+  await expect(inspector).toBeHidden();
+  expect(await camera()).toEqual(framed);
+  await page.screenshot({ path: test.info().outputPath("pav-node-deselection.png"), fullPage: true });
+});
+
 test("real node dragging stays on its named ring, works through pan and zoom, and resets free placements", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -475,6 +561,32 @@ test.describe("touch node dragging", () => {
     box = (await canvas.boundingBox())!;
     await page.touchscreen.tap(box.x + destination.x, box.y + destination.y);
     await expect(jump).toHaveValue(node.id);
+    const inspector = page.getByRole("complementary", { name: "Demo file details" });
+    await expect(inspector).toBeVisible();
+    await page.touchscreen.tap(box.x + destination.x, box.y + destination.y);
+    await expect(canvas).toHaveAttribute("data-selected-file", "");
+    await expect(inspector).toBeHidden();
+    await page.touchscreen.tap(box.x + destination.x, box.y + destination.y);
+    await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+    const blank = { x: box.x + 12, y: box.y + 12, id: 0 };
+    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [blank] });
+    await session.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
+    await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+    const second = { ...blank, x: blank.x + 80, id: 1 };
+    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [blank, second] });
+    await session.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [blank, { ...second, x: second.x + 40 }] });
+    await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+    expect(await canvas.evaluate((element) => (element as HTMLCanvasElement & { __zoom: { k: number } }).__zoom.k)).toBeGreaterThan(1);
+    const beforePan = await canvas.evaluate((element) => (element as HTMLCanvasElement & { __zoom: { x: number } }).__zoom.x);
+    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [blank] });
+    await session.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ ...blank, x: blank.x + 40 }] });
+    await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await expect(canvas).toHaveAttribute("data-selected-file", node.id);
+    expect(await canvas.evaluate((element) => (element as HTMLCanvasElement & { __zoom: { x: number } }).__zoom.x)).toBeCloseTo(beforePan + 40);
+    await page.touchscreen.tap(box.x + 5, box.y + 5);
+    await expect(canvas).toHaveAttribute("data-selected-file", "");
+    await expect(inspector).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const skills = page.getByRole("button", { name: "Highlight Skills ring" });
     const label = (await skills.boundingBox())!;

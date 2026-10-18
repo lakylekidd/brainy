@@ -30,7 +30,7 @@ export default function SignIn({ error, onSubmit, theme, onToggleTheme }: SignIn
       <section className="signin-card" aria-labelledby="signin-heading">
         <div className="signin-brand">
           <span className="brand-mark"><BrainCircuit size={24} /></span>
-          <span>HOMELAB <b>BRAIN</b></span>
+          <span>BRAINY</span>
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
         <div className="signin-intro">

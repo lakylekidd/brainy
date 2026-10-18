@@ -61,6 +61,8 @@ demo inventory/clock on the left and routine/context files on the right;
 **Fullscreen** fills the viewport.
 Select dots or use **Jump to file** to read documents in a dismissible overlay
 and follow their links, without a permanent right-hand inspector.
+Click the selected dot again or empty graph space to deselect and close its
+details; Escape also clears selection. Panning and dragging do not deselect.
 Named **Skills, Knowledge, Memory, Routines, and Applications** rings group
 files by kind, with size-weighted area sectors, dense knowledge bands and
 distinct node shapes. Click a ring's name to highlight its files across all

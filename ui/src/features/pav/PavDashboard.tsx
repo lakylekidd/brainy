@@ -28,7 +28,7 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("all");
   const [kind, setKind] = useState("all");
-  const [selected, setSelected] = useState(ROOT_FILE);
+  const [selected, setSelected] = useState<string | null>(null);
   const [focusedRing, setFocusedRing] = useState<RingId | null>(null);
   const [showLinks, setShowLinks] = useState(true);
   const [showLabels, setShowLabels] = useState(false);
@@ -67,7 +67,8 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
     <section className="pav-dashboard"><h1>PAV OS</h1><p role="alert">The demo vault could not be loaded. {source.error}</p></section>
   );
 
-  const file = visible.files.find((item) => item.id === selected) ?? visible.files.find((item) => item.id === ROOT_FILE)!;
+  const selectedFile = visible.files.find((item) => item.id === selected);
+  const file = selectedFile ?? visible.files.find((item) => item.id === ROOT_FILE)!;
   const outgoing = graph.links.filter((link) => link.source === file.id);
   const incoming = graph.links.filter((link) => link.target === file.id);
   const relatedIds = new Set([...outgoing.map((link) => link.target), ...incoming.map((link) => link.source)]);
@@ -83,7 +84,13 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
 
   function focusRing(ring: RingId | null) {
     setFocusedRing(ring);
-    setSelected(ROOT_FILE);
+    setSelected(null);
+    setDetailsOpen(false);
+  }
+
+  function clearSelection() {
+    setSelected(null);
+    setFocusedRing(null);
     setDetailsOpen(false);
   }
 
@@ -123,8 +130,8 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
         <section className="pav-map" aria-label="Demo vault exploration" ref={map}
           onKeyDown={(event) => {
             if (event.key !== "Escape") return;
-            if (detailsOpen) closeDetails();
-            else setFocusedRing(null);
+            clearSelection();
+            if (detailsOpen) detailsButton.current?.focus({ preventScroll: true });
           }}>
           <div className="pav-map-top">
             <div className="pav-views" role="group" aria-label="Graph views">
@@ -167,7 +174,8 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
             <span><i className="pav-shape-memory" />Memory</span><span><i className="pav-shape-routine" />Routine</span>
             <span><i className="pav-shape-app" />App</span>
           </div>
-          <VaultCanvas graph={visible} view={view} selected={file.id} onSelect={(id) => chooseFile(id, false)} onInspect={() => setDetailsOpen(true)}
+          <VaultCanvas graph={visible} view={view} selected={selectedFile?.id ?? null} onSelect={(id) => chooseFile(id, false)} onInspect={() => setDetailsOpen(true)}
+            onClearSelection={clearSelection}
             focusedRing={focusedRing} onFocusRing={focusRing} theme={theme} showLinks={showLinks} showLabels={showLabels} showMemberships={showMemberships} dotSize={dotSize} />
           <div className="pav-map-bottom">
             <span role="status">{visible.files.length === 1 && (query || area !== "all" || kind !== "all")

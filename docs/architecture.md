@@ -250,6 +250,10 @@ core, coherent ripples and eased 3D rotation are client-side visualization only,
 not live activity or external execution. The normal map fills the center of
 the reference three-column composition; native fullscreen fills the viewport.
 File details remain dismissible rather than a reserved inspector column.
+File selection is nullable, separate from the always-visible `AGENTS.md`
+context. Repeated node clicks and background taps clear file/ring focus and
+inspection without changing camera/placements; gesture movement and cancellation
+do not clear selection.
 Demo clock/inventory, skills and routine/context widgets use actual local time
 or fixture files, not simulated integrations. The read-only boundary is unchanged.
 The fixture is public

@@ -1,5 +1,30 @@
 # Implementation verification
 
+## PAV OS individual-node deselection (18 October 2026)
+
+- Single-file selection is now nullable rather than implicitly selecting
+  `AGENTS.md`. The entry point remains visible and inspectable. Clicking a
+  selected dot again, tapping empty graph space or pressing Escape clears
+  file/ring focus, stale hover highlighting and the open inspector, without
+  resetting the camera or temporary placements. Explicit document navigation
+  still selects; closing just the inspector still preserves selection.
+- Mouse and touch activation share pointer-release handling and suppress the
+  compatibility click so each tap toggles once. Background movement, cancelled
+  presses and multi-pointer background gestures do not clear selection.
+- **168 frontend tests across 17 files** pass, including **73 PAV cases across
+  six files**. Coverage includes ordinary nodes, the entry point, camera-framed
+  hubs, hover clearing, explicit navigation, cancellation, compatibility-click
+  suppression and neutral-selection Orbit animation. TypeScript/Vite and
+  Docker UI builds pass.
+- **16 Chromium cases** pass against the real Compose stack. Native checks
+  verify node/background toggling, actual Canvas pixel restoration with a
+  stationary pointer, camera preservation, repeated framed-hub clicks, mouse
+  panning, touch cancellation, pinch zoom and touch panning. The deselected
+  Areas screenshot is visually inspected.
+- The rebuilt UI is healthy and returns HTTP 200 on `http://localhost:5173`.
+  No fixture files, backend contracts, live vault, credentials or dependencies
+  changed.
+
 ## PAV OS clickable ring focus (18 October 2026)
 
 - Ring labels now focus their existing layer across areas without filtering,

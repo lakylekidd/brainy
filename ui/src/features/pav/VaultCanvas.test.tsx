@@ -7,7 +7,7 @@ import { loadDemoVault, ROOT_FILE } from "./vault";
 import VaultCanvas from "./VaultCanvas";
 
 const graph = loadDemoVault();
-const noRingFocus = { focusedRing: null, onFocusRing: vi.fn() };
+const noRingFocus = { focusedRing: null, onFocusRing: vi.fn(), onClearSelection: vi.fn() };
 const context = {
   setTransform: vi.fn(), clearRect: vi.fn(), save: vi.fn(), restore: vi.fn(), translate: vi.fn(), scale: vi.fn(),
   beginPath: vi.fn(), closePath: vi.fn(), ellipse: vi.fn(), fill: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn(),
@@ -16,6 +16,14 @@ const context = {
   measureText: vi.fn((text: string) => ({ width: text.length * 7 })),
 };
 const disconnect = vi.fn();
+function enablePointers(canvas: HTMLElement) {
+  vi.stubGlobal("PointerEvent", class extends MouseEvent {
+    readonly pointerId: number;
+    constructor(type: string, init: PointerEventInit) { super(type, init); this.pointerId = init.pointerId ?? 1; }
+  });
+  Object.assign(canvas, { setPointerCapture: vi.fn(), hasPointerCapture: () => false });
+}
+
 beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(context as unknown as CanvasRenderingContext2D);
   vi.stubGlobal("ResizeObserver", class {
@@ -95,16 +103,12 @@ describe("D3 HTML Canvas renderer", () => {
   });
 
   it("hit-tests ring text for taps, ignores cancelled/drifting presses and gives an actual dot priority over a label", () => {
-    vi.stubGlobal("PointerEvent", class extends MouseEvent {
-      readonly pointerId: number;
-      constructor(type: string, init: PointerEventInit) { super(type, init); this.pointerId = init.pointerId ?? 1; }
-    });
     const onSelect = vi.fn();
     const onFocusRing = vi.fn();
     render(<VaultCanvas {...noRingFocus} graph={graph} view="Ring" selected={ROOT_FILE} onSelect={onSelect} onFocusRing={onFocusRing}
       theme="dark" showLinks={false} showLabels={false} />);
     const canvas = screen.getByRole("img");
-    Object.assign(canvas, { setPointerCapture: vi.fn(), hasPointerCapture: () => false });
+    enablePointers(canvas);
     const label = screen.getByRole("button", { name: "Highlight Skills ring" });
     const bounds = vi.spyOn(label, "getBoundingClientRect").mockReturnValue(new DOMRect(15, 15, 80, 16));
     const event = { pointerId: 1, button: 0, clientX: 20, clientY: 20 };
@@ -176,11 +180,11 @@ describe("D3 HTML Canvas renderer", () => {
     expect(context.closePath).toHaveBeenCalled();
   });
 
-  it("pauses orbital projection independently while the decorative nucleus keeps animating", () => {
+  it.each([null, ROOT_FILE])("pauses orbital projection independently while the decorative nucleus keeps animating (selection: %s)", (selected) => {
     const layout = vi.spyOn(layouts, "createLayout");
     let next: FrameRequestCallback = () => {};
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => { next = callback; return 10; });
-    render(<VaultCanvas {...noRingFocus} graph={graph} view="3D Orbit" selected={ROOT_FILE} onSelect={vi.fn()} theme="dark" showLinks={false} showLabels={false} />);
+    render(<VaultCanvas {...noRingFocus} graph={graph} view="3D Orbit" selected={selected} onSelect={vi.fn()} theme="dark" showLinks={false} showLabels={false} />);
     act(() => { next(100); next(164); });
     const angle = layout.mock.calls.at(-1)![4]!;
     expect(angle).toBeGreaterThan(0);
@@ -256,14 +260,10 @@ describe("D3 HTML Canvas renderer", () => {
   });
 
   it("selects on pointer release without requiring a compatibility click and never selects a cancelled touch", () => {
-    vi.stubGlobal("PointerEvent", class extends MouseEvent {
-      readonly pointerId: number;
-      constructor(type: string, init: PointerEventInit) { super(type, init); this.pointerId = init.pointerId ?? 1; }
-    });
     const onSelect = vi.fn();
     render(<VaultCanvas {...noRingFocus} graph={graph} view="Ring" selected={ROOT_FILE} onSelect={onSelect} theme="dark" showLinks={false} showLabels={false} />);
     const canvas = screen.getByRole("img");
-    Object.assign(canvas, { setPointerCapture: vi.fn(), hasPointerCapture: () => false });
+    enablePointers(canvas);
     const node = createLayout(graph, "Ring", 240, 420).nodes.find((item) => item.id === "skills/research.md")!;
     const event = { pointerId: 1, button: 0, clientX: node.x, clientY: node.y };
     fireEvent.pointerDown(canvas, event);
@@ -273,7 +273,86 @@ describe("D3 HTML Canvas renderer", () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
     fireEvent.pointerDown(canvas, event);
     fireEvent.pointerCancel(canvas, event);
+    fireEvent.click(canvas, event);
     expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([["Ring", ROOT_FILE], ["Ring", "skills/research.md"], ["Areas", "business/index.md"]] as const)(
+    "toggles %s node %s exactly once per tap, clearing hover without reopening inspection or resetting its camera",
+    (view, id) => {
+      const onSelect = vi.fn();
+      const onInspect = vi.fn();
+      const onClearSelection = vi.fn();
+      const props = { ...noRingFocus, graph, view, onSelect, onInspect, onClearSelection,
+        theme: "dark" as const, showLinks: false, showLabels: false };
+      const { rerender } = render(<VaultCanvas {...props} selected={null} />);
+      const canvas = screen.getByRole("img");
+      enablePointers(canvas);
+      const node = createLayout(graph, view, 240, 420).nodes.find((item) => item.id === id)!;
+      const point = () => {
+        const [clientX, clientY] = zoomTransform(canvas).apply([node.x, node.y]);
+        return { pointerId: 1, button: 0, clientX, clientY };
+      };
+      const tap = () => {
+        fireEvent.pointerDown(canvas, point());
+        fireEvent.pointerUp(canvas, point());
+      };
+      tap();
+      expect(onSelect).toHaveBeenCalledExactlyOnceWith(id);
+      expect(onInspect).toHaveBeenCalledOnce();
+      rerender(<VaultCanvas {...props} selected={id} />);
+      fireEvent.click(canvas, point());
+      expect(onClearSelection).not.toHaveBeenCalled();
+      fireEvent.pointerMove(canvas, point());
+      const camera = zoomTransform(canvas);
+      tap();
+      expect(onClearSelection).toHaveBeenCalledOnce();
+      expect(onSelect).toHaveBeenCalledOnce();
+      expect(onInspect).toHaveBeenCalledOnce();
+      rerender(<VaultCanvas {...props} selected={null} />);
+      fireEvent.click(canvas, point());
+      expect(onClearSelection).toHaveBeenCalledOnce();
+      expect(zoomTransform(canvas)).toEqual(camera);
+      expect(canvas).toHaveAttribute("data-selected-file", "");
+      expect(screen.getByText(/Click selected dot or background to clear/)).toBeInTheDocument();
+      fireEvent.click(canvas, point());
+      expect(onSelect).toHaveBeenCalledTimes(2);
+      expect(onInspect).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it("clears on blank taps and click fallback, but not background pans, cancelled gestures or multiple pointers", () => {
+    const onClearSelection = vi.fn();
+    const onSelect = vi.fn();
+    render(<VaultCanvas {...noRingFocus} graph={graph} view="Ring" selected="skills/research.md"
+      onSelect={onSelect} onClearSelection={onClearSelection} theme="dark" showLinks={false} showLabels={false} />);
+    const canvas = screen.getByRole("img");
+    enablePointers(canvas);
+    const point = { pointerId: 1, button: 0, clientX: 5, clientY: 5 };
+    fireEvent.pointerDown(canvas, point);
+    fireEvent.pointerMove(canvas, { ...point, clientX: 25 });
+    fireEvent.pointerUp(canvas, { ...point, clientX: 25 });
+    fireEvent.click(canvas, point);
+    for (const cancel of [fireEvent.pointerCancel, fireEvent.lostPointerCapture]) {
+      fireEvent.pointerDown(canvas, point);
+      cancel(canvas, point);
+      fireEvent.click(canvas, point);
+    }
+    fireEvent.pointerDown(canvas, point);
+    fireEvent.pointerDown(canvas, { ...point, pointerId: 2 });
+    fireEvent.pointerUp(canvas, { ...point, pointerId: 2 });
+    fireEvent.pointerUp(canvas, point);
+    fireEvent.click(canvas, point);
+    expect(onClearSelection).not.toHaveBeenCalled();
+    expect(onSelect).not.toHaveBeenCalled();
+    fireEvent.pointerDown(canvas, point);
+    fireEvent.pointerUp(canvas, point);
+    fireEvent.click(canvas, point);
+    expect(onClearSelection).toHaveBeenCalledOnce();
+    fireEvent.click(canvas, point);
+    expect(onClearSelection).toHaveBeenCalledTimes(2);
+    fireEvent.keyDown(canvas, { key: "Escape" });
+    expect(onClearSelection).toHaveBeenCalledTimes(3);
   });
 
   it("does not animate a static Timeline and suspends all decorative motion on hidden pages", () => {

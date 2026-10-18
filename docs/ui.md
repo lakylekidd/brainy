@@ -163,7 +163,17 @@ Selecting a dot or using
 the keyboard-accessible **Jump to file** selector opens its source path, date,
 body and actual connected files in a dismissible overlay, initially closed.
 Dragging selects without opening the overlay; **File details** can reopen it.
-Close it with its button or Escape; focus returns to the details control.
+Click the selected dot again, tap empty graph space or press **Escape** in the
+map to clear file/ring focus and close the overlay. This also clears stale hover
+highlighting, without resetting the camera or temporary placements. Initial
+and cleared graph selection is empty; `AGENTS.md` remains the entry-point
+context, not an implicitly selected dot. Clicking it still selects and opens
+its document, and clicking it again clears it like any other node. The Jump
+selector and details control fall back to `AGENTS.md` when nothing is selected.
+Explicit navigation through Jump, widgets and document links always selects
+the destination rather than toggling it. The overlay's close button only
+closes details, preserving selection and returning focus to the details control.
+Escape also returns that focus when invoked from the open inspector.
 Following a connected file outside a filter
 clears the filter to reveal it. The chart uses an orange entry-point particle network,
 large initialed overview circles, skill diamonds, ordinary file/memory dots,
@@ -189,7 +199,8 @@ Drag a node to rearrange it. In **Ring**, dragging changes only its angle:
 skills stay on the Skills ring, routines on Routines, and notes stay on their
 assigned knowledge row. The central
 `AGENTS.md` stays anchored. Other views allow free placement. Drag empty
-space to pan; scroll/button zoom keeps hit-testing and dragging in graph
+space to pan; pans, node drags, cancelled presses and multi-pointer background
+gestures do not clear selection. Scroll/button zoom keeps hit-testing and dragging in graph
 coordinates. Select a file using **Jump to file**, focus the canvas and use
 arrow keys for keyboard placement (rotation in Ring). **Reset node positions**
 restores the current view's layout and camera; **Fit vault** resets only the
