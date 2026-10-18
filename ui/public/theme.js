@@ -6,10 +6,10 @@
     if (saved === "light" || saved === "dark") preference = saved;
   } catch (error) {
     if (!(error instanceof DOMException) || error.name !== "SecurityError") throw error;
-    console.warn("Theme storage is unavailable; using the system color preference.");
+    console.warn("Theme storage is unavailable; using the reference dark theme.");
   }
-  const theme = preference ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const theme = preference ?? "dark";
   document.documentElement.dataset.theme = theme;
   if (preference) document.documentElement.dataset.themePreference = preference;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0e1621" : "#f4f6f8");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0c1013" : "#f4f5f5");
 })();

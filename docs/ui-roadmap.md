@@ -34,10 +34,10 @@ behavior and current API coverage.
 
 | Milestone | Status | Current position |
 | --- | --- | --- |
-| 1. Shell + Dashboard | Complete | Authenticated shell, API-backed dashboard, responsive layout, and system-aware light/dark themes are implemented. |
+| 1. Shell + Dashboard | Complete | Authenticated reference-style shell, API-backed three-column dashboard with an embedded authorized graph, responsive navigation, reference dark default and optional saved light mode are implemented. |
 | 2. Knowledge Graph | Complete | Stable source-derived entities/edges, bounded authorized graph APIs, Sigma/Graphology exploration, search/filters, independent details, focus and progressive expansion are implemented. |
 | 3. WebObsidian Integration | Complete | Document inspection links canonical source paths to an operator-configured WebObsidian `/note/<path>` route, with safe encoding and explicit unavailable configuration states. |
-| 4. Agents + Permissions | Partial foundations | Existing APIs feed dashboard data; agents, roles and grants can be explored in the generic graph. Dedicated agent, role, and permission-management pages are not implemented. |
+| 4. Agents + Permissions | Complete | Dedicated agent listing/details, direct/inherited/effective grant matrices, role inspection, reviewed supported registration/access replacement, and authorized agent-focused graphs are implemented. Role definitions and credentials remain operator-managed. |
 | 5. Skills + Tools | Partial foundations | Registry APIs feed the dashboard and the generic graph shows authorized dependencies. Dedicated lists/detail and safe Git-backed management remain unimplemented. |
 | 6. Connections | Planned | No connection catalog, configuration, health, or test UI/API is established. |
 | 7. Proposals + Metadata | Partial foundations | The dashboard reads pending proposals and metadata issues. Review diffs, conflict handling, approval, and a dedicated review experience remain to be built against the safe writer workflow. |
@@ -51,6 +51,31 @@ guide](ui.md#existing-api-coverage-and-gaps) for current dashboard endpoints and
 known gaps.
 
 ## Milestone 2 — Knowledge Graph
+
+The additional **PAV OS demo dashboard** is separate from the milestone
+implementation and does not change its scope or completion status. It explores
+the public, fictional `ui/demo-vault` fixture using D3.js + Canvas in Ring,
+Circle, Areas, Links, Timeline and 3D Orbit layouts. Named capability rings,
+temporary dragging, reference-direction particles and automatic rotation are
+visualization features, not the live activity scope of Milestone 10. Center-column
+and browser-fullscreen exploration, dismissible inspection, and the adapted
+Current 1.1.1 graph motion/force settings likewise remain demo visualization;
+the decorative core and signal trails are not live events or additional
+knowledge records. A subsequent whole-app refinement adapts the reference's
+layout, exact dark palette and licensed fonts, retaining optional light mode.
+The reference-style rails are existing Brain metrics or explicit demo-file
+widgets, not new calendar, mail, routine execution or application integrations.
+The area-hub refinement expands only the public fixture to 134 real files:
+six file-backed overview hubs, independent area/kind/layer classification,
+size-weighted Ring sectors, dense Areas clouds and area focus/framing.
+Clickable ring labels additionally focus an existing visualization layer
+across areas, with pointer/touch and keyboard access, without changing data.
+Dashed inferred membership remains separate from actual Markdown references.
+It adds no synthetic knowledge records, execution history or live-vault writes,
+and does not advance any later milestone.
+It does not replace the
+authorized Sigma graph, add live/semantic graph features, or implement backend
+multi-vault support. See [demo behavior and boundaries](ui.md#pav-os-demo-dashboard).
 
 **Status: Complete (17 October 2026).** The implementation derives graph views
 from current sources rather than maintaining another canonical graph catalog.
@@ -134,6 +159,21 @@ WebObsidian.
 - Tests cover URL configuration, path encoding, and origin safety.
 
 ## Milestone 4 — Agents + Permissions
+
+**Status: Complete (17 October 2026).** Existing registration and full-access
+replacement operations were verified and reused. Added authorized independent
+agent details, role grants and permission catalog reads; `permissions` retains
+its effective-union meaning and additive `directPermissions` preserves grant
+provenance. Dedicated Agents/Permissions pages add search/status filtering,
+independent lookup, role inspection, matrices and bounded agent-focused graphs.
+Management requires existing backend grants, an explicit replacement review and
+confirmation; self-access editing is prohibited. Role definitions, catalog
+definitions and credential provisioning remain operator-managed. The existing
+access endpoint has no concurrency token, so the UI explicitly warns that
+concurrent edits are not merged. Frontend, focused backend and real-Compose
+Chromium checks pass. See [contracts and boundaries](ui.md#agents-and-permissions)
+and [verification evidence](verification.md#ui-agents-and-permissions-17-october-2026).
+No later-milestone feature or new credential/write workflow was introduced.
 
 **Goal:** Inspect and manage agent identities, roles, and effective permissions.
 
@@ -331,7 +371,7 @@ correlating live Brain activity with known graph entities.
 
 ## Suggested delivery order
 
-The numbered milestones are the original sequence. Milestones 4, 5, 7, and 8
+The numbered milestones are the original sequence. Milestones 5, 7, and 8
 can reuse existing backend foundations, but their dedicated UI and any missing
 backend contracts are still incomplete. Milestone 3 depends on document nodes
 from Milestone 2. Milestone 9 depends on graph entities and bounded graph

@@ -2,8 +2,8 @@ import { MultiDirectedGraph } from "graphology";
 import { entityTypes, GraphResult } from "./api";
 
 export const typeColors = {
-  document: "#5577d8", skill: "#18a878", tool: "#d08730",
-  agent: "#8a70d6", role: "#c55f93", permission: "#638694",
+  document: "#4a8cf0", skill: "#f07a2e", tool: "#d9a445",
+  agent: "#a874f0", role: "#e85e8e", permission: "#7fa3cc",
 };
 
 export function createGraph(data: GraphResult) {

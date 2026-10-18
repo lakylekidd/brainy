@@ -116,10 +116,16 @@ app.MapPost("/api/search", (BrainSearchRequest request, RequestAgent agent, Sear
 app.MapGet("/api/agents/me", (RequestAgent agent) => Results.Ok(new
 { agent.Context.Id, agent.Context.TeamId, permissions = agent.Context.Permissions.Order() }));
 app.MapGet("/api/agents", (RequestAgent agent, IAgentDirectory directory, CancellationToken ct) => directory.ListAsync(agent.Context, ct));
+app.MapGet("/api/agents/{id}/details", (string id, RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
+    directory.GetAsync(agent.Context, id, ct));
+app.MapGet("/api/roles", (RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
+    directory.ListRolesAsync(agent.Context, ct));
+app.MapGet("/api/permissions", (RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
+    directory.ListPermissionsAsync(agent.Context, ct));
 app.MapPost("/api/agents", async (CreateAgentRequest request, RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
 {
     var result = await directory.CreateAsync(agent.Context, request, ct);
-    return Results.Created($"/api/agents/{result.Id}", result);
+    return Results.Created($"/api/agents/{result.Id}/details", result);
 });
 app.MapPut("/api/agents/{id}/access", (string id, UpdateAccessRequest request, RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
     directory.UpdateAccessAsync(agent.Context, id, request, ct));

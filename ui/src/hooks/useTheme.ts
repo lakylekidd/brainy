@@ -1,33 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 export type Theme = "light" | "dark";
 
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0e1621" : "#f4f6f8");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0c1013" : "#f4f5f5");
 }
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(
-    () => document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+    () => document.documentElement.dataset.theme === "light" ? "light" : "dark",
   );
-  const preference = useRef(document.documentElement.dataset.themePreference);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    function updateSystemTheme(event: MediaQueryListEvent) {
-      if (preference.current === "light" || preference.current === "dark") return;
-      const next = event.matches ? "dark" : "light";
-      applyTheme(next);
-      setTheme(next);
-    }
-    media.addEventListener("change", updateSystemTheme);
-    return () => media.removeEventListener("change", updateSystemTheme);
-  }, []);
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
-    preference.current = next;
     document.documentElement.dataset.themePreference = next;
     applyTheme(next);
     setTheme(next);

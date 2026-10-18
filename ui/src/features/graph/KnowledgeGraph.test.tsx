@@ -41,6 +41,15 @@ describe("knowledge graph exploration", () => {
     }));
   });
 
+  it("opens an agent focus directly through the authorized bounded neighborhood contract", async () => {
+    render(<KnowledgeGraph credentials={credentials} theme="light" initialFocus="agent:helper" onUnauthorized={vi.fn()} />);
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/graph/neighbors?id=agent%3Ahelper"), expect.anything()));
+    expect(screen.getByText("Focus graph", { exact: true })).toBeInTheDocument();
+    const url = new URL(String(vi.mocked(fetch).mock.calls[0][0]), "http://localhost");
+    expect(url.searchParams.get("depth")).toBe("1");
+    expect(url.searchParams.get("limit")).toBe("80");
+  });
+
   it("links only inspected documents using the canonical source, never a metadata destination", async () => {
     vi.stubEnv("VITE_WEB_OBSIDIAN_BASE_URL", "https://obsidian.example");
     const document = { ...root, source: { ...root.source, id: "Projects/My note #1.md" },

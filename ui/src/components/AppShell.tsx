@@ -1,19 +1,20 @@
 import {
-  Activity, Bot, BrainCircuit, Cable, ChevronDown, CircleHelp,
-  Command, FileClock, FileText, Fingerprint, Gauge, GitPullRequest,
+  Activity, Bot, BrainCircuit, Cable, LogOut,
+  FileClock, FileText, Fingerprint, Gauge, GitPullRequest,
   Layers3, Menu, Settings2, Wrench, X,
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { AgentProfile } from "../api/client";
 import { Theme } from "../hooks/useTheme";
 import ThemeToggle from "./ThemeToggle";
 
 export type PageId =
-  | "dashboard" | "graph" | "agents" | "skills" | "tools" | "connections"
+  | "dashboard" | "pav" | "graph" | "agents" | "skills" | "tools" | "connections"
   | "permissions" | "proposals" | "metadata" | "operations" | "audit" | "settings";
 
 const navigation: { id: PageId; label: string; icon: typeof Gauge; group: string }[] = [
   { id: "dashboard", label: "Dashboard", icon: Gauge, group: "Workspace" },
+  { id: "pav", label: "PAV OS", icon: BrainCircuit, group: "Workspace" },
   { id: "graph", label: "Knowledge graph", icon: Layers3, group: "Workspace" },
   { id: "agents", label: "Agents", icon: Bot, group: "Control plane" },
   { id: "skills", label: "Skills", icon: BrainCircuit, group: "Control plane" },
@@ -39,30 +40,46 @@ interface AppShellProps {
 
 export default function AppShell({ profile, page, children, onNavigate, onSignOut, theme, onToggleTheme }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLElement>(null);
   const current = navigation.find((item) => item.id === page)!;
-  const initials = profile.id.slice(0, 2).toUpperCase();
   const groups = [...new Set(navigation.map((item) => item.group))];
+
+  useEffect(() => {
+    if (menuOpen) menu.current?.querySelector<HTMLButtonElement>('[aria-current="page"]')?.focus();
+  }, [menuOpen]);
+
+  function closeMenu() {
+    setMenuOpen(false);
+    menuButton.current?.focus();
+  }
 
   function navigate(id: PageId) {
     onNavigate(id);
-    setMenuOpen(false);
+    if (menuOpen) closeMenu();
   }
 
   return (
     <div className="app-shell">
-      {menuOpen && <button className="mobile-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
-      <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
-        <div className="sidebar-brand">
-          <span className="brand-mark"><BrainCircuit size={21} /></span>
-          <span className="brand-name">homelab <b>brain</b></span>
-          <button className="icon-button mobile-close" onClick={() => setMenuOpen(false)} aria-label="Close navigation"><X size={18} /></button>
+      <header className="workspace-header">
+        <a className="skip-link" href="#workspace-content">Skip to content</a>
+        <div className="topbar">
+          <div className="topbar-left">
+            <button ref={menuButton} className="icon-button mobile-menu" onClick={() => setMenuOpen(!menuOpen)}
+              aria-expanded={menuOpen} aria-controls="main-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <span className="shell-brand"><BrainCircuit size={16} /><span>BRAINY</span></span>
+            <span className="shell-context">Shared knowledge / Independent agents</span>
+          </div>
+          <div className="topbar-actions">
+            <span className="profile-chip"><span className="status-dot" /><span>{profile.id}</span></span>
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            <button className="icon-button" onClick={onSignOut} title="Sign out" aria-label="Sign out"><LogOut size={15} /></button>
+          </div>
         </div>
-        <div className="workspace-switcher">
-          <span className="workspace-avatar">H</span>
-          <span className="workspace-label"><b>Home lab</b><small>Personal workspace</small></span>
-          <ChevronDown size={15} />
-        </div>
-        <nav aria-label="Main navigation" className="main-nav">
+        <nav ref={menu} id="main-navigation" aria-label="Main navigation" className={`main-nav ${menuOpen ? "main-nav-open" : ""}`}
+          onKeyDown={(event) => { if (event.key === "Escape") closeMenu(); }}>
           {groups.map((group) => (
             <div className="nav-group" key={group}>
               <span className="nav-label">{group}</span>
@@ -75,49 +92,34 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
                 >
                   <Icon size={17} strokeWidth={1.8} />
                   <span>{label}</span>
-                  {id === "proposals" && <span className="nav-live-dot" />}
                 </button>
               ))}
             </div>
           ))}
         </nav>
-        <div className="sidebar-bottom">
-          <div className="help-card">
-            <span className="help-icon"><CircleHelp size={17} /></span>
-            <div><b>Need a hand?</b><span>Explore Brain docs</span></div>
-          </div>
-          <button className="agent-card" onClick={onSignOut} title="Sign out">
-            <span className="agent-avatar">{initials}</span>
-            <span className="agent-info"><b>{profile.id}</b><small>{profile.teamId ?? "Connected agent"}</small></span>
-            <span className="connected-indicator" aria-label="Connected" />
-          </button>
+      </header>
+      <details className="focus-strip">
+        <summary>Focus <span>/ {current.label}</span></summary>
+        <div className="focus-cards">
+          {([
+            ["graph", "01", "Explore knowledge", "Canonical sources and their explicit relationships."],
+            ["proposals", "02", "Review proposals", "Knowledge changes remain subject to human approval."],
+            ["agents", "03", "Inspect access", "Deterministic grants, resolved by the backend."],
+          ] as const).map(([id, number, title, description]) => <button key={id} onClick={() => navigate(id)}>
+            <span className="focus-rank">{number}</span><span><b>{title}</b><small>{description}</small></span>
+          </button>)}
         </div>
-      </aside>
-      <main className="main-area">
-        <header className="topbar">
-          <div className="topbar-left">
-            <button className="icon-button mobile-menu" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20} /></button>
-            <div className="breadcrumbs"><span>Brain</span><span className="crumb-slash">/</span><b>{current.label}</b></div>
-          </div>
-          <div className="topbar-actions">
-            <span className="topbar-context"><Command size={14} /> Control plane</span>
-            <span className="topbar-divider" />
-            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-            <button className="profile-chip" onClick={onSignOut} title="Sign out">
-              <span className="agent-avatar avatar-small">{initials}</span>
-              <span>{profile.id}</span>
-              <ChevronDown size={14} />
-            </button>
-          </div>
-        </header>
-        <div className={`page-content${page === "graph" ? " page-content-graph" : ""}`}>
+      </details>
+      <main className="main-area" id="workspace-content" tabIndex={-1}>
+        <div className={`page-content${page === "graph" ? " page-content-graph" : page === "pav" ? " page-content-pav" : ""}`}>
           {children}
         </div>
-        <footer className="app-footer">
-          <span><span className="status-dot" /> Brain connected</span>
-          <span>Homelab Brain <b>•</b> Access is permission-scoped</span>
-        </footer>
       </main>
+      <footer className="app-footer">
+        <span className="footer-label">SYSTEM STATUS</span>
+        <span><span className="status-dot" /> Authenticated <b>/</b> {profile.teamId ?? "Independent identity"}</span>
+        <span>Access is permission-scoped <b>/</b> Canonical files + Git</span>
+      </footer>
     </div>
   );
 }

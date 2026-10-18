@@ -1,0 +1,16 @@
+{
+  "source": "AI OS Dashboard Current 1.1.1 locally supplied reference, static/fonts",
+  "license": "SIL Open Font License 1.1; see the adjacent family OFL notices.",
+  "JetBrainsMono.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf",
+    "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda"
+  },
+  "BarlowCondensed-Medium.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-Medium.ttf",
+    "sha256": "262bd143292ce479ee0cd09a42b47ab173fca8e9c6eb5ed0b5c8a845bc371d17"
+  },
+  "BarlowCondensed-SemiBold.ttf": {
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-SemiBold.ttf",
+    "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9"
+  }
+}

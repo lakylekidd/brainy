@@ -4,7 +4,7 @@ The Brain UI is an operations and exploration surface, not a Markdown editor.
 WebObsidian remains the place to create and edit canonical knowledge documents;
 the Brain UI must link out to it rather than copy editing functionality.
 
-## Current scope: UI Milestones 1-3
+## Current scope: UI Milestones 1-4
 
 The frontend is a React + TypeScript + Vite application under `ui/`. Its current
 structure is:
@@ -15,12 +15,15 @@ ui/src/
   components/
   features/dashboard/
   features/graph/
+  features/agents/
+  features/pav/
   App.tsx
   styles.css
 ```
 
-The shell exposes the dashboard and knowledge graph, including configured
-WebObsidian links for document nodes; later milestone routes are
+The shell exposes the dashboard, knowledge graph, agents, permissions and a
+separate PAV OS demo dashboard,
+including configured WebObsidian links for document nodes; later milestone routes are
 explicit placeholders. The dashboard reads existing authenticated API endpoints
 for agent, skill, tool, pending-proposal, metadata-issue, audit, trace, and
 readiness data. Counts reflect the API response visible to the current identity;
@@ -50,16 +53,39 @@ configured, trusted CORS policy.
 
 ## Appearance
 
+The entire UI adapts the supplied AI OS Dashboard Current 1.1.1 reference:
+its night/live/orange-core palette, compact grouped top navigation, initially
+collapsed Focus disclosure, hairline separators and small control radii.
+Dark surfaces use `hsl(205 22% 6%)` / `hsl(205 25% 9%)`, the accent is
+`#f07a2e`, secondary text `#b0bec8` and muted text `#81919b`.
+JetBrains Mono and Barlow Condensed are bundled under `ui/public/fonts`;
+their SIL Open Font Licenses and original source/hash provenance are adjacent.
+There are no remote font requests or new font dependencies.
+
+The Dashboard follows the reference's 20% / 60% / 20% desktop composition:
+real local clock, permission-scoped inventory and health on the left; the
+existing bounded Sigma knowledge graph and registry skills deck in the center;
+review queue and recent activity on the right. Dashboard Refresh reloads both
+metrics and its embedded graph. The standalone Knowledge graph retains its
+full-width exploration and independent inspector. Focus contains navigation
+shortcuts, not invented priorities or live task data.
+
+Below 1000px the graph occupies the first row and the rails follow; below
+760px they stack. Mobile navigation is a nonmodal disclosure: opening focuses
+the active route, and Escape or route selection closes it and returns focus
+to the menu button. All existing routes, authorization and placeholders remain.
+The reference's calendar, mail, execution and other integrations are not added.
+
 The sun/moon button on the sign-in screen and in the shell header switches
 between light and dark mode, including dashboard panels, status badges, forms,
 and later-milestone placeholders. The control remains available on mobile and
 supports keyboard focus and activation.
 
-Without a saved choice, the UI follows `prefers-color-scheme`, including changes
-while the page is open. An explicit choice overrides the system and persists as
+Without a saved choice, the UI defaults to the reference dark theme, regardless
+of `prefers-color-scheme` or subsequent system changes. An explicit choice persists as
 only `brain-theme=light` or `brain-theme=dark` in local storage, across reloads
 and sign-out. Credentials are never stored with this preference. Removing that
-entry returns to the system default on the next reload. If the browser blocks
+entry returns to dark mode on the next reload. If the browser blocks
 storage, switching still works for the current page and a console warning
 explains that the preference cannot be saved.
 
@@ -67,6 +93,211 @@ A small same-origin external script applies the initial theme before styles
 load, avoiding a light-theme flash without loosening the Nginx content security
 policy. Native form controls and browser theme color follow the selected mode;
 the existing reduced-motion behavior is preserved.
+
+## PAV OS demo dashboard
+
+**PAV OS** is an additional authenticated-shell page, not a replacement for
+the operations dashboard or the authorized Sigma knowledge graph. It is an
+explicitly fictional, read-only example of a personal operating system named
+Studio North. It makes no graph API calls, does not change the configured
+canonical vault, and adds no multi-vault backend or write capability.
+
+The separate `ui/demo-vault/` contains **134 real Markdown documents**:
+one `AGENTS.md`, six area overviews, 110 notes, five skills, six routines,
+three memory/context notes and three application descriptions. Business has
+25 files, Personal 24, YouTube 24, Content 24, Career 23 and System 13,
+excluding the root. These are all demo documents, not registered
+executable skills, live application connections, or database memories. The
+entry-point file explains where the other files live.
+
+Vite imports only this fixture directory as raw text into the lazy-loaded
+feature. Every graph node, including each large overview hub, corresponds to
+exactly one file. **598 directed references** come from relative Markdown `.md`
+links in document bodies. Reciprocal links remain
+separate directed references in counts; the inspector distinguishes outgoing,
+incoming and two-way connections. Separately, **133 dashed membership guides**
+connect the root to real overviews and each overview to its same-area files.
+They are inferred from area metadata, not Markdown references, and do not
+inflate reference counts or animate as calls. **Membership** and **Links** have
+independent toggles; no semantic edges, execution records, folder nodes or
+duplicate/phantom file dots are created.
+Missing entry points, unsupported folders/metadata, duplicate area overviews,
+invalid dates or broken/escaping local links produce explicit errors.
+Document bodies render as plain text, never as HTML or executable Markdown.
+**This bundled fixture is public static build content**, even though the page
+is behind sign-in: never put private vault content, credentials or secrets here.
+Live permission-filtered data continues to use the existing graph APIs.
+
+The six views use D3 layouts/forces/scales and a high-DPI HTML Canvas 2D renderer:
+
+| View | Arrangement |
+| --- | --- |
+| Ring | Anchored `AGENTS.md` at the center of five named tracks: Skills, Knowledge, Memory, Routines and Applications. Real overview hubs sit inside their notes; size-weighted area sectors pack knowledge into up to four rows. Other kinds stay on their own tracks. Portrait ellipses preserve mobile label spacing. |
+| Circle | Area-grouped perimeter sectors, with curved connections bowed toward the center |
+| Areas | A deterministic D3 force layout groups files into compact same-color clouds around real initialed overview hubs; applications stay near the nucleus |
+| Links | A deterministic D3 force layout emphasizes actual references while retaining weaker area/membership anchors |
+| Timeline | Kind/layer lanes and a UTC date scale use each document's `created` frontmatter, not fabricated file activity; same-day files stack within their lane |
+| 3D Orbit | Depth-sorted Canvas 2D projection: skills in an inner shell, knowledge/memory in a middle shell, routines outside, applications on an equatorial ring; area sectors determine longitude. Guides and nodes turn together (roughly 57 seconds per revolution), with a gentle 27-second tilt sway and manual controls; not WebGL |
+
+The page uses the same reference three-column composition: local clock, demo
+inventory and the entry-point guide on the left; the graph and example skills
+deck in the center; actual routine and memory/context file links on the right.
+These widgets read the bundled fixture, not live schedules, database memories
+or external applications. The map fills its center column with no permanent
+"In your orbit" inspector. Its normal Canvas height is 490px on desktop and
+440px on mobile. **Fullscreen** uses the browser Fullscreen API to
+fill the viewport, hiding the surrounding shell while keeping graph controls.
+Exit using its button or the browser's Escape action. Resizing/fullscreen keeps
+temporary node placements. Unsupported or rejected fullscreen requests show an
+explicit message without disabling the normal map.
+
+Search matches names/paths; area selectors/legend buttons and the independent
+file-type selector filter dots and retain only relationships with visible
+endpoints. `AGENTS.md` remains visible as a context anchor, including explicit
+no-match states. Matching files also retain their real area overview even when
+that overview does not match the search or type. Legend/inventory counts show
+the whole fixture; hub labels count visible area files, including the overview
+once. Selecting an overview highlights its area, frames its files with the
+camera and exposes an accessible **Area members** list in the inspector.
+Selecting a dot or using
+the keyboard-accessible **Jump to file** selector opens its source path, date,
+body and actual connected files in a dismissible overlay, initially closed.
+Dragging selects without opening the overlay; **File details** can reopen it.
+Click the selected dot again, tap empty graph space or press **Escape** in the
+map to clear file/ring focus and close the overlay. This also clears stale hover
+highlighting, without resetting the camera or temporary placements. Initial
+and cleared graph selection is empty; `AGENTS.md` remains the entry-point
+context, not an implicitly selected dot. Clicking it still selects and opens
+its document, and clicking it again clears it like any other node. The Jump
+selector and details control fall back to `AGENTS.md` when nothing is selected.
+Explicit navigation through Jump, widgets and document links always selects
+the destination rather than toggling it. The overlay's close button only
+closes details, preserving selection and returning focus to the details control.
+Escape also returns that focus when invoked from the open inspector.
+Following a connected file outside a filter
+clears the filter to reveal it. The chart uses an orange entry-point particle network,
+large initialed overview circles, skill diamonds, ordinary file/memory dots,
+double-ring routines and application hexagons. Area colors apply to all kinds:
+a Content skill stays purple on the Skills track, rather than acquiring a
+generic Skills color.
+
+In **Ring**, click a track's name (**Skills**, **Knowledge**, **Memory**,
+**Routines**, **Applications**) to focus every visible file on that layer,
+across all areas. Matching dots and their incident reference links brighten;
+unrelated nodes dim rather than disappear, and `AGENTS.md` stays visible as
+context. This does not alter area/type filters, graph counts, positions or files.
+Click the same name again or press **Escape** while focus is in the map to clear.
+Ring names are also keyboard buttons: **Tab** to one and press **Enter/Space**.
+Their bounds follow the painted track through pan, zoom, breathing, resize and
+fullscreen; a direct hit on a real dot takes priority over overlapping text,
+preserving node dragging/inspection. Cancelled presses or label drags do not
+toggle a ring. Focusing a ring closes the single-file inspector; selecting a
+file, changing layouts or changing search/area/type filters clears ring focus.
+The ordinary **Labels** toggle controls file names, not these ring controls.
+
+Drag a node to rearrange it. In **Ring**, dragging changes only its angle:
+skills stay on the Skills ring, routines on Routines, and notes stay on their
+assigned knowledge row. The central
+`AGENTS.md` stays anchored. Other views allow free placement. Drag empty
+space to pan; pans, node drags, cancelled presses and multi-pointer background
+gestures do not clear selection. Scroll/button zoom keeps hit-testing and dragging in graph
+coordinates. Select a file using **Jump to file**, focus the canvas and use
+arrow keys for keyboard placement (rotation in Ring). **Reset node positions**
+restores the current view's layout and camera; **Fit vault** resets only the
+camera. Positions are temporary, per-view page state: filters, resizing and
+theme changes preserve them, while leaving/reloading the page clears them.
+Dragging never edits a file or its creation date/relationships.
+
+Links retain static arrowheads and animate bounded glowing signal trails from
+the source document toward the referenced document, followed by a soft arrival
+halo. Particles, arrows and edges share the same path. Arc-length sampling
+keeps travel even on bowed Circle connections; traversal is bounded to 1.6-6
+seconds based on distance/zoom. Ambient traffic is limited to eight links,
+or four on narrow canvases; focusing a file limits signals to its references.
+Incoming references still flow toward the selected file, never backward simply
+because it is selected. This is an illustrative
+view of Markdown references, **not live calls, runs, tool execution, or an
+activity stream**. Turning **Links** off hides both edges and their particles.
+**Pause motion** freezes automatic effects; the orbit's own pause control
+stops only orbital rotation/sway, leaving the decorative nucleus alive.
+Orbit speed eases to a stop while hovering or selecting a non-root file,
+and eases back in after returning to `AGENTS.md` and leaving the dots.
+Animation uses a bounded Canvas frame loop at
+about 30 redraws per second, not React state updates for every frame, and
+stops when hidden or unmounted; a settled Timeline with links off needs no
+animation loop. Orbit rotation and the radial ripple pause during dragging
+to keep the grabbed file stable.
+
+The supplied AI OS Dashboard Current 1.1.1 was inspected as the behavioral,
+layout and theme reference. The implementation remains React/TypeScript using
+the existing D3 dependency, file graph and five capability tracks; it does not
+embed or start that project's server, sample data or integrations. Appearance
+is adapted into shared React styles; only the licensed font assets are bundled.
+Its graph-specific settings are adapted here:
+
+- 360 decorative core particles and nearby connecting segments rotate and
+  breathe around the one actual `AGENTS.md` node; they are not extra files,
+  relationships or activity data.
+- Coherent radial motion stays within 1.1% of the base radius. Ring nodes and
+  their ellipse share the same wave; there is no random displacement that
+  breaks track membership. Colored neighborhood glows breathe softly over a
+  subtle static hexagonal background.
+- Layout changes use 820ms cubic easing with up to 160ms area staggering.
+  Reduced motion or paused motion applies the target directly. Node emphasis
+  eases toward 1.4x size; unrelated files dim rather than disappear.
+- Areas uses 34px / 0.05-strength links, -6 charge (-34 for applications),
+  100px maximum charge distance and stronger area/application anchors.
+  Links uses 40px / 0.22-strength links, -16 charge and 240px maximum charge
+  distance. Both use collisions, pin the root and stop D3 before bounded
+  manual settling (220/260 ticks); no additional simulation timers escape.
+  Membership forces bring same-area files toward their overview independently
+  of actual reference links; size-weighted area anchors keep clouds separate.
+- **Dot size** defaults to 85%, ranges from 50-125%, and scales down further
+  on narrow canvases. Like placements, it is page state, not a file edit.
+  Labels use overlap checks, zoom hysteresis and Orbit depth hysteresis;
+  overview and selected/hovered names have priority and move at subpixel coordinates.
+
+Panning, scroll/button zoom, fit, and link/label toggles need no additional data.
+The inspector remains usable
+if Canvas is unavailable. The page supports both themes and responsive layouts.
+Reduced-motion preferences disable all automatic motion, including
+changes while the page is open; static arrows, dragging, keyboard placement and
+manual orbit rotation remain available. The normal enabled motion preference
+resumes when reduced motion is turned off.
+
+To extend this **demo**, add a Markdown file under an area folder (`business`,
+`personal`, `youtube`, `content`, `career`, `system`) or a capability folder
+(`skills`, `memory`, `routines`, `applications`), with an H1 heading and a valid
+`created: YYYY-MM-DD` field inside YAML frontmatter. Nested folders are supported;
+depth organizes source files but does not create extra graph nodes.
+The owning area defaults to the top-level area folder, or System for capability
+folders. Optional scalar `area:` metadata can assign a capability to an interest
+area. The kind defaults to `note` in area folders or the singular capability
+kind; optional `kind:` accepts `area`, `note`, `skill`, `memory`, `routine` or
+`application`. Layer/track derives from kind, independently of owning area.
+For example, a skill in the Content area can live in `skills/`:
+
+```markdown
+---
+created: 2026-10-18
+area: content
+kind: skill
+---
+# Example writing skill
+
+[Content overview](../content/index.md)
+```
+
+Each area can have at most one real `kind: area` overview. Current hubs are
+`business/index.md`, `personal/personal.md`, `youtube/index.md`,
+`content/index.md`, `career/index.md` and `system/index.md`.
+Connect it with ordinary relative Markdown links such as
+`[Weekly review](../routines/weekly-review.md)`. File creation or edits here are
+repository fixture maintenance, not writes to a running canonical vault.
+Rebuild the UI container with `docker compose up -d --build --no-deps ui` (or
+use Vite). No second JSON graph or generated node list needs maintenance.
+The intentionally small fixture parser supports this documented format; it is
+not a general-purpose Markdown/YAML vault importer.
 
 ## Authentication and safety
 
@@ -133,15 +364,26 @@ The browser test uses the real Nginx proxy, ASP.NET authentication, and PostgreS
 data. It rejects an invalid token, signs in with the ignored `.env` admin token,
 checks successful identity and dashboard calls in both themes, verifies that only
 the theme preference reaches local storage and session storage remains empty,
-and signs out. A separate browser case checks system-theme changes, keyboard
+and signs out. A separate browser case checks dark defaults under either system
+theme, stability through system-theme changes, keyboard
 toggling, reload persistence, mobile layout, and content security policy errors.
 The tests do not enable Playwright traces or log the token.
+The reference-layout case verifies the exact dark tokens, served font hashes
+and loaded fonts, three-column proportions, cross-page navigation, mobile
+keyboard/focus behavior and overflow. Desktop Dashboard, PAV, identity and
+mobile screenshots support visual comparison against the supplied reference.
 Use `BRAIN_UI_URL` to select a different development UI URL.
 The graph browser check also selects a real accessible document and verifies
 the configured WebObsidian target, keyboard activation, new-tab isolation and
 absence of Brain authorization/referrer headers. Only the external navigation
 is intercepted; Brain API/data remain real. It does not sign into WebObsidian
 or verify that a separately deployed instance contains the document.
+The identity browser case reads actual agent/role/permission data, verifies
+direct versus inherited grants, reviews and cancels an access replacement,
+opens a bounded agent-focused graph, and checks role matrices, both themes,
+mobile layout and offline recovery. It does not save changes to existing agents
+or create persistent test identities. Actual mutations and denial/revocation
+cases run against isolated PostgreSQL integration databases.
 
 `ApiContractTests` cover invalid/unconfigured credentials, identity binding, MCP
 isolation, and OpenAPI security alternatives. `UiAdminApiTests` use actual
@@ -157,8 +399,9 @@ It is not a complete inventory. Type filters and case-insensitive name/source-ID
 search run on the server, rather than loading a full graph to filter in the
 browser. This is deterministic substring search, not semantic search.
 
-The graph fills the available page width (without the dashboard's width cap)
-and uses a viewport-scaled canvas, with the entity inspector below it.
+The standalone graph fills the available page width and uses a viewport-scaled
+canvas, with the entity inspector below it. Its Dashboard embed fills the
+center column and hides only the empty inspector until an entity is selected.
 There is no always-visible entity list beneath the canvas. Select a graph node
 or use the compact, keyboard-accessible **Inspect entity** selector in the
 toolbar to fetch its detail independently. **Expand neighbors** adds a one-hop neighborhood to the loaded
@@ -275,6 +518,97 @@ model, edge/node budgets, filtering, search, independent detail loads, focus,
 expansion, stale responses and explicit failures. Chromium graph checks use the
 real Compose API/data, including actual WebGL rendering, keyboard selection,
 both themes, mobile layout, reduced-motion operation and the no-WebGL inspector.
+
+## Agents and permissions
+
+**Agents** lists up to 1,000 enabled/disabled identities with name, ID, team,
+status and roles. Search and status filters narrow the returned inventory, not
+the entire database. A limit notice avoids implying a complete inventory;
+**Look up agent ID** fetches a record independently even beyond the list.
+Selection loads authorized details independently before exposing controls.
+Details explicitly render description, team, enabled state, roles, direct
+grants, effective permissions and update time, never arbitrary agent metadata.
+
+The agent permission matrix distinguishes grants inherited through each role,
+direct grants, and the effective union reported by the backend. A permission
+can be both direct and inherited without being counted twice. An enabled
+identity, exact permission IDs and each operation's visibility/ownership rules
+still apply: role names confer no implicit authority, disabling prevents
+authentication, and grants do not bypass private memory or source constraints.
+The current identity summary is refreshed with `/api/agents/me` whenever the
+directory refresh succeeds; a failed load explicitly leaves only the sign-in
+snapshot. Reload after newly granting directory access to a session that lacked
+`agents.read` at sign-in.
+
+**Permissions** also includes all configured roles (including unassigned
+roles), their descriptions/grants and a role-by-permission matrix. Tables use
+text rather than color to identify grants, keyboard-focusable scroll regions,
+and horizontally bounded overflow on mobile. Light/dark themes, native keyboard
+controls, loading, empty, offline, forbidden and missing-record states are
+supported. Pending detail requests are cancelled when selection changes;
+stale responses cannot expose another agent's controls. A 401 signs out.
+A 403 clears affected data/forms rather than retaining old management controls.
+
+### Identity read contracts
+
+All catalog/detail operations require `agents.read` in the shared
+`IAgentDirectory` boundary, not just the browser. Authentication and current
+database grants are resolved on each request. Authorization precedes lookup,
+so a caller without the read grant cannot distinguish a missing identity.
+
+| Route | Result |
+| --- | --- |
+| `GET /api/agents` | Existing capped list of `AgentView` records |
+| `GET /api/agents/{id}/details` | Independent `AgentView`, including disabled identities; 404 when missing |
+| `GET /api/roles` | `{ id, description, permissions: string[] }[]`, including roles with no members |
+| `GET /api/permissions` | `{ id, description }[]` from the database catalog, not a hard-coded browser list |
+
+`AgentView.permissions` remains the sorted, deduplicated effective union for
+compatibility. The additive `directPermissions: string[]` field identifies only
+directly assigned grants on list/detail/create/update responses. `roles` retains
+role IDs; the role catalog supplies their grant provenance. Catalogs and details
+are current request snapshots, not an atomic snapshot across multiple requests.
+No database migration, new grant or MCP management tool is introduced.
+The explicit `/details` suffix keeps every valid agent ID (including `me`)
+distinct from the existing `/api/agents/me` current-identity route. Registration
+returns this independently readable resource in its `Location` header.
+
+### Supported management boundaries
+
+Registration uses the existing `POST /api/agents` operation with ID, name,
+optional description/team and selected known roles/direct grants. Access edits
+use the existing `PUT /api/agents/{id}/access` with
+`{ roles, permissions, enabled }`; its `permissions` are **direct grants**, not
+the effective union. Only controls backed by these operations are exposed.
+Both require `agents.admin` server-side; the inspection-based UI additionally
+requires `agents.read`. Role/permission definitions and credentials remain
+operator-managed with no invented write or token-issuance API.
+
+The form first shows an explicit review, exact replacement roles/direct grants,
+enabled state and a catalog-derived effective-access preview. A separate
+confirmation saves; the server revalidates actor access and known grants and
+returns the actual effective union. Each grant collection is limited to 100
+entries. Enabled-state changes affect authentication on the next request.
+The server prevents changing the authenticated actor's own access; the UI
+explains this instead of exposing an unusable self-edit control.
+
+Access updates replace **all** roles, direct grants and enabled state. The
+existing operation has no revision token or optimistic-concurrency protection;
+concurrent access edits are not merged. Coordinate operator changes, refresh
+before editing, and inspect the explicit replacement review before confirming.
+Do not interpret the displayed update time as a concurrency token. Unknown
+outcomes (for example, a dropped save response) are explicit: refresh to inspect
+the actual state before retrying. Duplicate registration returns 409; invalid
+grants return 400; denied/missing operations never report success.
+Successful creates/access updates retain the existing transactional audit.
+
+Registration creates an identity, not a usable credential. An operator must
+provision a distinct token/digest out of band as described in the README.
+There are no credential inputs, generated secrets or credential storage in
+this feature. **Focus agent graph** opens the existing graph in a bounded
+one-hop neighborhood; independent detail/expansion routes retain existing
+source grants, two-hop maximum and 200-node/400-edge limits. Graph visibility
+is based on the current viewer, not the selected agent's grants.
 
 ## WebObsidian linking
 

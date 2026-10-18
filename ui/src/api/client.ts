@@ -81,10 +81,13 @@ export async function request<T>(
   path: string,
   credentials: Credentials,
   signal?: AbortSignal,
+  options?: Pick<RequestInit, "method" | "body">,
 ): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...options,
     headers: {
       Accept: "application/json",
+      ...(options?.body ? { "Content-Type": "application/json" } : {}),
       Authorization: `Bearer ${credentials.token}`,
     },
     signal,
