@@ -184,3 +184,9 @@ future work complete. If roadmap names, scope, or acceptance criteria conflict,
 ask me which one to follow before proceeding.
 
 When implementing milestones, always implement them in a new branch.
+
+## Codebase Knowledge
+- Before investigating source code, prefer Graphify queries when an up-to-date graph is available.
+- Use `graphify query`, `graphify explain`, or `graphify path` to identify relevant components.
+- Inspect actual source files before making changes.
+- Refresh the graph when it becomes outdated.
