@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import Dashboard from "./Dashboard";
 import { DashboardData } from "../../api/client";
 
@@ -26,6 +26,7 @@ const data: DashboardData = {
 };
 
 describe("Dashboard", () => {
+  afterEach(cleanup);
   it("shows available metrics and marks inaccessible data without inventing counts", () => {
     render(
       <Dashboard
@@ -54,9 +55,18 @@ describe("Dashboard", () => {
       />,
     );
 
-    expect(screen.getAllByText("brain.knowledge.proposed")).toHaveLength(2);
+    expect(screen.getAllByText("brain.knowledge.proposed")).toHaveLength(1);
     expect(screen.queryByText("must-not-be-rendered")).not.toBeInTheDocument();
     expect(screen.queryByText("Bearer secret")).not.toBeInTheDocument();
     expect(screen.queryByText("Not shown")).not.toBeInTheDocument();
+  });
+
+  it("places the authorized graph between the operational widgets without mixing in the demo", () => {
+    render(<Dashboard data={data} error={null} loading={false} onNavigate={vi.fn()} onRefresh={vi.fn()}
+      graph={<div role="img" aria-label="Authorized live graph" />} />);
+    expect(screen.getByRole("img", { name: "Authorized live graph" }).closest(".workspace-centre")).not.toBeNull();
+    expect(screen.getByRole("complementary", { name: "Brain overview" })).toHaveTextContent("No document-count API");
+    expect(screen.getByRole("complementary", { name: "Review and activity" })).toHaveTextContent("Operations/incident.md");
+    expect(screen.queryByText("Studio North")).not.toBeInTheDocument();
   });
 });

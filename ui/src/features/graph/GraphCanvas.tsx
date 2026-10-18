@@ -3,6 +3,7 @@ import type Sigma from "sigma";
 import { GraphResult } from "./api";
 import { createGraph } from "./model";
 import { Theme } from "../../hooks/useTheme";
+import { canvasFont, canvasPalette } from "../../appearance";
 
 export default function GraphCanvas({ data, selected, onSelect, theme }: {
   data: GraphResult; selected: string | null; onSelect: (id: string) => void; theme: Theme;
@@ -29,11 +30,11 @@ export default function GraphCanvas({ data, selected, onSelect, theme }: {
       if (disposed || !container.current) return;
       instance = new SigmaRenderer(graph, container.current, {
         defaultEdgeType: "arrow", renderEdgeLabels: false,
-        labelFont: "Segoe UI, sans-serif", labelSize: 12,
-        labelColor: { color: theme === "dark" ? "#dce5ef" : "#17212f" },
+        labelFont: canvasFont, labelSize: 10,
+        labelColor: { color: canvasPalette(theme).ink },
         defaultDrawNodeHover: (context, node, settings) =>
-          drawDiscNodeHover(context, node, { ...settings, labelColor: { color: "#17212f" } }),
-        defaultEdgeColor: theme === "dark" ? "#526078" : "#b6c1d0",
+          drawDiscNodeHover(context, node, { ...settings, labelColor: { color: "#202b32" } }),
+        defaultEdgeColor: theme === "dark" ? "#3f535e" : "#9ba9b0",
         stagePadding: 40, allowInvalidContainer: false,
         nodeReducer: (id, attributes) => {
           const active = selectedRef.current;

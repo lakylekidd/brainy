@@ -225,12 +225,31 @@ credential or body is forwarded. Brain does not synchronize or edit the external
 vault. See [WebObsidian linking](ui.md#webobsidian-linking).
 Semantic graph queries and live overlays are not implemented.
 
+**Shared UI shell.** The React application uses the supplied PAV OS reference's
+night/orange palette, locally licensed fonts, compact navigation and responsive
+hairline-separated widgets. Dark is the default; the light-mode toggle remains.
+The operations Dashboard reuses the existing bounded, permission-filtered
+Sigma graph in its center column, with API-backed inventory/health and
+review/activity rails. It adds no graph service, canonical data source or
+reference-project integrations. The standalone graph remains available.
+
 **PAV OS demo.** A separate lazy-loaded UI page uses D3.js with HTML Canvas
 to explore six layouts of the fictional `ui/demo-vault` fixture. Raw Markdown
 imports supply its files, creation dates and explicit relative links; there is
-no second graph catalog or backend multi-vault support. Named capability rings,
-temporary node dragging, directed-reference particles and automatic 3D rotation
-are client-side visualization only, not live activity or external execution.
+no second graph catalog or backend multi-vault support. Its 134 real files
+separate owning area, document kind and visualization layer. Six real overview
+documents are initialed area hubs, not synthetic folder records. Size-weighted
+sectors, compact area clouds and overview focus/framing use those same records.
+The 598 actual Markdown references remain distinct from 133 inferred, dashed
+area-membership guides; only actual references contribute to link counts and
+directional signals. Named capability rings,
+temporary node dragging, directed-reference signal trails, decorative particle
+core, coherent ripples and eased 3D rotation are client-side visualization only,
+not live activity or external execution. The normal map fills the center of
+the reference three-column composition; native fullscreen fills the viewport.
+File details remain dismissible rather than a reserved inspector column.
+Demo clock/inventory, skills and routine/context widgets use actual local time
+or fixture files, not simulated integrations. The read-only boundary is unchanged.
 The fixture is public
 static build content, contains no private/live data, and is not mounted into the
 API or worker. Existing authorization, canonical sources and writer workflows

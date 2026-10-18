@@ -1,25 +1,30 @@
-export const GROUPS = [
-  { id: "business", label: "Business", color: "#529cff", description: "Independent work & projects" },
-  { id: "personal", label: "Personal", color: "#badf61", description: "Life beyond the work" },
-  { id: "youtube", label: "YouTube", color: "#ed79b3", description: "Stories worth sharing" },
-  { id: "content", label: "Content", color: "#ac83ed", description: "Ideas into words" },
-  { id: "career", label: "Career", color: "#49d5b4", description: "The longer journey" },
-  { id: "skills", label: "Skills", color: "#c2ad67", description: "How to do the work" },
-  { id: "memory", label: "Memory", color: "#92a5d6", description: "Context worth keeping" },
-  { id: "routines", label: "Routines", color: "#60bcb5", description: "Small, repeatable rhythms" },
-  { id: "applications", label: "Applications", color: "#b78fba", description: "Where things happen" },
+export const AREAS = [
+  { id: "business", label: "Business", color: "#4a8cf0", description: "Independent work & projects" },
+  { id: "personal", label: "Personal", color: "#8cc421", description: "Life beyond the work" },
+  { id: "youtube", label: "YouTube", color: "#e85e8e", description: "Stories worth sharing" },
+  { id: "content", label: "Content", color: "#a874f0", description: "Ideas into words" },
+  { id: "career", label: "Career", color: "#22b79a", description: "The longer journey" },
+  { id: "system", label: "System", color: "#92999f", description: "Shared capabilities & workspace context" },
 ] as const;
 
-export type GroupId = typeof GROUPS[number]["id"] | "brain";
+export type AreaId = typeof AREAS[number]["id"];
+export const FILE_KINDS = ["area", "note", "skill", "memory", "routine", "application"] as const;
+export type FileKind = typeof FILE_KINDS[number] | "root";
+export const KIND_LABELS: Record<FileKind, string> = {
+  root: "Entry point", area: "Area overview", note: "Note", skill: "Skill",
+  memory: "Memory", routine: "Routine", application: "Application",
+};
 export interface VaultFile {
   id: string;
   title: string;
-  group: GroupId;
+  area: AreaId | null;
+  kind: FileKind;
+  layer: "core" | "knowledge" | "skills" | "memory" | "routines" | "applications";
   created: string;
   body: string;
 }
 export interface VaultLink { source: string; target: string }
-export interface VaultGraph { files: VaultFile[]; links: VaultLink[] }
+export interface VaultGraph { files: VaultFile[]; links: VaultLink[]; memberships: VaultLink[] }
 export const ROOT_FILE = "AGENTS.md";
 export class DemoVaultError extends Error {}
 
@@ -43,11 +48,23 @@ export function buildVault(sources: Record<string, string>): VaultGraph {
     const parsedDate = created ? new Date(`${created}T00:00:00Z`) : null;
     const body = markdown.slice(frontmatter?.[0].length ?? 0).trim();
     const title = /^# (.+)\r?$/m.exec(body)?.[1].trim();
-    const group = id === ROOT_FILE ? "brain" : GROUPS.find((item) => item.id === id.split("/")[0])?.id;
-    if (!created || !parsedDate || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== created || !title || !group) {
-      throw new DemoVaultError(`Invalid demo document: ${id}. Expected a known folder, heading and valid created date.`);
+    const folder = id.split("/")[0];
+    const defaults: Record<string, FileKind> = { skills: "skill", memory: "memory", routines: "routine", applications: "application" };
+    const fields = frontmatter?.[1] ?? "";
+    const areaField = /^area:\s*(.*?)\r?$/m.exec(fields)?.[1];
+    const kindField = /^kind:\s*(.*?)\r?$/m.exec(fields)?.[1];
+    const area = id === ROOT_FILE ? null : AREAS.find((item) => item.id === (areaField ?? (AREAS.some((item) => item.id === folder) ? folder : "system")))?.id;
+    const kind: FileKind | undefined = id === ROOT_FILE ? "root" : FILE_KINDS.find((item) => item === (kindField ?? defaults[folder] ?? "note"));
+    if (!created || !parsedDate || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== created || !title
+      || !kind || (id !== ROOT_FILE && (!area
+        || (!defaults[folder] && !AREAS.some((item) => item.id === folder))))
+      || (id === ROOT_FILE && (areaField !== undefined || (kindField !== undefined && kindField !== "root")))) {
+      throw new DemoVaultError(`Invalid demo document: ${id}. Expected a known folder, heading, valid created date and supported area/kind metadata.`);
     }
-    return { id, title, group, created, body };
+    const layers: Record<FileKind, VaultFile["layer"]> = {
+      root: "core", area: "core", note: "knowledge", skill: "skills", memory: "memory", routine: "routines", application: "applications",
+    };
+    return { id, title, area: area ?? null, kind, layer: layers[kind], created, body };
   });
   const ids = new Set(files.map((file) => file.id));
   if (!ids.has(ROOT_FILE)) throw new DemoVaultError("The demo vault is missing AGENTS.md.");
@@ -62,7 +79,16 @@ export function buildVault(sources: Record<string, string>): VaultGraph {
     }
     targets.forEach((target) => links.push({ source: file.id, target }));
   }
-  return { files, links };
+  const hubs = new Map<AreaId, VaultFile>();
+  for (const file of files.filter((item) => item.kind === "area")) {
+    if (!file.area || hubs.has(file.area)) throw new DemoVaultError(`Duplicate demo area overview: ${file.area}.`);
+    hubs.set(file.area, file);
+  }
+  const memberships = files.flatMap((file): VaultLink[] => {
+    const hub = file.area && hubs.get(file.area);
+    return hub ? [{ source: file.kind === "area" ? ROOT_FILE : hub.id, target: file.id }] : [];
+  });
+  return { files, links, memberships };
 }
 
 export function loadDemoVault(): VaultGraph {
@@ -74,18 +100,24 @@ export function loadDemoVault(): VaultGraph {
   ])));
 }
 
-export function filterVault(graph: VaultGraph, query: string, group: string): VaultGraph {
+export function filterVault(graph: VaultGraph, query: string, area: string, kind = "all"): VaultGraph {
   const term = query.trim().toLocaleLowerCase();
-  const files = graph.files.filter((file) => file.id === ROOT_FILE
-    || ((group === "all" || file.group === group) && `${file.title} ${file.id}`.toLocaleLowerCase().includes(term)));
+  const matches = graph.files.filter((file) => file.id !== ROOT_FILE
+    && (area === "all" || file.area === area) && (kind === "all" || file.kind === kind)
+    && `${file.title} ${file.id}`.toLocaleLowerCase().includes(term));
+  const areas = new Set(matches.map((file) => file.area));
+  const matchedIds = new Set(matches.map((file) => file.id));
+  const files = graph.files.filter((file) => file.id === ROOT_FILE || matchedIds.has(file.id)
+    || (file.kind === "area" && areas.has(file.area)));
   const ids = new Set(files.map((file) => file.id));
-  return { files, links: graph.links.filter((link) => ids.has(link.source) && ids.has(link.target)) };
+  return { files, links: graph.links.filter((link) => ids.has(link.source) && ids.has(link.target)),
+    memberships: graph.memberships.filter((link) => ids.has(link.source) && ids.has(link.target)) };
 }
 
-export function groupLabel(group: GroupId): string {
-  return GROUPS.find((item) => item.id === group)?.label ?? "Brain";
+export function areaLabel(area: AreaId | null): string {
+  return AREAS.find((item) => item.id === area)?.label ?? "Brain";
 }
 
 export function fileColor(file: VaultFile): string {
-  return GROUPS.find((group) => group.id === file.group)?.color ?? "#f3a45f";
+  return AREAS.find((area) => area.id === file.area)?.color ?? "#f07a2e";
 }

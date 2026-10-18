@@ -34,7 +34,7 @@ behavior and current API coverage.
 
 | Milestone | Status | Current position |
 | --- | --- | --- |
-| 1. Shell + Dashboard | Complete | Authenticated shell, API-backed dashboard, responsive layout, and system-aware light/dark themes are implemented. |
+| 1. Shell + Dashboard | Complete | Authenticated reference-style shell, API-backed three-column dashboard with an embedded authorized graph, responsive navigation, reference dark default and optional saved light mode are implemented. |
 | 2. Knowledge Graph | Complete | Stable source-derived entities/edges, bounded authorized graph APIs, Sigma/Graphology exploration, search/filters, independent details, focus and progressive expansion are implemented. |
 | 3. WebObsidian Integration | Complete | Document inspection links canonical source paths to an operator-configured WebObsidian `/note/<path>` route, with safe encoding and explicit unavailable configuration states. |
 | 4. Agents + Permissions | Complete | Dedicated agent listing/details, direct/inherited/effective grant matrices, role inspection, reviewed supported registration/access replacement, and authorized agent-focused graphs are implemented. Role definitions and credentials remain operator-managed. |
@@ -57,7 +57,20 @@ implementation and does not change its scope or completion status. It explores
 the public, fictional `ui/demo-vault` fixture using D3.js + Canvas in Ring,
 Circle, Areas, Links, Timeline and 3D Orbit layouts. Named capability rings,
 temporary dragging, reference-direction particles and automatic rotation are
-visualization features, not the live activity scope of Milestone 10.
+visualization features, not the live activity scope of Milestone 10. Center-column
+and browser-fullscreen exploration, dismissible inspection, and the adapted
+Current 1.1.1 graph motion/force settings likewise remain demo visualization;
+the decorative core and signal trails are not live events or additional
+knowledge records. A subsequent whole-app refinement adapts the reference's
+layout, exact dark palette and licensed fonts, retaining optional light mode.
+The reference-style rails are existing Brain metrics or explicit demo-file
+widgets, not new calendar, mail, routine execution or application integrations.
+The area-hub refinement expands only the public fixture to 134 real files:
+six file-backed overview hubs, independent area/kind/layer classification,
+size-weighted Ring sectors, dense Areas clouds and area focus/framing.
+Dashed inferred membership remains separate from actual Markdown references.
+It adds no synthetic knowledge records, execution history or live-vault writes,
+and does not advance any later milestone.
 It does not replace the
 authorized Sigma graph, add live/semantic graph features, or implement backend
 multi-vault support. See [demo behavior and boundaries](ui.md#pav-os-demo-dashboard).

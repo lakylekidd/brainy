@@ -19,9 +19,13 @@ Open **http://localhost:5173** and enter the value of `BRAIN_UI_ADMIN_TOKEN` fro
 the ignored `.env` file. No username or agent ID is required. Keep that token
 private; it is a shared administrator credential, not a personal SSO account.
 
-Use the sun/moon button on the sign-in screen or in the dashboard header to
-switch between light and dark mode. The UI follows your system preference until
-you choose a mode, then remembers only that appearance preference in this browser.
+The UI uses the supplied PAV OS reference's night/orange theme, compact top
+navigation, hairline-separated widgets and locally bundled JetBrains Mono /
+Barlow Condensed fonts. Dark mode is the default; the sun/moon button on sign-in
+and in the header retains an optional light mode and remembers only that choice.
+The Dashboard places its authorized knowledge graph and skills deck between
+inventory/health and review/activity columns. On mobile, the graph comes first
+and navigation expands from the menu button.
 
 Choose **Knowledge graph** to search/filter documents, skills, tools, agents,
 roles and permissions, inspect canonical source references, focus an entity and
@@ -45,17 +49,33 @@ Semantic graphs and live overlays remain later milestones.
 
 Choose **PAV OS** for a separate D3.js + HTML Canvas demo dashboard with
 **Ring, Circle, Areas, Links, Timeline, and 3D Orbit** views. It explores
-30 real Markdown files in [`ui/demo-vault`](ui/demo-vault/AGENTS.md), with
+134 real Markdown files and 598 directed references in
+[`ui/demo-vault`](ui/demo-vault/AGENTS.md), with
 `AGENTS.md` as the entry point, five interest areas (business, personal,
-YouTube, content, career), and shared skills, memory, routines and applications.
-Select dots or use **Jump to file** to read documents and follow their links.
+YouTube, content, career), plus System for shared workspace context.
+Six real overview files form large initialed hubs, with smaller same-color
+files clustered around them. Each interest area has 23-25 documents, including
+related skills and routines; file kind is independent of its owning area.
+The map fills the center of the reference-style three-column layout, with
+demo inventory/clock on the left and routine/context files on the right;
+**Fullscreen** fills the viewport.
+Select dots or use **Jump to file** to read documents in a dismissible overlay
+and follow their links, without a permanent right-hand inspector.
 Named **Skills, Knowledge, Memory, Routines, and Applications** rings group
-files by kind, with area colors and distinct node shapes. Drag nodes around
+files by kind, with size-weighted area sectors, dense knowledge bands and
+distinct node shapes. **Areas** groups files into compact neighborhoods.
+Selecting an overview highlights and frames its area; its inspector lists real
+member files. Dashed **Membership** guides are separate from actual Markdown
+references and have their own toggle. Drag nodes around
 their ring (or freely in other views); arrow keys and **Reset node positions**
 provide keyboard placement and recovery. Links animate from their source file
-toward the referenced file, and **3D Orbit** spins slowly by default.
-**Pause motion** stops both effects; reduced-motion preferences disable them.
-Search, area filters, zoom/pan and labels remain available.
+toward the referenced file with glowing trails and arrival halos. The graph
+adds a decorative particle-network core, breathing rings, smooth layout
+transitions and reference-style D3 force settings. **3D Orbit** uses layered
+shells, a roughly 57-second rotation and gentle tilt sway.
+**Pause motion** stops automatic effects; reduced-motion preferences disable
+them. Search, independent area/type filters, zoom/pan, labels and a **Dot size** slider remain
+available in both the reference dark theme and optional light mode.
 This is fictional, read-only example data, not the live Brain vault;
 no database, mount, credentials or existing knowledge is changed. See
 [the demo guide](docs/ui.md#pav-os-demo-dashboard) for extending the example.

@@ -9,11 +9,12 @@ information or treat a note as permission to act.
 
 ## Areas of interest
 
-- [Business](business/studio.md): a small independent design studio.
-- [Personal](personal/compass.md): energy, learning and a slower everyday life.
-- [YouTube](youtube/channel.md): thoughtful videos about creative systems.
-- [Content](content/editorial.md): essays, a newsletter and reusable ideas.
-- [Career](career/north-star.md): craft, relationships and the next chapter.
+- [Business](business/index.md): a small independent design studio.
+- [Personal](personal/personal.md): energy, learning and a slower everyday life.
+- [YouTube](youtube/index.md): thoughtful videos about creative systems.
+- [Content](content/index.md): essays, a newsletter and reusable ideas.
+- [Career](career/index.md): craft, relationships and the next chapter.
+- [System](system/index.md): shared workspace conventions and capabilities.
 
 ## Shared capabilities
 

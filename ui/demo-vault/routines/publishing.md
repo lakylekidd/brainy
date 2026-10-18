@@ -1,4 +1,5 @@
 ---
+area: content
 created: 2026-10-09
 ---
 # Publishing checklist

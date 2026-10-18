@@ -18,6 +18,8 @@ test("token-only login loads real dashboard data and sign-out clears access", as
   await expect(page.getByLabel("Agent ID")).toHaveCount(0);
   await expect(page.locator('input[type="password"]')).toHaveCount(1);
   await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
   await page.getByRole("button", { name: "Switch to dark mode" }).click();
 
   await page.getByLabel("Admin token").fill("not-a-valid-admin-token-0000000000000000");
@@ -36,15 +38,16 @@ test("token-only login loads real dashboard data and sign-out clears access", as
   await expect(page.getByText("Brain API ready", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Refresh" })).toBeEnabled();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await expect(page.locator(".panel").first()).toHaveCSS("background-color", "rgb(23, 34, 48)");
-  await expect(page.locator(".metric-card").first()).toHaveCSS("background-color", "rgb(23, 34, 48)");
+  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(12, 16, 19)");
+  await expect(page.locator(".panel").first()).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(page.locator(".metric-card").first()).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   for (const path of [
     "/api/agents/me", "/health/ready", "/api/agents", "/api/skills", "/api/tools",
     "/api/knowledge/proposals", "/api/knowledge/metadata/issues", "/api/audit", "/api/traces",
   ]) {
     expect(responses.get(path), path).toBe(200);
   }
-  await expect(page.getByText(expectedId, { exact: true })).toHaveCount(2);
+  await expect(page.getByText(expectedId, { exact: true })).toHaveCount(1);
   expect(await page.evaluate(() => ({ local: Object.entries(localStorage), session: sessionStorage.length })))
     .toEqual({ local: [["brain-theme", "dark"]], session: 0 });
   await page.getByRole("button", { name: "Knowledge graph", exact: true }).click();
@@ -52,7 +55,7 @@ test("token-only login loads real dashboard data and sign-out clears access", as
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Switch to light mode" }).click();
   await page.getByRole("button", { name: "Dashboard", exact: true }).click();
-  await expect(page.locator(".panel").first()).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(244, 245, 245)");
   await page.setViewportSize({ width: 375, height: 812 });
   await page.getByRole("button", { name: "Switch to dark mode" }).click();
   await expect(page.getByRole("button", { name: "Switch to light mode" })).toBeVisible();

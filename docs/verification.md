@@ -1,5 +1,115 @@
 # Implementation verification
 
+## PAV OS file-backed area hubs and dense clusters (18 October 2026)
+
+- Separated owning area, file kind and visualization layer. Six real overview
+  documents render as initialed, haloed hubs; smaller documents keep their
+  area's color across capability tracks. Ring uses size-weighted sectors and
+  dense knowledge rows; Areas uses distinct compact file clouds, with
+  applications near the nucleus. Hub selection highlights members, frames the
+  destination layout and exposes real area files in the inspector.
+- Expanded the public fictional fixture to **134 real Markdown files** and
+  **598 directed references**: Business 25, Personal 24, YouTube 24, Content 24,
+  Career 23, System 13, plus `AGENTS.md`. All files are reachable from the entry
+  point through actual Markdown references. The existing Personal document's
+  links are preserved. No fake execution records or hierarchy nodes were added.
+- **133 inferred membership guides** are rendered separately as dashed spokes.
+  Their independent toggle does not hide actual Markdown references, change
+  reference counts or create directional activity. Area/type/search filters
+  retain the root and matching files' real overview context.
+- **159 frontend tests across 17 files** pass, including **64 PAV cases across
+  six files**. They cover classification/metadata errors, broken references,
+  reachability, source immutability, area counts, weighted sectors, dense
+  layout geometry, initial drawing, independent membership rendering and
+  destination-based camera framing during animated view changes.
+  TypeScript/Vite and Docker UI production builds pass.
+- **14 Chromium cases** pass against the actual Compose stack. New hub
+  coverage clicks a real overview in Areas, measures its actual D3 camera
+  transform and member bounds, verifies independent membership pixels,
+  inspects area members and combines area/type filters with context recovery.
+  Existing layout, dragging, touch, motion, fullscreen, login, authorized
+  graph, identities, fonts and theme cases remain passing.
+- Ring, Areas, focused area, mobile and fullscreen outputs are visually
+  inspected. The rebuilt UI returns HTTP 200 at `http://localhost:5173` and its
+  container is healthy. No live canonical vault, backend contract, database,
+  credentials or reference-project source/data are changed.
+
+This entry supersedes the earlier fixture counts and folder-only grouping
+descriptions. Reproduce with `npm --prefix .\ui test`,
+`npm --prefix .\ui run build`, `docker compose up -d --build --no-deps ui`
+and `npm --prefix .\ui run test:e2e` against the initialized development stack.
+
+## Whole-app reference layout and theme (18 October 2026)
+
+- Applied the supplied Current 1.1.1 night/live/orange-core appearance across
+  sign-in, shared navigation, Dashboard, graph, identities/permissions and
+  placeholders. Exact dark tokens and locally served JetBrains Mono /
+  Barlow Condensed assets match the reference; font licenses and provenance
+  are retained. Dark now defaults under either OS color scheme, with an
+  explicit saved light-mode toggle.
+- Replaced the permanent sidebar with grouped top navigation, a nonmodal
+  mobile disclosure, collapsed Focus shortcuts and a system strip. Dashboard
+  and PAV follow the reference's 20% / 60% / 20% composition. Dashboard reuses
+  the bounded authorized Sigma graph, including Refresh; PAV rails read
+  fixture documents or actual local time, not simulated integrations.
+- **149 frontend tests across 17 files** pass. Coverage includes the clock's
+  update/cleanup, mobile navigation focus/Escape behavior, dark-default and
+  persisted-theme behavior, dashboard data boundaries, demo widget inspection,
+  and nearest-file hit testing when compact graph hit areas overlap.
+  TypeScript/Vite and Docker UI production builds pass.
+- **13 Chromium cases** pass against the actual Compose stack. The new
+  reference-layout case checks exact palette/font families and served font
+  hashes, actual column proportions, existing routes, responsive navigation
+  and horizontal overflow. Existing login, identity/permission, authorized
+  graph, WebObsidian, six PAV and theme cases remain passing, including native
+  mouse/touch dragging, keyboard placement, fullscreen and reduced motion.
+- Desktop Dashboard, PAV, identities, mobile and fullscreen outputs are
+  visually inspected. The UI is deployed on `http://localhost:5173`, returns
+  HTTP 200 and its Compose health check passes. No backend, canonical vault,
+  credentials or reference-project files are changed; PAV remains the public,
+  read-only 30-file / 84-reference fixture.
+
+Earlier entries document preceding iterations. This refinement supersedes
+their preserved-theme and normal-page full-width layout descriptions; native
+fullscreen still fills the viewport. Reproduce with `npm --prefix .\ui test`,
+`npm --prefix .\ui run build`, `docker compose up -d --build --no-deps ui`
+and `npm --prefix .\ui run test:e2e` from the initialized development checkout.
+
+## PAV OS full-width graph and reference motion (18 October 2026)
+
+- Created `feat/pav-graph-effects` from `feat/ui-agents-permissions`.
+  Inspected the supplied AI OS Dashboard Current 1.1.1 renderer, default
+  settings and skins as the behavioral reference. No reference server,
+  assets, data or unrelated widgets were added to Brain.
+- Removed the permanent inspector column and width cap. The full-width map
+  offers browser fullscreen, dismissible source details and the reference's
+  85% dot-size default. Existing light/dark colors and fonts are preserved.
+  Adapted force settings, grouped Circle sectors, bowed reference paths,
+  a decorative 360-particle nucleus, 1.1% coherent ripples, bounded glowing
+  directional trails/arrival halos, 820ms layout easing, layered orbital
+  shells, a roughly 57-second orbit and 27-second tilt sway.
+- **142 frontend tests** pass across 15 files, including **52 PAV cases in
+  six files**. New cases verify actual arc-length travel, bounded signal
+  duration, coincident endpoints, coherent node/track geometry, exact eased
+  targets, source immutability, dot scaling, independent orbital pause,
+  dismissible details/focus recovery and explicit fullscreen failures.
+  The TypeScript/Vite and Docker UI production builds pass.
+- **12 Chromium cases** pass against the real Compose stack, including six
+  PAV cases and all existing login, identity, live graph, WebObsidian and
+  theme checks. Browser assertions measure full map width and actual
+  1440x1000 fullscreen bounds, verify retained placements and source
+  inspection, use native keyboard dot-size changes, pan/zoom/mouse/touch
+  dragging, and compare real Canvas pixels under motion/pause/reduced motion.
+  Mobile checks additionally measure selector width and zero internal map
+  scroll, not just the absence of page overflow.
+- Desktop light/dark, mobile and fullscreen outputs were visually inspected.
+  The fixture remains 30 real files/84 actual references; core decoration
+  does not create graph nodes or live events. No backend, canonical vault,
+  credentials or reference project files were changed.
+
+Reproduce with the four frontend/Compose commands in the initial demo section
+below; browser verification requires the initialized development stack.
+
 ## PAV OS demo dashboard (18 October 2026)
 
 - Added a separate D3.js + HTML Canvas page without replacing the existing

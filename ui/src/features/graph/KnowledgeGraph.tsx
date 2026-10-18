@@ -11,8 +11,9 @@ import { typeColors } from "./model";
 import { webObsidianDocumentLink } from "./webObsidian";
 import "./graph.css";
 
-export default function KnowledgeGraph({ credentials, theme, onUnauthorized, initialFocus }: {
+export default function KnowledgeGraph({ credentials, theme, onUnauthorized, initialFocus, embedded = false }: {
   credentials: Credentials; theme: Theme; onUnauthorized: () => void; initialFocus?: string;
+  embedded?: boolean;
 }) {
   const [data, setData] = useState<GraphResult>(emptyGraph);
   const [types, setTypes] = useState<EntityType[]>([...entityTypes]);
@@ -122,7 +123,7 @@ export default function KnowledgeGraph({ credentials, theme, onUnauthorized, ini
     ? webObsidianDocumentLink(import.meta.env.VITE_WEB_OBSIDIAN_BASE_URL, detail.source.id)
     : null;
   return (
-    <div className="knowledge-graph">
+    <div className={`knowledge-graph${embedded ? " knowledge-graph-embedded" : ""}`}>
       <section className="page-heading">
         <div><div className="eyebrow heading-eyebrow">EXPLORE YOUR BRAIN</div><h1>Knowledge graph</h1>
           <p>Canonical sources. Deterministic relationships. Only the entities you can access.</p></div>
@@ -170,7 +171,7 @@ export default function KnowledgeGraph({ credentials, theme, onUnauthorized, ini
         <section className="panel graph-explorer" aria-label="Graph exploration">
           {data.entities.length > 0 && <GraphCanvas data={data} selected={selected} onSelect={setSelected} theme={theme} />}
         </section>
-        <aside className="panel graph-details" aria-label="Entity details">
+        <aside className="panel graph-details" aria-label="Entity details" hidden={embedded && !selected}>
           <div className="eyebrow">ENTITY INSPECTOR</div>
           {!selected && <p>Select a graph node or use Inspect entity above to inspect its canonical reference.</p>}
           {selected && !detail && !detailError && <p role="status">Loading entity…</p>}

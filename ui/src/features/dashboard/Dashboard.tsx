@@ -7,6 +7,8 @@ import {
   AuditEvent, DashboardData, ResourceResult, TraceView,
 } from "../../api/client";
 import { PageId } from "../../components/AppShell";
+import type { ReactNode } from "react";
+import Today from "../../components/Today";
 
 interface DashboardProps {
   data: DashboardData | null;
@@ -14,6 +16,7 @@ interface DashboardProps {
   error: string | null;
   onRefresh: () => void;
   onNavigate: (page: PageId) => void;
+  graph?: ReactNode;
 }
 
 type MetricProps = {
@@ -26,7 +29,7 @@ type MetricProps = {
   onClick?: () => void;
 };
 
-export default function Dashboard({ data, loading, error, onRefresh, onNavigate }: DashboardProps) {
+export default function Dashboard({ data, loading, error, onRefresh, onNavigate, graph }: DashboardProps) {
   const metrics: MetricProps[] = [
     metric("Knowledge documents", "Not available", "No document-count API", FileText, "blue", true),
     metric("Agent memories", "Not available", "No memory-count API", BrainCircuit, "violet", true),
@@ -64,42 +67,53 @@ export default function Dashboard({ data, loading, error, onRefresh, onNavigate 
 
       {error && <div className="inline-error" role="alert">{error}</div>}
 
-      <section className="metrics-grid" aria-label="Brain metrics">
-        {metrics.map((item) => <MetricCard key={item.label} {...item} />)}
-      </section>
-
-      <section className="dashboard-main-grid">
-        <article className="panel activity-panel">
-          <PanelHeader
-            eyebrow="WHAT'S HAPPENING"
-            title="Recent activity"
-            action="View operations"
-            onAction={() => onNavigate("operations")}
-          />
-          <div className="activity-list">
-            {activity.length > 0 ? activity.slice(0, 5).map((item, index) => (
-              <div className="activity-row" key={`${item.kind}-${item.timestamp}-${index}`}>
-                <span className={`activity-symbol activity-${item.kind}`}>
-                  {item.kind === "trace" ? <Activity size={15} /> : <FileClock size={15} />}
-                </span>
-                <span className="activity-copy">
-                  <b>{safeLabel(item.label)}</b>
-                  <small>{item.detail}</small>
-                </span>
-                <time>{formatAge(item.timestamp)}</time>
-              </div>
-            )) : (
-              <EmptyState
-                icon={Activity}
-                message={data?.audit.status === "unavailable" && data.traces.status === "unavailable"
-                  ? "Activity is hidden by your current permissions."
-                  : "No recent activity to show."}
-              />
-            )}
-          </div>
-          <div className="panel-footnote"><span className="live-mark" /> Activity is permission-scoped to your agent</div>
-        </article>
-
+      <div className="workspace-grid dashboard-workspace">
+        <aside className="workspace-left" aria-label="Brain overview">
+          <Today />
+          <section className="metrics-grid" aria-label="Brain metrics">
+            <h2 className="widget-title">Workspace inventory</h2>
+            {metrics.map((item) => <MetricCard key={item.label} {...item} />)}
+          </section>
+          <article className="panel system-panel">
+            <PanelHeader eyebrow="PLATFORM HEALTH" title="System pulse" />
+            <div className="system-status-row">
+              <span className={`system-status-icon ${apiReady ? "pulse-ok" : "pulse-warn"}`}><Activity size={17} /></span>
+              <span className="system-status-copy"><b>Brain API</b><small>{apiReady ? "Authenticated / Ready" : data?.api.status === "unavailable" ? data.api.reason : "Checking connection"}</small></span>
+              <span className={`status-tag ${apiReady ? "status-healthy" : "status-unknown"}`}>{apiReady ? "Healthy" : "Unknown"}</span>
+            </div>
+            <div className="system-status-row">
+              <span className="system-status-icon pulse-neutral"><Clock3 size={17} /></span>
+              <span className="system-status-copy"><b>Background jobs</b><small>Job status is not exposed by the current API</small></span>
+              <span className="status-tag status-unknown">Not tracked</span>
+            </div>
+            <div className="system-status-row">
+              <span className="system-status-icon pulse-neutral"><Boxes size={17} /></span>
+              <span className="system-status-copy"><b>Connections</b><small>Connection health is not exposed by the current API</small></span>
+              <span className="status-tag status-unknown">Not tracked</span>
+            </div>
+            <div className="system-footer"><button className="text-link" onClick={() => onNavigate("settings")}>System details <ArrowRight size={14} /></button></div>
+          </article>
+        </aside>
+        <div className="workspace-centre">
+          {graph}
+          <article className="panel registry-panel">
+            <PanelHeader eyebrow="CAPABILITIES" title="Skills deck" action="Explore skills" onAction={() => onNavigate("skills")} />
+            <div className="registry-counts">
+              <div className="registry-count"><Sparkles size={14} /><b>{count(data?.skills)}</b><small>Skills</small></div>
+              <div className="registry-count"><Wrench size={14} /><b>{count(data?.tools)}</b><small>Tools</small></div>
+            </div>
+            <div className="skill-list">
+              {skills.slice(0, 3).map((skill) => <div className="skill-row" key={skill.id}>
+                <span className="skill-bullet"><Sparkles size={15} /></span>
+                <span className="skill-name"><b>{safeLabel(skill.title)}</b><small>{safeLabel(skill.id)}</small></span>
+                <span className="registry-active"><span className="status-dot" /> Available</span>
+              </div>)}
+              {skills.length === 0 && <EmptyState icon={Boxes} message={data?.skills.status === "unavailable" ? data.skills.reason : "No skills are visible to this agent."} />}
+            </div>
+            <p className="panel-footnote">Registry instructions, not executable actions. Canonical knowledge stays in your vault.</p>
+          </article>
+        </div>
+        <aside className="workspace-right" aria-label="Review and activity">
         <article className="panel review-panel">
           <PanelHeader
             eyebrow="NEEDS YOUR ATTENTION"
@@ -136,81 +150,38 @@ export default function Dashboard({ data, loading, error, onRefresh, onNavigate 
             Open proposal queue <ArrowRight size={15} />
           </button>
         </article>
-      </section>
-
-      <section className="dashboard-bottom-grid">
-        <article className="panel registry-panel">
+        <article className="panel activity-panel">
           <PanelHeader
-            eyebrow="CAPABILITIES"
-            title="Your registry"
-            action="Explore skills"
-            onAction={() => onNavigate("skills")}
+            eyebrow="WHAT'S HAPPENING"
+            title="Recent activity"
+            action="View operations"
+            onAction={() => onNavigate("operations")}
           />
-          <div className="registry-counts">
-            <div className="registry-count">
-              <span className="registry-count-icon icon-green"><Sparkles size={17} /></span>
-              <span><b>{count(data?.skills)}</b><small>Skills</small></span>
-            </div>
-            <div className="registry-count">
-              <span className="registry-count-icon icon-amber"><Wrench size={17} /></span>
-              <span><b>{count(data?.tools)}</b><small>Tools</small></span>
-            </div>
-          </div>
-          <div className="skill-list">
-            {skills.slice(0, 3).map((skill) => (
-              <div className="skill-row" key={skill.id}>
-                <span className="skill-bullet"><Sparkles size={13} /></span>
-                <span className="skill-name"><b>{safeLabel(skill.title)}</b><small>{safeLabel(skill.id)}</small></span>
-                <span className="registry-active"><span className="status-dot" /> Available</span>
+          <div className="activity-list">
+            {activity.length > 0 ? activity.slice(0, 5).map((item, index) => (
+              <div className="activity-row" key={`${item.kind}-${item.timestamp}-${index}`}>
+                <span className={`activity-symbol activity-${item.kind}`}>
+                  {item.kind === "trace" ? <Activity size={15} /> : <FileClock size={15} />}
+                </span>
+                <span className="activity-copy">
+                  <b>{safeLabel(item.label)}</b>
+                  <small>{item.detail}</small>
+                </span>
+                <time>{formatAge(item.timestamp)}</time>
               </div>
-            ))}
-            {skills.length === 0 && (
+            )) : (
               <EmptyState
-                icon={Boxes}
-                message={data?.skills.status === "unavailable"
-                  ? data.skills.reason
-                  : "No skills are visible to this agent."}
+                icon={Activity}
+                message={data?.audit.status === "unavailable" && data.traces.status === "unavailable"
+                  ? "Activity is hidden by your current permissions."
+                  : "No recent activity to show."}
               />
             )}
           </div>
+          <div className="panel-footnote"><span className="live-mark" /> Activity is permission-scoped to your agent</div>
         </article>
-
-        <article className="panel system-panel">
-          <PanelHeader eyebrow="PLATFORM HEALTH" title="System pulse" />
-          <div className="system-status-row">
-            <span className={`system-status-icon ${apiReady ? "pulse-ok" : "pulse-warn"}`}>
-              <Activity size={17} />
-            </span>
-            <span className="system-status-copy">
-              <b>Brain API</b>
-              <small>{apiReady ? "Authenticated · Ready" : data?.api.status === "unavailable" ? data.api.reason : "Checking connection"}</small>
-            </span>
-            <span className={`status-tag ${apiReady ? "status-healthy" : "status-unknown"}`}>
-              {apiReady ? "Healthy" : "Unknown"}
-            </span>
-          </div>
-          <div className="system-status-row">
-            <span className="system-status-icon pulse-neutral"><Clock3 size={17} /></span>
-            <span className="system-status-copy">
-              <b>Background jobs</b>
-              <small>Job status is not exposed by the current API</small>
-            </span>
-            <span className="status-tag status-unknown">Not tracked</span>
-          </div>
-          <div className="system-status-row">
-            <span className="system-status-icon pulse-neutral"><Boxes size={17} /></span>
-            <span className="system-status-copy">
-              <b>Connections</b>
-              <small>Connection health is not exposed by the current API</small>
-            </span>
-            <span className="status-tag status-unknown">Not tracked</span>
-          </div>
-          <div className="system-footer">
-            <span><Sparkles size={14} /> Canonical knowledge stays in your vault</span>
-            <button className="text-link" onClick={() => onNavigate("settings")}>System details <ArrowRight size={14} /></button>
-          </div>
-        </article>
-      </section>
+        </aside>
+      </div>
 
       <div className="dashboard-disclaimer">
         <span className="disclaimer-icon"><ShieldAlert size={15} /></span>

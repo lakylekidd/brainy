@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLayout, nodePlacement, placeNodes, RINGS, ringId, VIEWS } from "./layouts";
+import { areaSectors, createLayout, nodePlacement, placeNodes, RINGS, ringId, VIEWS } from "./layouts";
 import type { Placement } from "./layouts";
 import { filterVault, loadDemoVault, ROOT_FILE } from "./vault";
 
@@ -30,12 +30,39 @@ describe("D3 vault layouts", () => {
     expect(tracks).toHaveLength(5);
     expect(tracks.map((guide) => guide.label?.split(" / ")[0])).toEqual(RINGS.map((ring) => ring.label));
     for (const [index, guide] of tracks.entries()) {
-      layout.nodes.filter((node) => node.id !== ROOT_FILE && ringId(node.file) === RINGS[index].id).forEach((node) => {
-        expect(Math.hypot((node.x - 500) / guide.rx, (node.y - 350) / guide.ry)).toBeCloseTo(1);
+      layout.nodes.filter((node) => node.id !== ROOT_FILE && node.file.kind !== "area" && ringId(node.file) === RINGS[index].id).forEach((node) => {
+        expect(Math.hypot((node.x - 500) / node.ring!.rx, (node.y - 350) / node.ring!.ry)).toBeCloseTo(1);
+        if (RINGS[index].id !== "knowledge") expect(node.ring!.rx).toBe(guide.rx);
+        else expect(node.ring!.rx / 288).toBeGreaterThanOrEqual(0.43);
       });
     }
-    expect(tracks[0].label).toBe("Skills / 4");
-    expect(tracks[1].label).toBe("Knowledge / 15");
+    expect(tracks[0].label).toBe("Skills / 5");
+    expect(tracks[1].label).toBe(`Knowledge / ${graph.files.filter((file) => file.kind === "note").length}`);
+    const business = layout.nodes.filter((node) => node.file.area === "business" && node.file.kind === "note");
+    expect(new Set(business.map((node) => node.ring!.rx)).size).toBeGreaterThan(1);
+  });
+
+  it("weights sectors by area size and puts overview hubs between the core and their note bands", () => {
+    const sectors = areaSectors(graph);
+    const business = sectors.find((area) => area.id === "business")!;
+    const system = sectors.find((area) => area.id === "system")!;
+    expect(business.end - business.start).toBeGreaterThan(system.end - system.start);
+    const ring = createLayout(graph, "Ring", 1000, 700);
+    const hub = ring.nodes.find((node) => node.id === "business/index.md")!;
+    expect(hub.radius).toBeGreaterThan(ring.nodes.find((node) => node.file.kind === "note")!.radius * 2);
+    expect(hub.ring!.rx).toBeLessThan(ring.nodes.find((node) => node.id === "business/studio.md")!.ring!.rx);
+  });
+
+  it("builds six compact Areas neighborhoods instead of one mixed cloud, with applications near the nucleus", () => {
+    const layout = createLayout(graph, "Areas", 1000, 700);
+    const hubs = layout.nodes.filter((node) => node.file.kind === "area");
+    for (const hub of hubs) {
+      const members = layout.nodes.filter((node) => node.file.area === hub.file.area && node.file.kind === "note");
+      const ownDistance = members.reduce((sum, node) => sum + Math.hypot(node.x - hub.x, node.y - hub.y), 0) / members.length;
+      const otherDistance = hubs.filter((other) => other !== hub).reduce((sum, other) => sum + Math.hypot(other.x - hub.x, other.y - hub.y), 0) / (hubs.length - 1);
+      expect(ownDistance).toBeLessThan(otherDistance * 0.6);
+    }
+    expect(layout.nodes.filter((node) => node.file.kind === "application").every((node) => Math.hypot(node.x - 500, node.y - 350) < 150)).toBe(true);
   });
 
   it("produces six different arrangements rather than relabeling the same view", () => {

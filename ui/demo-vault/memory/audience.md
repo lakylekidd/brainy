@@ -1,4 +1,5 @@
 ---
+area: youtube
 created: 2026-10-12
 ---
 # Audience observations

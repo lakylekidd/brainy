@@ -1,4 +1,5 @@
 ---
+area: personal
 created: 2026-10-10
 ---
 # Working preferences

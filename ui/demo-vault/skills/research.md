@@ -1,4 +1,5 @@
 ---
+area: career
 created: 2026-10-05
 ---
 # Research synthesis

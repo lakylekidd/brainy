@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { flowProgress, linkControl, linkPoint } from "./flow";
+import { flowProgress, linkControl, linkPoint, signalDuration, signalPath } from "./flow";
 
 describe("directed reference flow", () => {
   const source = { x: 10, y: 30 };
@@ -27,5 +27,34 @@ describe("directed reference flow", () => {
     expect(flowProgress(850, 1)).not.toBe(flowProgress(850, 0));
     expect(flowProgress(1e9, 83)).toBeGreaterThanOrEqual(0);
     expect(flowProgress(1e9, 83)).toBeLessThan(1);
+  });
+
+  it("travels a deep Circle bow by arc length instead of uneven curve-parameter speed", () => {
+    const path = signalPath(source, target, { x: 100, y: 400 });
+    expect(path.at(0)).toEqual(source);
+    expect(path.at(1)).toEqual(target);
+    expect(path.control).not.toEqual(linkControl(source, target));
+    const quarters = Array.from({ length: 4 }, (_, quarter) => {
+      let length = 0;
+      for (let i = 1; i <= 20; i++) {
+        const a = path.at(quarter / 4 + (i - 1) / 80);
+        const b = path.at(quarter / 4 + i / 80);
+        length += Math.hypot(b.x - a.x, b.y - a.y);
+      }
+      return length;
+    });
+    expect(Math.max(...quarters) - Math.min(...quarters)).toBeLessThan(0.5);
+    expect(path.at(-1)).toEqual(source);
+    expect(path.at(2)).toEqual(target);
+  });
+
+  it("bounds travel to 1.6-6 seconds, respects world distance and safely handles coincident nodes", () => {
+    expect(signalDuration(20, 1)).toBe(1600);
+    expect(signalDuration(180, 1)).toBe(3000);
+    expect(signalDuration(180, 2)).toBe(3000);
+    expect(signalDuration(5000, 4)).toBe(6000);
+    const path = signalPath(source, source);
+    expect(path.length).toBe(0);
+    expect(path.at(0.5)).toEqual(source);
   });
 });

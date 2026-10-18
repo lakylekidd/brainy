@@ -1,4 +1,5 @@
 ---
+area: business
 created: 2026-10-14
 ---
 # Whiteboard

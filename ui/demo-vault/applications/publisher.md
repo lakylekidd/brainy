@@ -1,4 +1,5 @@
 ---
+area: content
 created: 2026-10-15
 ---
 # Publishing queue

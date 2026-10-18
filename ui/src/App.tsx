@@ -85,6 +85,9 @@ export default function App() {
           loading={loading}
           onNavigate={setPage}
           onRefresh={() => setRefreshVersion((version) => version + 1)}
+          graph={<Suspense fallback={<p role="status">Loading graph feature...</p>}>
+            <KnowledgeGraph key={refreshVersion} credentials={credentials} theme={theme} embedded onUnauthorized={() => signOut("Your credentials are no longer valid. Connect again.")} />
+          </Suspense>}
         />
       ) : page === "pav" ? (
         <Suspense fallback={<p role="status">Loading demo vault...</p>}>
