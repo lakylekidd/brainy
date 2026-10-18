@@ -1,0 +1,1214 @@
+{
+  "HomelabBrain.sln": {
+    "mtime": 1792285835.0789561,
+    "seen": 1792320014.012258,
+    "ast_hash": "9cb14043803e9eaae96ec76f61bf5e08",
+    "semantic_hash": "9cb14043803e9eaae96ec76f61bf5e08"
+  },
+  "docs/schemas/frontmatter-v1.schema.json": {
+    "mtime": 1792251447.0328057,
+    "seen": 1792320014.012258,
+    "ast_hash": "2dd26e61f0720e822fd83b246e5d43a0",
+    "semantic_hash": "2dd26e61f0720e822fd83b246e5d43a0"
+  },
+  "dotnet-tools.json": {
+    "mtime": 1792251447.0328057,
+    "seen": 1792320014.012258,
+    "ast_hash": "89cd250b9f222641b44f921f5b5a637e",
+    "semantic_hash": "89cd250b9f222641b44f921f5b5a637e"
+  },
+  "global.json": {
+    "mtime": 1792251447.0328057,
+    "seen": 1792320014.012258,
+    "ast_hash": "78532844d9400fe0622debff985cd782",
+    "semantic_hash": "78532844d9400fe0622debff985cd782"
+  },
+  "scripts/Initialize-Development.ps1": {
+    "mtime": 1792254324.0770183,
+    "seen": 1792320014.012258,
+    "ast_hash": "c6ee073140f5b438bca93aa0afc00aff",
+    "semantic_hash": "c6ee073140f5b438bca93aa0afc00aff"
+  },
+  "scripts/Initialize-DevelopmentVault.ps1": {
+    "mtime": 1792251447.050964,
+    "seen": 1792320014.012258,
+    "ast_hash": "a25936555e5f76904c31e86f8063fb48",
+    "semantic_hash": "a25936555e5f76904c31e86f8063fb48"
+  },
+  "scripts/Initialize-UiAdmin.ps1": {
+    "mtime": 1792254324.0785758,
+    "seen": 1792320014.012258,
+    "ast_hash": "538b458dc15a021e11eb032ecf57d099",
+    "semantic_hash": "538b458dc15a021e11eb032ecf57d099"
+  },
+  "scripts/Install-BrainClient.ps1": {
+    "mtime": 1792286894.861235,
+    "seen": 1792320014.012258,
+    "ast_hash": "52142fd20cb3a8b7c0d6211c1b5d8750",
+    "semantic_hash": "52142fd20cb3a8b7c0d6211c1b5d8750"
+  },
+  "scripts/Start-Development.ps1": {
+    "mtime": 1792254324.0802054,
+    "seen": 1792320014.012258,
+    "ast_hash": "f7b854af587e134d0d86c5a350aa4cfa",
+    "semantic_hash": "f7b854af587e134d0d86c5a350aa4cfa"
+  },
+  "scripts/Test-Development.ps1": {
+    "mtime": 1792251447.0529644,
+    "seen": 1792320014.012258,
+    "ast_hash": "cd214a544bd9b11342ec900f5967abc5",
+    "semantic_hash": "cd214a544bd9b11342ec900f5967abc5"
+  },
+  "scripts/Test-Mcp.ps1": {
+    "mtime": 1792251447.0539658,
+    "seen": 1792320014.012258,
+    "ast_hash": "2e48de5b958513a4ea56eca2c9daf8f0",
+    "semantic_hash": "2e48de5b958513a4ea56eca2c9daf8f0"
+  },
+  "scripts/Test-Metadata.ps1": {
+    "mtime": 1792251447.0549643,
+    "seen": 1792320014.012258,
+    "ast_hash": "eb09aa850b2497dca1157c6958eecc57",
+    "semantic_hash": "eb09aa850b2497dca1157c6958eecc57"
+  },
+  "scripts/install-brain-client.sh": {
+    "mtime": 1792286894.863237,
+    "seen": 1792320014.012258,
+    "ast_hash": "5e3299206654642617cb20e8919ffad8",
+    "semantic_hash": "5e3299206654642617cb20e8919ffad8"
+  },
+  "src/Brain.Api/ActivityEndpoints.cs": {
+    "mtime": 1792285804.1683078,
+    "seen": 1792320014.012258,
+    "ast_hash": "a9a4efa6b5a9a95c5e9683516b171357",
+    "semantic_hash": "a9a4efa6b5a9a95c5e9683516b171357"
+  },
+  "src/Brain.Api/AgentAuthentication.cs": {
+    "mtime": 1792285764.783951,
+    "seen": 1792320014.012258,
+    "ast_hash": "0d05bf121e3c40434664c8cfa67c5f02",
+    "semantic_hash": "0d05bf121e3c40434664c8cfa67c5f02"
+  },
+  "src/Brain.Api/Brain.Api.csproj": {
+    "mtime": 1792285764.78234,
+    "seen": 1792320014.012258,
+    "ast_hash": "df788838d6dd8e26a270c454078b3a63",
+    "semantic_hash": "df788838d6dd8e26a270c454078b3a63"
+  },
+  "src/Brain.Api/DeviceEndpoints.cs": {
+    "mtime": 1792287342.477199,
+    "seen": 1792320014.012258,
+    "ast_hash": "015c6168a9a57b6deb8f7397cc31b2ee",
+    "semantic_hash": "015c6168a9a57b6deb8f7397cc31b2ee"
+  },
+  "src/Brain.Api/GraphEndpoints.cs": {
+    "mtime": 1792266339.4634237,
+    "seen": 1792320014.012258,
+    "ast_hash": "a9e82527d2489f0e282468c9628f135e",
+    "semantic_hash": "a9e82527d2489f0e282468c9628f135e"
+  },
+  "src/Brain.Api/Program.cs": {
+    "mtime": 1792287421.5712168,
+    "seen": 1792320014.012258,
+    "ast_hash": "6836ee7d28ed5c62450ee0079929bbdd",
+    "semantic_hash": "6836ee7d28ed5c62450ee0079929bbdd"
+  },
+  "src/Brain.Api/appsettings.json": {
+    "mtime": 1792251447.0609648,
+    "seen": 1792320014.012258,
+    "ast_hash": "25cbcd95dc6263dde1cc83629e3cc65b",
+    "semantic_hash": "25cbcd95dc6263dde1cc83629e3cc65b"
+  },
+  "src/Brain.Application/ActivityContracts.cs": {
+    "mtime": 1792251447.0619643,
+    "seen": 1792320014.012258,
+    "ast_hash": "d120d83535c1569367d244c7b94a9d68",
+    "semantic_hash": "d120d83535c1569367d244c7b94a9d68"
+  },
+  "src/Brain.Application/Brain.Application.csproj": {
+    "mtime": 1792251447.0629642,
+    "seen": 1792320014.012258,
+    "ast_hash": "7808de5b087ccaf50d0d12ee651bd93b",
+    "semantic_hash": "7808de5b087ccaf50d0d12ee651bd93b"
+  },
+  "src/Brain.Application/Contracts.cs": {
+    "mtime": 1792285592.4332428,
+    "seen": 1792320014.012258,
+    "ast_hash": "f131c67f8e4d9da83a52206513503bc8",
+    "semantic_hash": "f131c67f8e4d9da83a52206513503bc8"
+  },
+  "src/Brain.Application/DependencyService.cs": {
+    "mtime": 1792286271.8128147,
+    "seen": 1792320014.012258,
+    "ast_hash": "c9f3f469f400620f28d644d04400cf2c",
+    "semantic_hash": "c9f3f469f400620f28d644d04400cf2c"
+  },
+  "src/Brain.Application/DeviceContracts.cs": {
+    "mtime": 1792285732.2682137,
+    "seen": 1792320014.012258,
+    "ast_hash": "ad089f016f4aaf603545e46e250de438",
+    "semantic_hash": "ad089f016f4aaf603545e46e250de438"
+  },
+  "src/Brain.Application/DeviceService.cs": {
+    "mtime": 1792287561.6483614,
+    "seen": 1792320014.012258,
+    "ast_hash": "22a9a20acbf49919d42902aa6c65292a",
+    "semantic_hash": "22a9a20acbf49919d42902aa6c65292a"
+  },
+  "src/Brain.Application/DeviceSkillService.cs": {
+    "mtime": 1792286510.384708,
+    "seen": 1792320014.012258,
+    "ast_hash": "c4891340f6e5954b7e86392ee57d19e4",
+    "semantic_hash": "c4891340f6e5954b7e86392ee57d19e4"
+  },
+  "src/Brain.Application/GraphContracts.cs": {
+    "mtime": 1792266339.4675272,
+    "seen": 1792320014.012258,
+    "ast_hash": "110048816f1547d8e82bda957c21e898",
+    "semantic_hash": "110048816f1547d8e82bda957c21e898"
+  },
+  "src/Brain.Application/GraphService.cs": {
+    "mtime": 1792266339.4701202,
+    "seen": 1792320014.012258,
+    "ast_hash": "41dd45f8bd29c717fea96da97b0ddc83",
+    "semantic_hash": "41dd45f8bd29c717fea96da97b0ddc83"
+  },
+  "src/Brain.Application/KnowledgeChangePlanner.cs": {
+    "mtime": 1792251447.0644596,
+    "seen": 1792320014.012258,
+    "ast_hash": "e9348338acbcd9934557c9f31f1c9d2a",
+    "semantic_hash": "e9348338acbcd9934557c9f31f1c9d2a"
+  },
+  "src/Brain.Application/KnowledgeContracts.cs": {
+    "mtime": 1792251447.066622,
+    "seen": 1792320014.012258,
+    "ast_hash": "b35feb14e4160fc392c6ea88fd8df4f2",
+    "semantic_hash": "b35feb14e4160fc392c6ea88fd8df4f2"
+  },
+  "src/Brain.Application/KnowledgeProposalContracts.cs": {
+    "mtime": 1792251447.067626,
+    "seen": 1792320014.012258,
+    "ast_hash": "38a497fb20cc7ee7ece8efc3ab36e3be",
+    "semantic_hash": "38a497fb20cc7ee7ece8efc3ab36e3be"
+  },
+  "src/Brain.Application/KnowledgeProposalService.cs": {
+    "mtime": 1792251447.0686247,
+    "seen": 1792320014.012258,
+    "ast_hash": "fec4cdee7506cbf2c8bbbed184350366",
+    "semantic_hash": "fec4cdee7506cbf2c8bbbed184350366"
+  },
+  "src/Brain.Application/KnowledgeService.cs": {
+    "mtime": 1792266339.4737,
+    "seen": 1792320014.012258,
+    "ast_hash": "fffe5dc7ec9b1b5e9ea31fef49b2eac2",
+    "semantic_hash": "fffe5dc7ec9b1b5e9ea31fef49b2eac2"
+  },
+  "src/Brain.Application/KnowledgeWriterService.cs": {
+    "mtime": 1792251447.0703716,
+    "seen": 1792320014.012258,
+    "ast_hash": "bc0b3f735467e55d5df687b47249c443",
+    "semantic_hash": "bc0b3f735467e55d5df687b47249c443"
+  },
+  "src/Brain.Application/MarkdownChunker.cs": {
+    "mtime": 1792251447.0736825,
+    "seen": 1792320014.012258,
+    "ast_hash": "a8459b7512c5a0572d2d7bf69394cfb3",
+    "semantic_hash": "a8459b7512c5a0572d2d7bf69394cfb3"
+  },
+  "src/Brain.Application/MemoryService.cs": {
+    "mtime": 1792251447.0736825,
+    "seen": 1792320014.012258,
+    "ast_hash": "5419595c47d69dcc7d8453f3aea523b8",
+    "semantic_hash": "5419595c47d69dcc7d8453f3aea523b8"
+  },
+  "src/Brain.Application/MetadataContracts.cs": {
+    "mtime": 1792251447.0736825,
+    "seen": 1792320014.012258,
+    "ast_hash": "baaa5820e7d908c1ddd79d8c0f9e8a50",
+    "semantic_hash": "baaa5820e7d908c1ddd79d8c0f9e8a50"
+  },
+  "src/Brain.Application/MetadataService.cs": {
+    "mtime": 1792251447.0768027,
+    "seen": 1792320014.012258,
+    "ast_hash": "7ea352482b494dc91009c19f6731c1fc",
+    "semantic_hash": "7ea352482b494dc91009c19f6731c1fc"
+  },
+  "src/Brain.Application/ProvisioningService.cs": {
+    "mtime": 1792286644.2863588,
+    "seen": 1792320014.012258,
+    "ast_hash": "65ce2a4d4cf8c0b4bfc858e963d5e623",
+    "semantic_hash": "65ce2a4d4cf8c0b4bfc858e963d5e623"
+  },
+  "src/Brain.Application/RegistryAccess.cs": {
+    "mtime": 1792266339.4747179,
+    "seen": 1792320014.012258,
+    "ast_hash": "e4f0bf22e9e155b55dd333f78b543061",
+    "semantic_hash": "e4f0bf22e9e155b55dd333f78b543061"
+  },
+  "src/Brain.Application/RegistryContracts.cs": {
+    "mtime": 1792286258.7787764,
+    "seen": 1792320014.012258,
+    "ast_hash": "c660d236c0dfd01f920dd116ba5b123e",
+    "semantic_hash": "c660d236c0dfd01f920dd116ba5b123e"
+  },
+  "src/Brain.Application/RegistryService.cs": {
+    "mtime": 1792286409.6083763,
+    "seen": 1792320014.012258,
+    "ast_hash": "35369a7d6963adb9f80aedb215d8d475",
+    "semantic_hash": "35369a7d6963adb9f80aedb215d8d475"
+  },
+  "src/Brain.Application/RuntimeContracts.cs": {
+    "mtime": 1792286179.0023987,
+    "seen": 1792320014.012258,
+    "ast_hash": "7bd7ad0c11371b9168944515355fd4a1",
+    "semantic_hash": "7bd7ad0c11371b9168944515355fd4a1"
+  },
+  "src/Brain.Application/SearchService.cs": {
+    "mtime": 1792251447.0808237,
+    "seen": 1792320014.012258,
+    "ast_hash": "7f9e7442a0f67caf032ffffba180acc8",
+    "semantic_hash": "7f9e7442a0f67caf032ffffba180acc8"
+  },
+  "src/Brain.Application/Validation.cs": {
+    "mtime": 1792251447.0823019,
+    "seen": 1792320014.012258,
+    "ast_hash": "f710b609af636a1bb1e54c1da6d63ca8",
+    "semantic_hash": "f710b609af636a1bb1e54c1da6d63ca8"
+  },
+  "src/Brain.Client/AgentLoop.cs": {
+    "mtime": 1792287629.6454318,
+    "seen": 1792320014.012258,
+    "ast_hash": "96a351ecf92ee677b87541682f44b9b3",
+    "semantic_hash": "96a351ecf92ee677b87541682f44b9b3"
+  },
+  "src/Brain.Client/Brain.Client.csproj": {
+    "mtime": 1792285850.3912168,
+    "seen": 1792320014.012258,
+    "ast_hash": "ba84b92cfa1252e33d35fa25dd087c1e",
+    "semantic_hash": "ba84b92cfa1252e33d35fa25dd087c1e"
+  },
+  "src/Brain.Client/ClientState.cs": {
+    "mtime": 1792286472.931131,
+    "seen": 1792320014.012258,
+    "ast_hash": "3ddd328ad43790bc978ed54ad46c50b2",
+    "semantic_hash": "3ddd328ad43790bc978ed54ad46c50b2"
+  },
+  "src/Brain.Client/HarnessConnections.cs": {
+    "mtime": 1792287541.5584981,
+    "seen": 1792320014.012258,
+    "ast_hash": "3a75a5db57a965bbaba99b8f336ec997",
+    "semantic_hash": "3a75a5db57a965bbaba99b8f336ec997"
+  },
+  "src/Brain.Client/McpProxy.cs": {
+    "mtime": 1792287477.3351889,
+    "seen": 1792320014.012258,
+    "ast_hash": "2b89525eb6a2bd969c54a1b304c2897c",
+    "semantic_hash": "2b89525eb6a2bd969c54a1b304c2897c"
+  },
+  "src/Brain.Client/OidcLogin.cs": {
+    "mtime": 1792286036.6354222,
+    "seen": 1792320014.012258,
+    "ast_hash": "edfdbbb34a301f51e36ae3943fca14bc",
+    "semantic_hash": "edfdbbb34a301f51e36ae3943fca14bc"
+  },
+  "src/Brain.Client/Program.cs": {
+    "mtime": 1792287541.5695217,
+    "seen": 1792320014.012258,
+    "ast_hash": "ed811c19cbba58a7820d4e9be24e3a94",
+    "semantic_hash": "ed811c19cbba58a7820d4e9be24e3a94"
+  },
+  "src/Brain.Client/Provisioner.cs": {
+    "mtime": 1792287316.056467,
+    "seen": 1792320014.012258,
+    "ast_hash": "68a058661f4e72e5e472fb715d5504a9",
+    "semantic_hash": "68a058661f4e72e5e472fb715d5504a9"
+  },
+  "src/Brain.Client/RuntimeInventory.cs": {
+    "mtime": 1792286275.0353935,
+    "seen": 1792320014.012258,
+    "ast_hash": "04f5dc9933cab1c31d2071075fd7f3ee",
+    "semantic_hash": "04f5dc9933cab1c31d2071075fd7f3ee"
+  },
+  "src/Brain.Client/ServiceInstaller.cs": {
+    "mtime": 1792287316.0609396,
+    "seen": 1792320014.012258,
+    "ast_hash": "87fc89da5df0c6ddbc5e7983090669ec",
+    "semantic_hash": "87fc89da5df0c6ddbc5e7983090669ec"
+  },
+  "src/Brain.Client/SkillSynchronizer.cs": {
+    "mtime": 1792286522.0700822,
+    "seen": 1792320014.012258,
+    "ast_hash": "7afcba5d7763e124601af74c6fe75269",
+    "semantic_hash": "7afcba5d7763e124601af74c6fe75269"
+  },
+  "src/Brain.Domain/Activity.cs": {
+    "mtime": 1792251447.083311,
+    "seen": 1792320014.012258,
+    "ast_hash": "3700b2e7fb1a734f2e3dba9f4fec4fdd",
+    "semantic_hash": "3700b2e7fb1a734f2e3dba9f4fec4fdd"
+  },
+  "src/Brain.Domain/Brain.Domain.csproj": {
+    "mtime": 1792251447.0843115,
+    "seen": 1792320014.012258,
+    "ast_hash": "e2b260fa9012f472b127d9e2f724cd19",
+    "semantic_hash": "e2b260fa9012f472b127d9e2f724cd19"
+  },
+  "src/Brain.Domain/Device.cs": {
+    "mtime": 1792285713.8706832,
+    "seen": 1792320014.012258,
+    "ast_hash": "27ff5aa6317a1197a0db0d77e6e7f876",
+    "semantic_hash": "27ff5aa6317a1197a0db0d77e6e7f876"
+  },
+  "src/Brain.Domain/DeviceRuntime.cs": {
+    "mtime": 1792286179.0013816,
+    "seen": 1792320014.012258,
+    "ast_hash": "0337809f7b8a31ef0dc7b0441f2303c8",
+    "semantic_hash": "0337809f7b8a31ef0dc7b0441f2303c8"
+  },
+  "src/Brain.Domain/DeviceSkill.cs": {
+    "mtime": 1792286510.382194,
+    "seen": 1792320014.012258,
+    "ast_hash": "3b35cd2731459539c99fbb220f13b533",
+    "semantic_hash": "3b35cd2731459539c99fbb220f13b533"
+  },
+  "src/Brain.Domain/Identity.cs": {
+    "mtime": 1792285713.8728342,
+    "seen": 1792320014.012258,
+    "ast_hash": "84360f615c4d9a0ef8a39c3b9949b92c",
+    "semantic_hash": "84360f615c4d9a0ef8a39c3b9949b92c"
+  },
+  "src/Brain.Domain/Knowledge.cs": {
+    "mtime": 1792266339.4787922,
+    "seen": 1792320014.012258,
+    "ast_hash": "655e407e0af5f14c78ef0e8ccf0c1864",
+    "semantic_hash": "655e407e0af5f14c78ef0e8ccf0c1864"
+  },
+  "src/Brain.Domain/KnowledgeWriteProposal.cs": {
+    "mtime": 1792251447.0883162,
+    "seen": 1792320014.012258,
+    "ast_hash": "da4a5045df75e43da7fb95836928c109",
+    "semantic_hash": "da4a5045df75e43da7fb95836928c109"
+  },
+  "src/Brain.Domain/Memory.cs": {
+    "mtime": 1792251447.0893161,
+    "seen": 1792320014.012258,
+    "ast_hash": "663d3ee5231583a517a02c7a990aeb21",
+    "semantic_hash": "663d3ee5231583a517a02c7a990aeb21"
+  },
+  "src/Brain.Domain/MetadataScanState.cs": {
+    "mtime": 1792251447.091314,
+    "seen": 1792320014.012258,
+    "ast_hash": "22b142732d0d09bccf33a8e0236ef4c8",
+    "semantic_hash": "22b142732d0d09bccf33a8e0236ef4c8"
+  },
+  "src/Brain.Domain/ProvisioningPlan.cs": {
+    "mtime": 1792286612.4986293,
+    "seen": 1792320014.012258,
+    "ast_hash": "5eb716c4856bc6c60f6040c04da8856e",
+    "semantic_hash": "5eb716c4856bc6c60f6040c04da8856e"
+  },
+  "src/Brain.Domain/Registry.cs": {
+    "mtime": 1792286258.7777877,
+    "seen": 1792320014.012258,
+    "ast_hash": "9e7fafb2e79147b07177e029bc0d313f",
+    "semantic_hash": "9e7fafb2e79147b07177e029bc0d313f"
+  },
+  "src/Brain.Infrastructure/ActivityLiveBus.cs": {
+    "mtime": 1792251447.0943131,
+    "seen": 1792320014.012258,
+    "ast_hash": "e00e340ce167c33ad29983987f6df870",
+    "semantic_hash": "e00e340ce167c33ad29983987f6df870"
+  },
+  "src/Brain.Infrastructure/ActivityPublisher.cs": {
+    "mtime": 1792251447.0953135,
+    "seen": 1792320014.012258,
+    "ast_hash": "0bae3f984be8ab2c7e9533a4d6d26033",
+    "semantic_hash": "0bae3f984be8ab2c7e9533a4d6d26033"
+  },
+  "src/Brain.Infrastructure/ActivityRegistration.cs": {
+    "mtime": 1792251447.0963151,
+    "seen": 1792320014.012258,
+    "ast_hash": "26f50cef0c36aa74ba7630141b75e0e6",
+    "semantic_hash": "26f50cef0c36aa74ba7630141b75e0e6"
+  },
+  "src/Brain.Infrastructure/ActivitySanitizer.cs": {
+    "mtime": 1792251447.0973122,
+    "seen": 1792320014.012258,
+    "ast_hash": "d0bfabe59d0e7fa9eb158c140de4f570",
+    "semantic_hash": "d0bfabe59d0e7fa9eb158c140de4f570"
+  },
+  "src/Brain.Infrastructure/ActivityStore.cs": {
+    "mtime": 1792251447.0993936,
+    "seen": 1792320014.012258,
+    "ast_hash": "e037549902ba841f271390b44d8a694e",
+    "semantic_hash": "e037549902ba841f271390b44d8a694e"
+  },
+  "src/Brain.Infrastructure/AgentDirectory.cs": {
+    "mtime": 1792285592.4342446,
+    "seen": 1792320014.012258,
+    "ast_hash": "e7cc5e049637e067fb3efa5873cbba00",
+    "semantic_hash": "e7cc5e049637e067fb3efa5873cbba00"
+  },
+  "src/Brain.Infrastructure/AuditLog.cs": {
+    "mtime": 1792251447.1034026,
+    "seen": 1792320014.012258,
+    "ast_hash": "297df76a98d3641dd19050751d7fecb2",
+    "semantic_hash": "297df76a98d3641dd19050751d7fecb2"
+  },
+  "src/Brain.Infrastructure/Brain.Infrastructure.csproj": {
+    "mtime": 1792251447.104402,
+    "seen": 1792320014.012258,
+    "ast_hash": "dc44ac7dc0261dc6374b1ec9e0234244",
+    "semantic_hash": "dc44ac7dc0261dc6374b1ec9e0234244"
+  },
+  "src/Brain.Infrastructure/BrainDbContext.cs": {
+    "mtime": 1792286630.3052113,
+    "seen": 1792320014.012258,
+    "ast_hash": "82f82b6547e34091320bfebea0ed8ce3",
+    "semantic_hash": "82f82b6547e34091320bfebea0ed8ce3"
+  },
+  "src/Brain.Infrastructure/CompatibleMetadataProvider.cs": {
+    "mtime": 1792251447.1074066,
+    "seen": 1792320014.012258,
+    "ast_hash": "611949578e1cddbb4514f5964654c122",
+    "semantic_hash": "611949578e1cddbb4514f5964654c122"
+  },
+  "src/Brain.Infrastructure/DatabaseInitializer.cs": {
+    "mtime": 1792251447.108404,
+    "seen": 1792320014.012258,
+    "ast_hash": "27fa00fc680de791a3c881a47a47ac18",
+    "semantic_hash": "27fa00fc680de791a3c881a47a47ac18"
+  },
+  "src/Brain.Infrastructure/DevelopmentEmbeddingProvider.cs": {
+    "mtime": 1792251447.1094081,
+    "seen": 1792320014.012258,
+    "ast_hash": "8e13a76138612d01a90047fc9c376fe9",
+    "semantic_hash": "8e13a76138612d01a90047fc9c376fe9"
+  },
+  "src/Brain.Infrastructure/DeviceSkillStore.cs": {
+    "mtime": 1792286517.716986,
+    "seen": 1792320014.012258,
+    "ast_hash": "69e9af26736d9c37d5d4462b31c1e87d",
+    "semantic_hash": "69e9af26736d9c37d5d4462b31c1e87d"
+  },
+  "src/Brain.Infrastructure/DeviceStore.cs": {
+    "mtime": 1792287547.495983,
+    "seen": 1792320014.012258,
+    "ast_hash": "31b6670c1664f0fdf494eb762222b994",
+    "semantic_hash": "31b6670c1664f0fdf494eb762222b994"
+  },
+  "src/Brain.Infrastructure/FileSystemKnowledgeVault.cs": {
+    "mtime": 1792251447.110743,
+    "seen": 1792320014.012258,
+    "ast_hash": "30498dd776a174fbcad405b70274d407",
+    "semantic_hash": "30498dd776a174fbcad405b70274d407"
+  },
+  "src/Brain.Infrastructure/FileSystemRegistrySource.cs": {
+    "mtime": 1792286258.7834053,
+    "seen": 1792320014.012258,
+    "ast_hash": "a0a5f2d0dbded9118d616e058665c5a4",
+    "semantic_hash": "a0a5f2d0dbded9118d616e058665c5a4"
+  },
+  "src/Brain.Infrastructure/GitKnowledgeProvenance.cs": {
+    "mtime": 1792251447.110743,
+    "seen": 1792320014.012258,
+    "ast_hash": "b8c7da7835e5d11fb154e392141ea8bf",
+    "semantic_hash": "b8c7da7835e5d11fb154e392141ea8bf"
+  },
+  "src/Brain.Infrastructure/GitKnowledgeWriter.cs": {
+    "mtime": 1792251447.1156461,
+    "seen": 1792320014.012258,
+    "ast_hash": "760a5bb1295e232cfa139ec1c9f662f5",
+    "semantic_hash": "760a5bb1295e232cfa139ec1c9f662f5"
+  },
+  "src/Brain.Infrastructure/GraphReferenceExtractor.cs": {
+    "mtime": 1792266339.4819045,
+    "seen": 1792320014.012258,
+    "ast_hash": "4123b33236306141410989d2b98c8d9d",
+    "semantic_hash": "4123b33236306141410989d2b98c8d9d"
+  },
+  "src/Brain.Infrastructure/GraphSource.cs": {
+    "mtime": 1792266339.4836526,
+    "seen": 1792320014.012258,
+    "ast_hash": "ef3fd06102b5ebba01c4c95d680fe68b",
+    "semantic_hash": "ef3fd06102b5ebba01c4c95d680fe68b"
+  },
+  "src/Brain.Infrastructure/KnowledgeIndex.cs": {
+    "mtime": 1792251447.1176589,
+    "seen": 1792320014.012258,
+    "ast_hash": "7b20a82e0e024e57ef07cea574b1616b",
+    "semantic_hash": "7b20a82e0e024e57ef07cea574b1616b"
+  },
+  "src/Brain.Infrastructure/KnowledgeProposalStore.cs": {
+    "mtime": 1792251447.119656,
+    "seen": 1792320014.012258,
+    "ast_hash": "c931ee339f12166bd2fd0651734de755",
+    "semantic_hash": "c931ee339f12166bd2fd0651734de755"
+  },
+  "src/Brain.Infrastructure/MemoryStore.cs": {
+    "mtime": 1792251447.1206548,
+    "seen": 1792320014.012258,
+    "ast_hash": "9c18c474bc88bbc76bb578829a73515f",
+    "semantic_hash": "9c18c474bc88bbc76bb578829a73515f"
+  },
+  "src/Brain.Infrastructure/MetadataDocumentProcessor.cs": {
+    "mtime": 1792251447.122655,
+    "seen": 1792320014.012258,
+    "ast_hash": "e3be55694903204d309ed9e0811586c9",
+    "semantic_hash": "e3be55694903204d309ed9e0811586c9"
+  },
+  "src/Brain.Infrastructure/MetadataScanStore.cs": {
+    "mtime": 1792251447.123657,
+    "seen": 1792320014.012258,
+    "ast_hash": "092a3da285477cad4e26beecf40ddd0e",
+    "semantic_hash": "092a3da285477cad4e26beecf40ddd0e"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016203414_InitialFoundation.Designer.cs": {
+    "mtime": 1792251447.1256573,
+    "seen": 1792320014.012258,
+    "ast_hash": "b2d04b04fe0ec86b0b820ae6feea0094",
+    "semantic_hash": "b2d04b04fe0ec86b0b820ae6feea0094"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016203414_InitialFoundation.cs": {
+    "mtime": 1792251447.126658,
+    "seen": 1792320014.012258,
+    "ast_hash": "1110e45c05a0f231003744d82ccf84c9",
+    "semantic_hash": "1110e45c05a0f231003744d82ccf84c9"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016205713_KnowledgeIndex.Designer.cs": {
+    "mtime": 1792251447.128659,
+    "seen": 1792320014.012258,
+    "ast_hash": "b9bcb4e7fb28c2b743e0d7a1fcd8a1f5",
+    "semantic_hash": "b9bcb4e7fb28c2b743e0d7a1fcd8a1f5"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016205713_KnowledgeIndex.cs": {
+    "mtime": 1792251447.129658,
+    "seen": 1792320014.012258,
+    "ast_hash": "6a6ad14a0dd5e578a0eb64a5d345f2bc",
+    "semantic_hash": "6a6ad14a0dd5e578a0eb64a5d345f2bc"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016211321_SafeKnowledgeWrites.Designer.cs": {
+    "mtime": 1792251447.1310737,
+    "seen": 1792320014.012258,
+    "ast_hash": "463d35283a0642e2f72bfc374b82d2a5",
+    "semantic_hash": "463d35283a0642e2f72bfc374b82d2a5"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016211321_SafeKnowledgeWrites.cs": {
+    "mtime": 1792251447.133331,
+    "seen": 1792320014.012258,
+    "ast_hash": "9c6f1d730a8217b6af45838d64ade45f",
+    "semantic_hash": "9c6f1d730a8217b6af45838d64ade45f"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016213908_SkillsAndTools.Designer.cs": {
+    "mtime": 1792251447.1343446,
+    "seen": 1792320014.012258,
+    "ast_hash": "d7f5f186a0f2c0700c3d0c4328a9c243",
+    "semantic_hash": "d7f5f186a0f2c0700c3d0c4328a9c243"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016213908_SkillsAndTools.cs": {
+    "mtime": 1792251447.1353438,
+    "seen": 1792320014.012258,
+    "ast_hash": "e6fd78666c612af9d6edc3e76f35e3bd",
+    "semantic_hash": "e6fd78666c612af9d6edc3e76f35e3bd"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016220425_MetadataEnrichment.Designer.cs": {
+    "mtime": 1792251447.1373434,
+    "seen": 1792320014.012258,
+    "ast_hash": "94c1a30524ec2ecdb15821b6b22ba597",
+    "semantic_hash": "94c1a30524ec2ecdb15821b6b22ba597"
+  },
+  "src/Brain.Infrastructure/Migrations/20261016220425_MetadataEnrichment.cs": {
+    "mtime": 1792251447.138342,
+    "seen": 1792320014.012258,
+    "ast_hash": "fde8efbbe1f70d3dcf002ec76d0b3fae",
+    "semantic_hash": "fde8efbbe1f70d3dcf002ec76d0b3fae"
+  },
+  "src/Brain.Infrastructure/Migrations/20261017150837_ActivityTracing.Designer.cs": {
+    "mtime": 1792251447.1403408,
+    "seen": 1792320014.012258,
+    "ast_hash": "d8e2b280597c01c779bb128a97b54cac",
+    "semantic_hash": "d8e2b280597c01c779bb128a97b54cac"
+  },
+  "src/Brain.Infrastructure/Migrations/20261017150837_ActivityTracing.cs": {
+    "mtime": 1792251447.1413393,
+    "seen": 1792320014.012258,
+    "ast_hash": "ea1c12ea48cf7431058bebd910e9d33d",
+    "semantic_hash": "ea1c12ea48cf7431058bebd910e9d33d"
+  },
+  "src/Brain.Infrastructure/Migrations/20261017164339_KnowledgeGraph.Designer.cs": {
+    "mtime": 1792266339.4860106,
+    "seen": 1792320014.012258,
+    "ast_hash": "2284ff290bafaab3ebabd503b18c1217",
+    "semantic_hash": "2284ff290bafaab3ebabd503b18c1217"
+  },
+  "src/Brain.Infrastructure/Migrations/20261017164339_KnowledgeGraph.cs": {
+    "mtime": 1792266339.4860106,
+    "seen": 1792320014.012258,
+    "ast_hash": "f69e622fdc2d6d7c4af41fb028fa54ca",
+    "semantic_hash": "f69e622fdc2d6d7c4af41fb028fa54ca"
+  },
+  "src/Brain.Infrastructure/Migrations/20261018012541_BrainClientOnboarding.Designer.cs": {
+    "mtime": 1792286741.2865672,
+    "seen": 1792320014.012258,
+    "ast_hash": "0dd7c99a5007e85fc541937a213306d9",
+    "semantic_hash": "0dd7c99a5007e85fc541937a213306d9"
+  },
+  "src/Brain.Infrastructure/Migrations/20261018012541_BrainClientOnboarding.cs": {
+    "mtime": 1792286741.2865672,
+    "seen": 1792320014.012258,
+    "ast_hash": "c954e049d43e77f8645329b44f7a3c16",
+    "semantic_hash": "c954e049d43e77f8645329b44f7a3c16"
+  },
+  "src/Brain.Infrastructure/Migrations/BrainDbContextModelSnapshot.cs": {
+    "mtime": 1792286741.2865672,
+    "seen": 1792320014.012258,
+    "ast_hash": "fe8b5b6d877805e4dd32e10d0c2a2c0a",
+    "semantic_hash": "fe8b5b6d877805e4dd32e10d0c2a2c0a"
+  },
+  "src/Brain.Infrastructure/ProvisioningStore.cs": {
+    "mtime": 1792286630.3052113,
+    "seen": 1792320014.012258,
+    "ast_hash": "d6033aca55ff21343a822c478d1e2991",
+    "semantic_hash": "d6033aca55ff21343a822c478d1e2991"
+  },
+  "src/Brain.Infrastructure/RegistryIndex.cs": {
+    "mtime": 1792251447.1443405,
+    "seen": 1792320014.012258,
+    "ast_hash": "fade24472e7a200e278dd9a888488d36",
+    "semantic_hash": "fade24472e7a200e278dd9a888488d36"
+  },
+  "src/Brain.Infrastructure/RuntimeStore.cs": {
+    "mtime": 1792286188.0149128,
+    "seen": 1792320014.012258,
+    "ast_hash": "d669685cceeafa143a1dbaa63f128034",
+    "semantic_hash": "d669685cceeafa143a1dbaa63f128034"
+  },
+  "src/Brain.Infrastructure/ServiceRegistration.cs": {
+    "mtime": 1792286630.3052113,
+    "seen": 1792320014.012258,
+    "ast_hash": "8922c57d3f4cd02a2c7adf65bdb0481a",
+    "semantic_hash": "8922c57d3f4cd02a2c7adf65bdb0481a"
+  },
+  "src/Brain.Infrastructure/WorkerDatabaseReadiness.cs": {
+    "mtime": 1792251447.1473465,
+    "seen": 1792320014.012258,
+    "ast_hash": "f4e0ac776110df029f6af245aecbcb43",
+    "semantic_hash": "f4e0ac776110df029f6af245aecbcb43"
+  },
+  "src/Brain.Mcp/Brain.Mcp.csproj": {
+    "mtime": 1792251447.147892,
+    "seen": 1792320014.012258,
+    "ast_hash": "4811067bf6009be0da191a875ad62662",
+    "semantic_hash": "4811067bf6009be0da191a875ad62662"
+  },
+  "src/Brain.Mcp/BrainTools.cs": {
+    "mtime": 1792251447.15012,
+    "seen": 1792320014.012258,
+    "ast_hash": "114b975a0b5e54bde4729f3e78728cfd",
+    "semantic_hash": "114b975a0b5e54bde4729f3e78728cfd"
+  },
+  "src/Brain.Mcp/McpRegistration.cs": {
+    "mtime": 1792251447.151119,
+    "seen": 1792320014.012258,
+    "ast_hash": "d7dcc5fc8517f54a627b1c30a76610df",
+    "semantic_hash": "d7dcc5fc8517f54a627b1c30a76610df"
+  },
+  "src/Brain.Worker/Brain.Worker.csproj": {
+    "mtime": 1792251447.1521199,
+    "seen": 1792320014.012258,
+    "ast_hash": "4786f40075e5d049a48d6a9a0ea6b1e0",
+    "semantic_hash": "4786f40075e5d049a48d6a9a0ea6b1e0"
+  },
+  "src/Brain.Worker/Program.cs": {
+    "mtime": 1792251447.1541202,
+    "seen": 1792320014.012258,
+    "ast_hash": "e7788039f340f5766c0b633203d7f8cb",
+    "semantic_hash": "e7788039f340f5766c0b633203d7f8cb"
+  },
+  "tests/Brain.IntegrationTests/ActivityApiTests.cs": {
+    "mtime": 1792287012.7690835,
+    "seen": 1792320014.012258,
+    "ast_hash": "4043b2bf886ed961edb3f83dae87d3ce",
+    "semantic_hash": "4043b2bf886ed961edb3f83dae87d3ce"
+  },
+  "tests/Brain.IntegrationTests/AgentApiTests.cs": {
+    "mtime": 1792285592.4368086,
+    "seen": 1792320014.012258,
+    "ast_hash": "3a6e5d8a6ec39d9f324f0a7b93918566",
+    "semantic_hash": "3a6e5d8a6ec39d9f324f0a7b93918566"
+  },
+  "tests/Brain.IntegrationTests/ApiContractTests.cs": {
+    "mtime": 1792285592.4400668,
+    "seen": 1792320014.012258,
+    "ast_hash": "1a38ce84342048827b20895d11aef7c0",
+    "semantic_hash": "1a38ce84342048827b20895d11aef7c0"
+  },
+  "tests/Brain.IntegrationTests/Brain.IntegrationTests.csproj": {
+    "mtime": 1792251447.1548014,
+    "seen": 1792320014.012258,
+    "ast_hash": "1af82b4d9394ccc547fdf2742500861b",
+    "semantic_hash": "1af82b4d9394ccc547fdf2742500861b"
+  },
+  "tests/Brain.IntegrationTests/BrainFixture.cs": {
+    "mtime": 1792287012.764317,
+    "seen": 1792320014.012258,
+    "ast_hash": "16c8502b2d68c8930de923748878cab6",
+    "semantic_hash": "16c8502b2d68c8930de923748878cab6"
+  },
+  "tests/Brain.IntegrationTests/DeviceApiTests.cs": {
+    "mtime": 1792287552.9342215,
+    "seen": 1792320014.012258,
+    "ast_hash": "af50f0e30476f88c4bb0705b6ce4cbdd",
+    "semantic_hash": "af50f0e30476f88c4bb0705b6ce4cbdd"
+  },
+  "tests/Brain.IntegrationTests/GraphApiTests.cs": {
+    "mtime": 1792266339.4940577,
+    "seen": 1792320014.012258,
+    "ast_hash": "ff56c985998cd9c69418c74357b0e274",
+    "semantic_hash": "ff56c985998cd9c69418c74357b0e274"
+  },
+  "tests/Brain.IntegrationTests/KnowledgeApiTests.cs": {
+    "mtime": 1792266339.495299,
+    "seen": 1792320014.012258,
+    "ast_hash": "d3f1d3f6a9a2e4f69f0c7b100f4cdb21",
+    "semantic_hash": "d3f1d3f6a9a2e4f69f0c7b100f4cdb21"
+  },
+  "tests/Brain.IntegrationTests/KnowledgeProposalApiTests.cs": {
+    "mtime": 1792251447.1623175,
+    "seen": 1792320014.012258,
+    "ast_hash": "f7df4cae2205206bf7faceb69447d1f0",
+    "semantic_hash": "f7df4cae2205206bf7faceb69447d1f0"
+  },
+  "tests/Brain.IntegrationTests/McpTests.cs": {
+    "mtime": 1792251447.1657324,
+    "seen": 1792320014.012258,
+    "ast_hash": "c1d2e9923c1dee9b082c7c04d47d356d",
+    "semantic_hash": "c1d2e9923c1dee9b082c7c04d47d356d"
+  },
+  "tests/Brain.IntegrationTests/MemoryApiTests.cs": {
+    "mtime": 1792251447.167748,
+    "seen": 1792320014.012258,
+    "ast_hash": "61d3e35c1e5c565bbbfb49cccf373906",
+    "semantic_hash": "61d3e35c1e5c565bbbfb49cccf373906"
+  },
+  "tests/Brain.IntegrationTests/MetadataApiTests.cs": {
+    "mtime": 1792251447.168749,
+    "seen": 1792320014.012258,
+    "ast_hash": "01e9ae2ab20c07f1eedcfef3a3928ced",
+    "semantic_hash": "01e9ae2ab20c07f1eedcfef3a3928ced"
+  },
+  "tests/Brain.IntegrationTests/RegistryApiTests.cs": {
+    "mtime": 1792251447.1707458,
+    "seen": 1792320014.012258,
+    "ast_hash": "b8d0ebdd807460edad884153b0c6b9fe",
+    "semantic_hash": "b8d0ebdd807460edad884153b0c6b9fe"
+  },
+  "tests/Brain.IntegrationTests/UiAdminApiTests.cs": {
+    "mtime": 1792254324.091766,
+    "seen": 1792320014.012258,
+    "ast_hash": "caa4d8fcdf173eab3d2d6475b2e1e2b8",
+    "semantic_hash": "caa4d8fcdf173eab3d2d6475b2e1e2b8"
+  },
+  "tests/Brain.IntegrationTests/WorkerReadinessTests.cs": {
+    "mtime": 1792287012.7668867,
+    "seen": 1792320014.012258,
+    "ast_hash": "46efc2411164d2cb64084e479f44fadf",
+    "semantic_hash": "46efc2411164d2cb64084e479f44fadf"
+  },
+  "tests/Brain.UnitTests/ActivityTests.cs": {
+    "mtime": 1792251447.1737483,
+    "seen": 1792320014.012258,
+    "ast_hash": "d8443880dd949eb71bb767e39b3902df",
+    "semantic_hash": "d8443880dd949eb71bb767e39b3902df"
+  },
+  "tests/Brain.UnitTests/Brain.UnitTests.csproj": {
+    "mtime": 1792286074.9904113,
+    "seen": 1792320014.012258,
+    "ast_hash": "fea4d5921886ca2d5c299b526c2ba5ac",
+    "semantic_hash": "fea4d5921886ca2d5c299b526c2ba5ac"
+  },
+  "tests/Brain.UnitTests/DeviceClientTests.cs": {
+    "mtime": 1792286881.3857937,
+    "seen": 1792320014.012258,
+    "ast_hash": "6c4cf3d279c25ea8e9f2cb744533b53e",
+    "semantic_hash": "6c4cf3d279c25ea8e9f2cb744533b53e"
+  },
+  "tests/Brain.UnitTests/GraphTests.cs": {
+    "mtime": 1792266339.4973073,
+    "seen": 1792320014.012258,
+    "ast_hash": "20be5be5706cdb01691fac9abbafc4ae",
+    "semantic_hash": "20be5be5706cdb01691fac9abbafc4ae"
+  },
+  "tests/Brain.UnitTests/KnowledgeTests.cs": {
+    "mtime": 1792251447.176746,
+    "seen": 1792320014.012258,
+    "ast_hash": "0c0be1579e557471acb33d3f154844e2",
+    "semantic_hash": "0c0be1579e557471acb33d3f154844e2"
+  },
+  "tests/Brain.UnitTests/KnowledgeWriteTests.cs": {
+    "mtime": 1792251447.177746,
+    "seen": 1792320014.012258,
+    "ast_hash": "12bb8a972bc91a723386f336a8729e8d",
+    "semantic_hash": "12bb8a972bc91a723386f336a8729e8d"
+  },
+  "tests/Brain.UnitTests/MemoryServiceTests.cs": {
+    "mtime": 1792251447.178749,
+    "seen": 1792320014.012258,
+    "ast_hash": "4ae7d635d3f8792ba13bc37831243d5f",
+    "semantic_hash": "4ae7d635d3f8792ba13bc37831243d5f"
+  },
+  "tests/Brain.UnitTests/MetadataTests.cs": {
+    "mtime": 1792251447.1807442,
+    "seen": 1792320014.012258,
+    "ast_hash": "16131b47f63ca75b1511744b4b47fac9",
+    "semantic_hash": "16131b47f63ca75b1511744b4b47fac9"
+  },
+  "tests/Brain.UnitTests/RegistrySourceTests.cs": {
+    "mtime": 1792286277.6155758,
+    "seen": 1792320014.012258,
+    "ast_hash": "8e743c63d5cfa00eebe8a780cb88ac78",
+    "semantic_hash": "8e743c63d5cfa00eebe8a780cb88ac78"
+  },
+  "tests/TestGit.cs": {
+    "mtime": 1792251447.1833954,
+    "seen": 1792320014.012258,
+    "ast_hash": "6f85019fe7193b3111fb18b6fd26f422",
+    "semantic_hash": "6f85019fe7193b3111fb18b6fd26f422"
+  },
+  "tests/VaultSandbox.cs": {
+    "mtime": 1792251447.1853933,
+    "seen": 1792320014.012258,
+    "ast_hash": "a25e4e4fcc825b1695a1fbe42f6ed871",
+    "semantic_hash": "a25e4e4fcc825b1695a1fbe42f6ed871"
+  },
+  "ui/e2e/admin-login.spec.ts": {
+    "mtime": 1792285592.656019,
+    "seen": 1792320014.012258,
+    "ast_hash": "606dd4a65a67fb0bd6b599ae76800ba5",
+    "semantic_hash": "606dd4a65a67fb0bd6b599ae76800ba5"
+  },
+  "ui/e2e/agents.spec.ts": {
+    "mtime": 1792285592.6576068,
+    "seen": 1792320014.012258,
+    "ast_hash": "f0c7ac0ae62d421b1438b984e9746875",
+    "semantic_hash": "f0c7ac0ae62d421b1438b984e9746875"
+  },
+  "ui/e2e/graph.spec.ts": {
+    "mtime": 1792267158.7190437,
+    "seen": 1792320014.012258,
+    "ast_hash": "ccd805c090bc9c41c04a705c7c7995f9",
+    "semantic_hash": "ccd805c090bc9c41c04a705c7c7995f9"
+  },
+  "ui/e2e/pav.spec.ts": {
+    "mtime": 1792285592.6576068,
+    "seen": 1792320014.012258,
+    "ast_hash": "2b0a5c4e6e64f2e2d12120825d1140d2",
+    "semantic_hash": "2b0a5c4e6e64f2e2d12120825d1140d2"
+  },
+  "ui/e2e/reference-layout.spec.ts": {
+    "mtime": 1792285592.6606557,
+    "seen": 1792320014.012258,
+    "ast_hash": "eb59f3377666c75678a85172e2ce1a66",
+    "semantic_hash": "eb59f3377666c75678a85172e2ce1a66"
+  },
+  "ui/e2e/theme.spec.ts": {
+    "mtime": 1792285592.6606557,
+    "seen": 1792320014.012258,
+    "ast_hash": "9ed8360d24cb04ab6c8ad98d0fef0d11",
+    "semantic_hash": "9ed8360d24cb04ab6c8ad98d0fef0d11"
+  },
+  "ui/package.json": {
+    "mtime": 1792285592.6711211,
+    "seen": 1792320014.012258,
+    "ast_hash": "9d1d4aa990048f290317a41aa39251a9",
+    "semantic_hash": "9d1d4aa990048f290317a41aa39251a9"
+  },
+  "ui/playwright.config.ts": {
+    "mtime": 1792254324.1002536,
+    "seen": 1792320014.012258,
+    "ast_hash": "d146da290a825ef315b02fee84f33a9e",
+    "semantic_hash": "d146da290a825ef315b02fee84f33a9e"
+  },
+  "ui/public/fonts/PROVENANCE.json": {
+    "mtime": 1792285592.689144,
+    "seen": 1792320014.012258,
+    "ast_hash": "d2f4450d81726af6e6ec86b3447e9804",
+    "semantic_hash": "d2f4450d81726af6e6ec86b3447e9804"
+  },
+  "ui/public/theme.js": {
+    "mtime": 1792285592.690142,
+    "seen": 1792320014.012258,
+    "ast_hash": "2c7aec9cca5bf79a538f70a8d2cfd5b6",
+    "semantic_hash": "2c7aec9cca5bf79a538f70a8d2cfd5b6"
+  },
+  "ui/src/App.test.tsx": {
+    "mtime": 1792285592.6926582,
+    "seen": 1792320014.012258,
+    "ast_hash": "5a8b09c4018a30108fe6b26e5c07023a",
+    "semantic_hash": "5a8b09c4018a30108fe6b26e5c07023a"
+  },
+  "ui/src/App.tsx": {
+    "mtime": 1792285592.6936579,
+    "seen": 1792320014.012258,
+    "ast_hash": "e77bd0008606b4c5ecdea7149914ac26",
+    "semantic_hash": "e77bd0008606b4c5ecdea7149914ac26"
+  },
+  "ui/src/api/client.test.ts": {
+    "mtime": 1792254324.1105943,
+    "seen": 1792320014.012258,
+    "ast_hash": "6544923cdb956f8faa24e433c5ebe60f",
+    "semantic_hash": "6544923cdb956f8faa24e433c5ebe60f"
+  },
+  "ui/src/api/client.ts": {
+    "mtime": 1792285592.6964781,
+    "seen": 1792320014.012258,
+    "ast_hash": "6ee3491cea99123f2f6a9f527b5d36fb",
+    "semantic_hash": "6ee3491cea99123f2f6a9f527b5d36fb"
+  },
+  "ui/src/appearance.ts": {
+    "mtime": 1792285592.6984973,
+    "seen": 1792320014.012258,
+    "ast_hash": "3d229713cc369172f0b0d0e88d783792",
+    "semantic_hash": "3d229713cc369172f0b0d0e88d783792"
+  },
+  "ui/src/components/AppShell.test.tsx": {
+    "mtime": 1792285592.6984973,
+    "seen": 1792320014.012258,
+    "ast_hash": "14685254e1ac45fca6cd342c7401c987",
+    "semantic_hash": "14685254e1ac45fca6cd342c7401c987"
+  },
+  "ui/src/components/AppShell.tsx": {
+    "mtime": 1792285592.7020307,
+    "seen": 1792320014.012258,
+    "ast_hash": "3c66400f423596a4f877b506dced8443",
+    "semantic_hash": "3c66400f423596a4f877b506dced8443"
+  },
+  "ui/src/components/SignIn.tsx": {
+    "mtime": 1792285592.704454,
+    "seen": 1792320014.012258,
+    "ast_hash": "1064fe991c8625715ad4ff47f4f16f46",
+    "semantic_hash": "1064fe991c8625715ad4ff47f4f16f46"
+  },
+  "ui/src/components/ThemeToggle.tsx": {
+    "mtime": 1792254324.1190367,
+    "seen": 1792320014.012258,
+    "ast_hash": "f2c35447a6814421914b21173978e116",
+    "semantic_hash": "f2c35447a6814421914b21173978e116"
+  },
+  "ui/src/components/Today.test.tsx": {
+    "mtime": 1792285592.7064643,
+    "seen": 1792320014.012258,
+    "ast_hash": "60b9f5dd861e744cbd4d947d70c008a8",
+    "semantic_hash": "60b9f5dd861e744cbd4d947d70c008a8"
+  },
+  "ui/src/components/Today.tsx": {
+    "mtime": 1792285592.7084947,
+    "seen": 1792320014.012258,
+    "ast_hash": "61ea4f6d1e4acd77532b0b59e416552e",
+    "semantic_hash": "61ea4f6d1e4acd77532b0b59e416552e"
+  },
+  "ui/src/features/agents/AccessForm.tsx": {
+    "mtime": 1792285592.7084947,
+    "seen": 1792320014.012258,
+    "ast_hash": "ae66c8b0338cdce405b41201fa555f18",
+    "semantic_hash": "ae66c8b0338cdce405b41201fa555f18"
+  },
+  "ui/src/features/agents/Agents.test.tsx": {
+    "mtime": 1792285592.7105136,
+    "seen": 1792320014.012258,
+    "ast_hash": "5e78308cc56ca36c50087337ea387428",
+    "semantic_hash": "5e78308cc56ca36c50087337ea387428"
+  },
+  "ui/src/features/agents/Agents.tsx": {
+    "mtime": 1792285592.7125223,
+    "seen": 1792320014.012258,
+    "ast_hash": "8f6fd38798daa0f07e02292fcbe03b04",
+    "semantic_hash": "8f6fd38798daa0f07e02292fcbe03b04"
+  },
+  "ui/src/features/agents/api.ts": {
+    "mtime": 1792285592.715603,
+    "seen": 1792320014.012258,
+    "ast_hash": "379f04fed9e56da45062fd96591e89bf",
+    "semantic_hash": "379f04fed9e56da45062fd96591e89bf"
+  },
+  "ui/src/features/dashboard/Dashboard.test.tsx": {
+    "mtime": 1792285592.7176127,
+    "seen": 1792320014.012258,
+    "ast_hash": "dbb50f58f052a820ec91e98a8ab2ed14",
+    "semantic_hash": "dbb50f58f052a820ec91e98a8ab2ed14"
+  },
+  "ui/src/features/dashboard/Dashboard.tsx": {
+    "mtime": 1792285592.7196276,
+    "seen": 1792320014.012258,
+    "ast_hash": "853893538f235d6293f24a51e4ba7c70",
+    "semantic_hash": "853893538f235d6293f24a51e4ba7c70"
+  },
+  "ui/src/features/graph/GraphCanvas.test.tsx": {
+    "mtime": 1792266339.5198276,
+    "seen": 1792320014.012258,
+    "ast_hash": "8165016b1d618e690933704a937d21d1",
+    "semantic_hash": "8165016b1d618e690933704a937d21d1"
+  },
+  "ui/src/features/graph/GraphCanvas.tsx": {
+    "mtime": 1792285592.7229443,
+    "seen": 1792320014.012258,
+    "ast_hash": "2e641fc8dfa7dec0d8c87ac53543aa20",
+    "semantic_hash": "2e641fc8dfa7dec0d8c87ac53543aa20"
+  },
+  "ui/src/features/graph/KnowledgeGraph.test.tsx": {
+    "mtime": 1792285592.7250502,
+    "seen": 1792320014.012258,
+    "ast_hash": "b08e863cbef43bf3c5bce3538252e953",
+    "semantic_hash": "b08e863cbef43bf3c5bce3538252e953"
+  },
+  "ui/src/features/graph/KnowledgeGraph.tsx": {
+    "mtime": 1792285592.7270005,
+    "seen": 1792320014.012258,
+    "ast_hash": "9de861c8fed0353fc397028a0608e075",
+    "semantic_hash": "9de861c8fed0353fc397028a0608e075"
+  },
+  "ui/src/features/graph/api.ts": {
+    "mtime": 1792266339.5265844,
+    "seen": 1792320014.012258,
+    "ast_hash": "9d98494ddd98287eddfa3e3016b3a82f",
+    "semantic_hash": "9d98494ddd98287eddfa3e3016b3a82f"
+  },
+  "ui/src/features/graph/model.test.ts": {
+    "mtime": 1792266339.5296562,
+    "seen": 1792320014.012258,
+    "ast_hash": "46aa0816eaafd213779b07f821680eba",
+    "semantic_hash": "46aa0816eaafd213779b07f821680eba"
+  },
+  "ui/src/features/graph/model.ts": {
+    "mtime": 1792285592.729007,
+    "seen": 1792320014.012258,
+    "ast_hash": "429834b028927b6e8c779618fb4642ce",
+    "semantic_hash": "429834b028927b6e8c779618fb4642ce"
+  },
+  "ui/src/features/graph/webObsidian.test.ts": {
+    "mtime": 1792267158.7260535,
+    "seen": 1792320014.012258,
+    "ast_hash": "f0991032a07cb960565f6cc0ad3a1cd8",
+    "semantic_hash": "f0991032a07cb960565f6cc0ad3a1cd8"
+  },
+  "ui/src/features/graph/webObsidian.ts": {
+    "mtime": 1792267158.7275567,
+    "seen": 1792320014.012258,
+    "ast_hash": "086d394c0cc63d2c866a1b201c6129b6",
+    "semantic_hash": "086d394c0cc63d2c866a1b201c6129b6"
+  },
+  "ui/src/features/pav/PavDashboard.test.tsx": {
+    "mtime": 1792285592.7317855,
+    "seen": 1792320014.012258,
+    "ast_hash": "5e6738788b355c5735d8ad65458dae17",
+    "semantic_hash": "5e6738788b355c5735d8ad65458dae17"
+  },
+  "ui/src/features/pav/PavDashboard.tsx": {
+    "mtime": 1792285592.7345803,
+    "seen": 1792320014.012258,
+    "ast_hash": "c11fe9ebb8ad6891f3fbd8827d022feb",
+    "semantic_hash": "c11fe9ebb8ad6891f3fbd8827d022feb"
+  },
+  "ui/src/features/pav/VaultCanvas.test.tsx": {
+    "mtime": 1792285592.736548,
+    "seen": 1792320014.012258,
+    "ast_hash": "d63dd0e40571d625d3738e113eff3a3e",
+    "semantic_hash": "d63dd0e40571d625d3738e113eff3a3e"
+  },
+  "ui/src/features/pav/VaultCanvas.tsx": {
+    "mtime": 1792285592.7383673,
+    "seen": 1792320014.012258,
+    "ast_hash": "aeff9fab9539417d8e073d4d80950185",
+    "semantic_hash": "aeff9fab9539417d8e073d4d80950185"
+  },
+  "ui/src/features/pav/flow.test.ts": {
+    "mtime": 1792285592.7401197,
+    "seen": 1792320014.012258,
+    "ast_hash": "5afc2758980b87ed1eadc6921fdef071",
+    "semantic_hash": "5afc2758980b87ed1eadc6921fdef071"
+  },
+  "ui/src/features/pav/flow.ts": {
+    "mtime": 1792285592.741697,
+    "seen": 1792320014.012258,
+    "ast_hash": "872af92056c84523b74e52bcd810cd89",
+    "semantic_hash": "872af92056c84523b74e52bcd810cd89"
+  },
+  "ui/src/features/pav/layouts.test.ts": {
+    "mtime": 1792285592.7435188,
+    "seen": 1792320014.012258,
+    "ast_hash": "29ad92a06e732b891d2de5e8b539f1bf",
+    "semantic_hash": "29ad92a06e732b891d2de5e8b539f1bf"
+  },
+  "ui/src/features/pav/layouts.ts": {
+    "mtime": 1792285592.744656,
+    "seen": 1792320014.012258,
+    "ast_hash": "b497876f694cfd0084c36ab80d57ae65",
+    "semantic_hash": "b497876f694cfd0084c36ab80d57ae65"
+  },
+  "ui/src/features/pav/motion.test.ts": {
+    "mtime": 1792285592.7466748,
+    "seen": 1792320014.012258,
+    "ast_hash": "f019c7b051551f05c9658e0a9f2d0992",
+    "semantic_hash": "f019c7b051551f05c9658e0a9f2d0992"
+  },
+  "ui/src/features/pav/motion.ts": {
+    "mtime": 1792285592.7466748,
+    "seen": 1792320014.012258,
+    "ast_hash": "8d1ac63183d3de3dbd3c5f57b7b8324a",
+    "semantic_hash": "8d1ac63183d3de3dbd3c5f57b7b8324a"
+  },
+  "ui/src/features/pav/vault.test.ts": {
+    "mtime": 1792285592.7517433,
+    "seen": 1792320014.012258,
+    "ast_hash": "364e13dca0bc6dd5668ec7efabd66e4d",
+    "semantic_hash": "364e13dca0bc6dd5668ec7efabd66e4d"
+  },
+  "ui/src/features/pav/vault.ts": {
+    "mtime": 1792285592.7517433,
+    "seen": 1792320014.012258,
+    "ast_hash": "bd3907673161dcbe2fdf5230b2c6ac94",
+    "semantic_hash": "bd3907673161dcbe2fdf5230b2c6ac94"
+  },
+  "ui/src/hooks/useTheme.test.tsx": {
+    "mtime": 1792285592.755521,
+    "seen": 1792320014.012258,
+    "ast_hash": "c906c91018bad088fe4a256aa5efeae3",
+    "semantic_hash": "c906c91018bad088fe4a256aa5efeae3"
+  },
+  "ui/src/hooks/useTheme.ts": {
+    "mtime": 1792285592.7575853,
+    "seen": 1792320014.012258,
+    "ast_hash": "31575716f0caa91447ffec6a0d5710b2",
+    "semantic_hash": "31575716f0caa91447ffec6a0d5710b2"
+  },
+  "ui/src/main.tsx": {
+    "mtime": 1792254324.1296864,
+    "seen": 1792320014.012258,
+    "ast_hash": "2faed4d2377850d086629ef49bdcc061",
+    "semantic_hash": "2faed4d2377850d086629ef49bdcc061"
+  },
+  "ui/src/test-setup.ts": {
+    "mtime": 1792254324.1334512,
+    "seen": 1792320014.012258,
+    "ast_hash": "c5b496cf28f3cdd1debd973c0fdd607b",
+    "semantic_hash": "c5b496cf28f3cdd1debd973c0fdd607b"
+  },
+  "ui/src/vite-env.d.ts": {
+    "mtime": 1792267158.729095,
+    "seen": 1792320014.012258,
+    "ast_hash": "f322bfd8147fdbcae1b24ef89214857f",
+    "semantic_hash": "f322bfd8147fdbcae1b24ef89214857f"
+  },
+  "ui/tsconfig.json": {
+    "mtime": 1792254324.138069,
+    "seen": 1792320014.012258,
+    "ast_hash": "5124d05d93eefb78f6c1427ff4e12381",
+    "semantic_hash": "5124d05d93eefb78f6c1427ff4e12381"
+  },
+  "ui/vite.config.ts": {
+    "mtime": 1792254324.1391296,
+    "seen": 1792320014.012258,
+    "ast_hash": "3f36a19391aa8dab9f109f3899e6cd93",
+    "semantic_hash": "3f36a19391aa8dab9f109f3899e6cd93"
+  }
+}
