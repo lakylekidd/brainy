@@ -1,5 +1,35 @@
 # Implementation verification
 
+## PAV OS clickable ring focus (18 October 2026)
+
+- Ring labels now focus their existing layer across areas without filtering,
+  moving or removing any file. The focused track/label and matching dots are
+  emphasized; incident references brighten and retain their original direction.
+  Root context, fixture counts and the separate membership boundary remain.
+  Clicking the same name or pressing Escape clears focus. File selection,
+  view changes and search/area/type changes clear it as well.
+- Keyboard buttons expose the same labels with pressed state and Enter/Space
+  activation. Screen-space label targets follow camera transforms, breathing
+  tracks, resizing and fullscreen. Pointer/touch hit-testing gives a direct
+  dot hit priority over text, so a node dragged beneath a label remains
+  selectable. Cancelled, drifting or multi-pointer presses do not accidentally
+  toggle the ring.
+- **162 frontend tests across 17 files** pass, including **67 PAV cases across
+  six files**. New assertions cover label geometry/zoom alignment, layer focus
+  state and counts, toggle/clear behavior, pointer cancellation, drag rejection
+  and overlapping-dot priority. TypeScript/Vite and Docker UI builds pass.
+- **15 Chromium cases** pass against the real Compose stack. The new ring case
+  samples actual Canvas pixels to verify all five cross-area skills remain
+  bright while unrelated notes dim; it also verifies all five ring counts,
+  unchanged graph counts/filters, keyboard toggle/Escape, pan/zoom, fullscreen,
+  theme persistence and individual inspection. Existing touch coverage now
+  taps the ring name after dragging and inspecting a real node.
+- Dark/light focused-ring and mobile touch screenshots are visually inspected.
+  The rebuilt UI returns HTTP 200 on `http://localhost:5173`; its container is
+  healthy. No fixture files, backend contracts, live vault, credentials or
+  dependencies changed. Reproduction uses the same frontend/Compose commands
+  recorded below.
+
 ## PAV OS file-backed area hubs and dense clusters (18 October 2026)
 
 - Separated owning area, file kind and visualization layer. Six real overview

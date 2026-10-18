@@ -32,6 +32,7 @@ export interface Guide {
   x: number; y: number;
   rx: number; ry: number;
   label?: string;
+  ring?: RingId;
   color?: string;
   points?: { x: number; y: number }[];
 }
@@ -94,7 +95,7 @@ export function createLayout(graph: VaultGraph, view: ViewMode, width: number, h
     if (ring.id === "applications") members.forEach((node, i) => setPolar(node, 1, -Math.PI / 2 + (i + 0.5) / members.length * TAU));
     if (view === "Ring" && members.length) guides.push({
       kind: "ellipse", x: cx, y: cy, rx: r, ry,
-      label: `${ring.label} / ${members.length}`, color: ring.color,
+      label: `${ring.label} / ${members.length}`, color: ring.color, ring: ring.id,
     });
   });
   groups.forEach((area) => {

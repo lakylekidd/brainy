@@ -74,6 +74,10 @@
 :root[data-theme="light"] .pav-visual { background: radial-gradient(ellipse at center, #e6edf1, var(--bg) 70%); }
 .pav-canvas-host { height: 490px; width: 100%; position: relative; }
 .pav-canvas-host canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.pav-ring-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.pav-ring-label { position: absolute; visibility: hidden; height: 15px; padding: 0 4px; border: 1px solid transparent; border-radius: 2px; font: 600 9px/13px var(--mono); white-space: nowrap; }
+.pav-ring-label[data-hovered="true"], .pav-ring-label[aria-pressed="true"] { border-color: var(--h); }
+.pav-ring-label:focus-visible { outline: 2px solid var(--h); outline-offset: 2px; }
 .pav-map-caption { position: absolute; left: 12px; top: 12px; display: flex; align-items: center; gap: 7px; color: var(--mute); font-size: 8px; pointer-events: none; }
 .pav-live-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--good); flex: 0 0 5px; }
 .pav-camera { position: absolute; left: 8px; bottom: 34px; display: flex; align-items: center; flex-wrap: wrap; gap: 3px; max-width: calc(100% - 16px); padding: 3px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); }

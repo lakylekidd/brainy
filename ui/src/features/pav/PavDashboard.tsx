@@ -2,7 +2,7 @@ import { ArrowDownLeft, ArrowUpRight, BrainCircuit, ChevronRight, FileText, Fold
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Theme } from "../../hooks/useTheme";
 import Today from "../../components/Today";
-import { VIEWS, type ViewMode } from "./layouts";
+import { VIEWS, type RingId, type ViewMode } from "./layouts";
 import { AREAS, DemoVaultError, FILE_KINDS, KIND_LABELS, areaLabel, fileColor, filterVault, loadDemoVault, ROOT_FILE } from "./vault";
 import VaultCanvas from "./VaultCanvas";
 import "./pav.css";
@@ -29,6 +29,7 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
   const [area, setArea] = useState("all");
   const [kind, setKind] = useState("all");
   const [selected, setSelected] = useState(ROOT_FILE);
+  const [focusedRing, setFocusedRing] = useState<RingId | null>(null);
   const [showLinks, setShowLinks] = useState(true);
   const [showLabels, setShowLabels] = useState(false);
   const [showMemberships, setShowMemberships] = useState(true);
@@ -76,7 +77,14 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
   function chooseFile(id: string, inspect = true) {
     if (!visible?.files.some((item) => item.id === id)) { setArea("all"); setQuery(""); setKind("all"); }
     setSelected(id);
+    setFocusedRing(null);
     setDetailsOpen(inspect);
+  }
+
+  function focusRing(ring: RingId | null) {
+    setFocusedRing(ring);
+    setSelected(ROOT_FILE);
+    setDetailsOpen(false);
   }
 
   function closeDetails() {
@@ -113,10 +121,14 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
 
       <div className="pav-workbench">
         <section className="pav-map" aria-label="Demo vault exploration" ref={map}
-          onKeyDown={(event) => { if (event.key === "Escape" && detailsOpen) closeDetails(); }}>
+          onKeyDown={(event) => {
+            if (event.key !== "Escape") return;
+            if (detailsOpen) closeDetails();
+            else setFocusedRing(null);
+          }}>
           <div className="pav-map-top">
             <div className="pav-views" role="group" aria-label="Graph views">
-              {VIEWS.map((name) => <button key={name} onClick={() => setView(name)} aria-pressed={view === name}>{name}</button>)}
+              {VIEWS.map((name) => <button key={name} onClick={() => { setView(name); setFocusedRing(null); }} aria-pressed={view === name}>{name}</button>)}
             </div>
             <div className="pav-map-actions"><span className="pav-engine">D3.js <span>+</span> Canvas</span>
               <button className="pav-fullscreen" onClick={toggleFullscreen} aria-label={fullscreen ? "Exit map fullscreen" : "Enter map fullscreen"} aria-pressed={fullscreen}>
@@ -125,12 +137,12 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
             </div>
           </div>
           <div className="pav-toolbar">
-            <label className="pav-search"><Search size={15} /><input aria-label="Search demo files" placeholder="Find a thought, a file, a connection..." value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-            <select aria-label="Filter demo area" value={area} onChange={(event) => setArea(event.target.value)}>
+            <label className="pav-search"><Search size={15} /><input aria-label="Search demo files" placeholder="Find a thought, a file, a connection..." value={query} onChange={(event) => { setQuery(event.target.value); setFocusedRing(null); }} /></label>
+            <select aria-label="Filter demo area" value={area} onChange={(event) => { setArea(event.target.value); setFocusedRing(null); }}>
               <option value="all">All areas</option>
               {activeGroups.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}
             </select>
-            <select aria-label="Filter file type" value={kind} onChange={(event) => setKind(event.target.value)}>
+            <select aria-label="Filter file type" value={kind} onChange={(event) => { setKind(event.target.value); setFocusedRing(null); }}>
               <option value="all">All file types</option>
               {FILE_KINDS.map((value) => <option key={value} value={value}>{KIND_LABELS[value]}</option>)}
             </select>
@@ -145,7 +157,7 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
           </div>
           {fullscreenError && <p className="pav-fullscreen-error" role="alert">{fullscreenError}</p>}
           <section className="pav-legend" aria-label="Vault areas">
-            {activeGroups.map((group) => <button key={group.id} aria-pressed={area === group.id} onClick={() => setArea(area === group.id ? "all" : group.id)}>
+            {activeGroups.map((group) => <button key={group.id} aria-pressed={area === group.id} onClick={() => { setArea(area === group.id ? "all" : group.id); setFocusedRing(null); }}>
               <span className="pav-file-dot" style={{ background: group.color }} /><b>{group.label}</b><span>{graph.files.filter((item) => item.area === group.id).length}</span>
             </button>)}
           </section>
@@ -156,7 +168,7 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
             <span><i className="pav-shape-app" />App</span>
           </div>
           <VaultCanvas graph={visible} view={view} selected={file.id} onSelect={(id) => chooseFile(id, false)} onInspect={() => setDetailsOpen(true)}
-            theme={theme} showLinks={showLinks} showLabels={showLabels} showMemberships={showMemberships} dotSize={dotSize} />
+            focusedRing={focusedRing} onFocusRing={focusRing} theme={theme} showLinks={showLinks} showLabels={showLabels} showMemberships={showMemberships} dotSize={dotSize} />
           <div className="pav-map-bottom">
             <span role="status">{visible.files.length === 1 && (query || area !== "all" || kind !== "all")
               ? "No matching files. AGENTS.md remains as your entry point."

@@ -68,6 +68,8 @@ widgets, not new calendar, mail, routine execution or application integrations.
 The area-hub refinement expands only the public fixture to 134 real files:
 six file-backed overview hubs, independent area/kind/layer classification,
 size-weighted Ring sectors, dense Areas clouds and area focus/framing.
+Clickable ring labels additionally focus an existing visualization layer
+across areas, with pointer/touch and keyboard access, without changing data.
 Dashed inferred membership remains separate from actual Markdown references.
 It adds no synthetic knowledge records, execution history or live-vault writes,
 and does not advance any later milestone.

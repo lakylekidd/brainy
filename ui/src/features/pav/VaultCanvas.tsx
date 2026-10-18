@@ -5,13 +5,14 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { Theme } from "../../hooks/useTheme";
 import { canvasFont, canvasPalette } from "../../appearance";
-import { createLayout, nodePlacement, placeNodes, type Layout, type Placement, type PlotNode, type ViewMode } from "./layouts";
+import { createLayout, nodePlacement, placeNodes, RINGS, type Layout, type Placement, type PlotNode, type RingId, type ViewMode } from "./layouts";
 import { drawSignal, flowProgress, signalDuration, signalPath } from "./flow";
 import { drawCore, drawFields, drawGround, MAP_MOTION, rippleLayout, transitionLayout } from "./motion";
 import { areaLabel, fileColor, ROOT_FILE, type VaultGraph } from "./vault";
 
-export default function VaultCanvas({ graph, view, selected, onSelect, onInspect, theme, showLinks, showLabels, showMemberships = true, dotSize = 85 }: {
+export default function VaultCanvas({ graph, view, selected, onSelect, onInspect, focusedRing, onFocusRing, theme, showLinks, showLabels, showMemberships = true, dotSize = 85 }: {
   graph: VaultGraph; view: ViewMode; selected: string; onSelect: (id: string) => void;
+  focusedRing: RingId | null; onFocusRing: (ring: RingId | null) => void;
   onInspect?: () => void; theme: Theme; showLinks: boolean; showLabels: boolean; showMemberships?: boolean; dotSize?: number;
 }) {
   const host = useRef<HTMLDivElement>(null);
@@ -27,14 +28,17 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   const arrivals = useRef(new Map<string, number>());
   const emphasis = useRef(new Map<string, { alpha: number; scale: number; elapsed: number }>());
   const visibleLabels = useRef(new Set<string>());
+  const ringLabels = useRef(new Map<RingId, HTMLButtonElement>());
   const edits = useRef(new Map<ViewMode, Map<string, Placement>>());
   const drawn = useRef<Layout>({ nodes: [], guides: [] });
   const drag = useRef<{ id: string; pointer: number; startX: number; startY: number; offsetX: number; offsetY: number; moved: boolean } | null>(null);
+  const ringPress = useRef<{ ring: RingId; pointer: number; startX: number; startY: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
   const hintId = useId();
   const [size, setSize] = useState({ width: 800, height: 680 });
   const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [hoveredRing, setHoveredRing] = useState<RingId | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [playing, setPlaying] = useState(true);
   const [motion, setMotion] = useState(true);
@@ -44,6 +48,9 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const baseLayout = useMemo(() => createLayout(graph, view, size.width, size.height), [graph, view, size]);
   const motionActive = motion && !reducedMotion && pageVisible && !unavailable;
+  const layer = view === "Ring" ? focusedRing : null;
+  const layerLabel = RINGS.find((ring) => ring.id === layer)?.label;
+  const layerCount = graph.files.filter((file) => file.layer === layer).length;
 
   const paint = useCallback(() => {
     const ctx = context.current;
@@ -76,12 +83,13 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     ctx.translate(camera.current.x, camera.current.y);
     ctx.scale(camera.current.k, camera.current.k);
     const { ink, surface, muted, line } = canvasPalette(theme);
-    const focus = hovered ?? selected;
+    const focus = layer ? ROOT_FILE : hovered ?? selected;
+    const focused = !!layer || focus !== ROOT_FILE;
     const focusFile = graph.files.find((file) => file.id === focus);
     const focusArea = focusFile?.kind === "area" ? focusFile.area : null;
-    const adjacent = new Set<string>([focus]);
+    const adjacent = new Set<string>(layer ? graph.files.filter((file) => file.layer === layer).map((file) => file.id) : [focus]);
     if (focusArea) graph.files.filter((file) => file.area === focusArea).forEach((file) => adjacent.add(file.id));
-    graph.links.forEach((link) => {
+    if (!layer) graph.links.forEach((link) => {
       if (link.source === focus) adjacent.add(link.target);
       if (link.target === focus) adjacent.add(link.source);
     });
@@ -94,7 +102,8 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
         const source = positions.get(link.source);
         const target = positions.get(link.target);
         if (!source || !target) continue;
-        ctx.globalAlpha = focusArea && target.file.area === focusArea ? 0.32 : focus !== ROOT_FILE ? 0.015 : 0.045;
+        ctx.globalAlpha = layer ? adjacent.has(target.id) ? 0.2 : 0.015
+          : focusArea && target.file.area === focusArea ? 0.32 : focused ? 0.015 : 0.045;
         ctx.strokeStyle = fileColor(target.file);
         ctx.lineWidth = 0.7 / camera.current.k;
         ctx.beginPath();
@@ -107,8 +116,9 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     }
 
     for (const guide of layout.guides) {
-      ctx.strokeStyle = guide.color ? `${guide.color}${dark ? "55" : "80"}` : line;
-      ctx.lineWidth = guide.kind === "ellipse" && view === "Ring" ? 1.1 : 0.7;
+      const activeRing = !!layer && guide.ring === layer;
+      ctx.strokeStyle = guide.color ? `${guide.color}${activeRing ? "cc" : dark ? "55" : "80"}` : line;
+      ctx.lineWidth = activeRing ? 1.8 : guide.kind === "ellipse" && view === "Ring" ? 1.1 : 0.7;
       ctx.setLineDash(view === "Ring" && guide.label?.startsWith("Skills") ? [1, 5] : []);
       ctx.beginPath();
       if (guide.kind === "ellipse") {
@@ -142,6 +152,18 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
         const y = guide.kind === "ellipse" ? guide.y - guide.ry + 11 : guide.y;
         const textWidth = ctx.measureText(guide.label.toUpperCase()).width;
         const x = Math.max(left + textWidth / 2 + 6, Math.min(right - textWidth / 2 - 6, guide.x));
+        const button = guide.ring && ringLabels.current.get(guide.ring);
+        if (button) {
+          // Native buttons share the painted label's camera geometry, including its breathing track.
+          button.style.left = `${x * camera.current.k + camera.current.x}px`;
+          button.style.top = `${(y - 2.5) * camera.current.k + camera.current.y}px`;
+          button.style.width = `${textWidth + 10}px`;
+          button.style.transform = `translate(-50%, -50%) scale(${camera.current.k})`;
+          button.style.color = activeRing ? ink : dark ? guide.color ?? muted : ink;
+          button.style.background = surface;
+          button.style.visibility = "visible";
+          continue;
+        }
         ctx.fillStyle = surface;
         ctx.fillRect(x - textWidth / 2 - 5, y - 9, textWidth + 10, 13);
         ctx.fillStyle = dark ? guide.color ?? muted : ink;
@@ -151,8 +173,8 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     }
 
     const cap = size.width <= 760 ? MAP_MOTION.phoneSignals : MAP_MOTION.ambientSignals;
-    const focused = focus !== ROOT_FILE;
-    const candidates = graph.links.filter((link) => !focused || link.source === focus || link.target === focus);
+    const touchesLayer = (source: string, target: string) => adjacent.has(source) || adjacent.has(target);
+    const candidates = graph.links.filter((link) => layer ? touchesLayer(link.source, link.target) : !focused || link.source === focus || link.target === focus);
     const stride = Math.max(1, Math.ceil(candidates.length / cap));
     const flowing = new Set(candidates.filter((_, i) => i % stride === 0).slice(0, cap));
     const signalKeys = new Set<string>();
@@ -161,7 +183,8 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
         const source = positions.get(link.source);
         const target = positions.get(link.target);
         if (!source || !target) continue;
-        const active = focused && (focusArea ? adjacent.has(link.source) && adjacent.has(link.target) : link.source === focus || link.target === focus);
+        const active = focused && (layer ? touchesLayer(link.source, link.target)
+          : focusArea ? adjacent.has(link.source) && adjacent.has(link.target) : link.source === focus || link.target === focus);
         const depth = view === "3D Orbit" ? Math.min(source.depth, target.depth) * 0.85 + 0.15 : 1;
         ctx.globalAlpha = (active ? 0.65 : focused ? 0.025 : 0.12) * depth;
         ctx.strokeStyle = fileColor(source.file);
@@ -225,8 +248,8 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     }
 
     for (const node of layout.nodes) {
-      const active = node.id === selected || node.id === hovered;
-      const targetAlpha = focused && !adjacent.has(node.id) ? 0.13 : 1;
+      const active = !layer && (node.id === selected || node.id === hovered);
+      const targetAlpha = layer && node.id === ROOT_FILE ? 1 : focused && !adjacent.has(node.id) ? 0.13 : 1;
       const previous = emphasis.current.get(node.id);
       const delta = previous ? Math.max(0, time - previous.elapsed) : 0;
       const alpha = previous && motionActive ? previous.alpha + (targetAlpha - previous.alpha) * (1 - Math.exp(-delta / 45)) : targetAlpha;
@@ -319,7 +342,8 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
       const wasVisible = visibleLabels.current.has(node.id);
       const depthVisible = view !== "3D Orbit" || node.depth >= (wasVisible ? 0.4 : 0.55);
       const zoomVisible = camera.current.k >= (wasVisible ? 1.62 : 1.8) && (!focused || adjacent.has(node.id));
-      const visible = node.id === selected || node.id === hovered || (depthVisible && (node.file.kind === "area" || showLabels || zoomVisible));
+      const visible = !layer && (node.id === selected || node.id === hovered)
+        || (depthVisible && (node.file.kind === "area" || showLabels || zoomVisible));
       if (visible) visibleLabels.current.add(node.id);
       else visibleLabels.current.delete(node.id);
       return visible;
@@ -330,7 +354,7 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
         ? `${areaLabel(node.file.area).toUpperCase()} ${graph.files.filter((file) => file.area === node.file.area).length}`
         : node.id === ROOT_FILE ? ROOT_FILE : node.file.title));
     ctx.restore();
-  }, [graph, baseLayout, selected, hovered, showLabels, showLinks, showMemberships, size, theme, view, motionActive, reducedMotion, dotSize]);
+  }, [graph, baseLayout, selected, hovered, layer, showLabels, showLinks, showMemberships, size, theme, view, motionActive, reducedMotion, dotSize]);
 
   useLayoutEffect(() => {
     paintRef.current = paint;
@@ -361,7 +385,8 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
         if (event.button || event.ctrlKey) return false;
         const point = event.touches?.[0] ?? event;
         const node = hit(point.clientX, point.clientY);
-        return event.touches?.length > 1 || !node || (view === "Ring" && node.id === ROOT_FILE);
+        return event.touches?.length > 1 || (!(hitRing(point.clientX, point.clientY) && !hit(point.clientX, point.clientY, 0))
+          && (!node || (view === "Ring" && node.id === ROOT_FILE)));
       })
       .on("zoom", (event) => { camera.current = event.transform; paintRef.current(); });
     const selection = select(canvas.current);
@@ -402,8 +427,10 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   }, []);
 
   useEffect(() => {
-    const current = drag.current;
+    const current = drag.current ?? ringPress.current;
     drag.current = null;
+    ringPress.current = null;
+    setHoveredRing(null);
     if (current && canvas.current?.hasPointerCapture(current.pointer)) canvas.current.releasePointerCapture(current.pointer);
     setDragging(false);
     setArranged(edits.current.get(view)?.size ?? 0);
@@ -442,7 +469,15 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     return () => cancelAnimationFrame(frame);
   }, [playing, motionActive, view, showLinks, graph.links.length, hovered, selected]);
 
-  function hit(clientX: number, clientY: number): PlotNode | undefined {
+  function hitRing(clientX: number, clientY: number): RingId | undefined {
+    if (view !== "Ring") return;
+    for (const [ring, button] of ringLabels.current) {
+      const box = button.getBoundingClientRect();
+      if (box.width && clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom) return ring;
+    }
+  }
+
+  function hit(clientX: number, clientY: number, padding = 7): PlotNode | undefined {
     const rect = canvas.current?.getBoundingClientRect();
     if (!rect) return;
     const [x, y] = camera.current.invert([clientX - rect.left, clientY - rect.top]);
@@ -450,7 +485,7 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     let distance = Infinity;
     for (const node of [...drawn.current.nodes].reverse()) {
       const separation = Math.hypot(x - node.x, y - node.y);
-      if (separation <= node.radius + 7 / camera.current.k && separation < distance) {
+      if (separation <= node.radius + padding / camera.current.k && separation < distance) {
         nearest = node;
         distance = separation;
       }
@@ -473,8 +508,17 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
 
   function startDrag(event: ReactPointerEvent<HTMLCanvasElement>) {
     suppressClick.current = false;
-    if (event.button !== 0 || drag.current || unavailable) return;
-    const node = hit(event.clientX, event.clientY);
+    if (ringPress.current && ringPress.current.pointer !== event.pointerId) ringPress.current.moved = true;
+    if (event.button !== 0 || drag.current || ringPress.current || unavailable) return;
+    const actualDot = hit(event.clientX, event.clientY, 0);
+    const ring = hitRing(event.clientX, event.clientY);
+    if (ring && !actualDot) {
+      ringPress.current = { ring, pointer: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      event.preventDefault();
+      return;
+    }
+    const node = actualDot ?? hit(event.clientX, event.clientY);
     if (!node || (view === "Ring" && node.id === ROOT_FILE)) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const [x, y] = camera.current.invert([event.clientX - rect.left, event.clientY - rect.top]);
@@ -484,9 +528,17 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   }
 
   function movePointer(event: ReactPointerEvent<HTMLCanvasElement>) {
+    const press = ringPress.current;
+    if (press?.pointer === event.pointerId) {
+      if (Math.hypot(event.clientX - press.startX, event.clientY - press.startY) >= 4) press.moved = true;
+      return;
+    }
     const current = drag.current;
     if (!current || current.pointer !== event.pointerId) {
-      setHovered(hit(event.clientX, event.clientY)?.id ?? null);
+      const ring = hitRing(event.clientX, event.clientY);
+      const node = hit(event.clientX, event.clientY, 0) ?? (ring ? undefined : hit(event.clientX, event.clientY));
+      setHovered(node?.id ?? null);
+      setHoveredRing(node ? null : ring ?? null);
       return;
     }
     if (!current.moved && Math.hypot(event.clientX - current.startX, event.clientY - current.startY) < 4) return;
@@ -497,6 +549,14 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   }
 
   function endDrag(event: ReactPointerEvent<HTMLCanvasElement>) {
+    const press = ringPress.current;
+    if (press?.pointer === event.pointerId) {
+      ringPress.current = null;
+      suppressClick.current = true;
+      if (event.type === "pointerup" && !press.moved) onFocusRing(layer === press.ring ? null : press.ring);
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      return;
+    }
     const current = drag.current;
     if (current?.pointer !== event.pointerId) return;
     const tapped = event.type === "pointerup" && !current.moved;
@@ -536,14 +596,20 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
           data-view={view} data-node-count={graph.files.length} data-link-count={graph.links.length}
           data-membership-count={graph.memberships.length} data-area-hub-count={graph.files.filter((file) => file.kind === "area").length}
           data-focused-area={graph.files.find((file) => file.id === selected && file.kind === "area")?.area ?? ""}
+          data-focused-ring={layer ?? ""} data-ring-focus-count={layerCount}
           data-motion={reducedMotion ? "reduced" : motionActive ? "running" : "paused"} data-arranged-count={arranged}
           onPointerDown={startDrag} onPointerMove={movePointer} onPointerUp={endDrag} onPointerCancel={endDrag} onLostPointerCapture={endDrag}
-          onPointerLeave={() => setHovered(null)}
+          onPointerLeave={() => { setHovered(null); setHoveredRing(null); }}
           onClick={(event) => {
             if (event.defaultPrevented) return;
             if (suppressClick.current) { suppressClick.current = false; return; }
-            const node = hit(event.clientX, event.clientY);
-            if (node) { onSelect(node.id); onInspect?.(); }
+            const actualDot = hit(event.clientX, event.clientY, 0);
+            const ring = hitRing(event.clientX, event.clientY);
+            if (ring && !actualDot) onFocusRing(layer === ring ? null : ring);
+            else {
+              const node = actualDot ?? hit(event.clientX, event.clientY);
+              if (node) { onSelect(node.id); onInspect?.(); }
+            }
           }}
           onKeyDown={(event) => {
             const movements: Record<string, [number, number]> = { ArrowLeft: [-16, 0], ArrowRight: [16, 0], ArrowUp: [0, -16], ArrowDown: [0, 16] };
@@ -558,7 +624,15 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
             } else place(node.id, node.x + movement[0], node.y + movement[1]);
             setArranged(edits.current.get(view)?.size ?? 0);
           }}
-          style={{ cursor: dragging ? "grabbing" : hovered ? "move" : "grab" }} />
+          style={{ cursor: dragging ? "grabbing" : hoveredRing ? "pointer" : hovered ? "move" : "grab" }} />
+        {view === "Ring" && !unavailable && <div className="pav-ring-labels" role="group" aria-label="Ring focus">
+          {RINGS.filter((ring) => graph.files.some((file) => file.layer === ring.id)).map((ring) => <button key={ring.id}
+            ref={(element) => { if (element) ringLabels.current.set(ring.id, element); else ringLabels.current.delete(ring.id); }}
+            className="pav-ring-label" type="button" aria-label={`Highlight ${ring.label} ring`} aria-pressed={layer === ring.id}
+            data-hovered={hoveredRing === ring.id} aria-describedby={hintId} onClick={() => onFocusRing(layer === ring.id ? null : ring.id)}>
+            {ring.label.toUpperCase()} / {graph.files.filter((file) => file.layer === ring.id).length}
+          </button>)}
+        </div>}
       </div>
       {unavailable && <p className="pav-canvas-error" role="status">Canvas rendering is unavailable. Use Jump to file and Connected files to explore every document.</p>}
       <div className="pav-map-caption"><span className="pav-live-dot" />{view === "Timeline" ? "Dates from document frontmatter" : "Real files / Directed references, not live runs"}</div>
@@ -582,8 +656,10 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
           </button>
         </>}
       </div>
-      <div className="pav-map-hint" id={hintId}>{hovered ? graph.files.find((file) => file.id === hovered)?.id
-        : `${view === "Ring" ? "Drag nodes around their ring" : "Drag nodes to arrange"} / Drag background to pan / Arrow keys move selected file / Scroll to zoom`}</div>
+      <div className="pav-map-hint" id={hintId} aria-live={layer ? "polite" : "off"}>{layer
+        ? `${layerLabel} ring: ${layerCount} visible files highlighted / Click label again or press Escape to clear`
+        : hovered ? graph.files.find((file) => file.id === hovered)?.id
+          : `${view === "Ring" ? "Click a ring label to highlight its files / Drag nodes around their ring" : "Drag nodes to arrange"} / Drag background to pan / Arrow keys move selected file / Scroll to zoom`}</div>
     </div>
   );
 }

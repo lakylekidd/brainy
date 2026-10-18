@@ -171,6 +171,20 @@ double-ring routines and application hexagons. Area colors apply to all kinds:
 a Content skill stays purple on the Skills track, rather than acquiring a
 generic Skills color.
 
+In **Ring**, click a track's name (**Skills**, **Knowledge**, **Memory**,
+**Routines**, **Applications**) to focus every visible file on that layer,
+across all areas. Matching dots and their incident reference links brighten;
+unrelated nodes dim rather than disappear, and `AGENTS.md` stays visible as
+context. This does not alter area/type filters, graph counts, positions or files.
+Click the same name again or press **Escape** while focus is in the map to clear.
+Ring names are also keyboard buttons: **Tab** to one and press **Enter/Space**.
+Their bounds follow the painted track through pan, zoom, breathing, resize and
+fullscreen; a direct hit on a real dot takes priority over overlapping text,
+preserving node dragging/inspection. Cancelled presses or label drags do not
+toggle a ring. Focusing a ring closes the single-file inspector; selecting a
+file, changing layouts or changing search/area/type filters clears ring focus.
+The ordinary **Labels** toggle controls file names, not these ring controls.
+
 Drag a node to rearrange it. In **Ring**, dragging changes only its angle:
 skills stay on the Skills ring, routines on Routines, and notes stay on their
 assigned knowledge row. The central

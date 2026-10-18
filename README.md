@@ -63,7 +63,10 @@ Select dots or use **Jump to file** to read documents in a dismissible overlay
 and follow their links, without a permanent right-hand inspector.
 Named **Skills, Knowledge, Memory, Routines, and Applications** rings group
 files by kind, with size-weighted area sectors, dense knowledge bands and
-distinct node shapes. **Areas** groups files into compact neighborhoods.
+distinct node shapes. Click a ring's name to highlight its files across all
+areas without filtering them out; click again or press Escape to clear.
+Ring names also support Tab and Enter/Space.
+**Areas** groups files into compact neighborhoods.
 Selecting an overview highlights and frames its area; its inspector lists real
 member files. Dashed **Membership** guides are separate from actual Markdown
 references and have their own toggle. Drag nodes around

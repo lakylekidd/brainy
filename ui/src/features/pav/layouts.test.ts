@@ -29,6 +29,7 @@ describe("D3 vault layouts", () => {
     const tracks = layout.guides.filter((guide) => guide.kind === "ellipse");
     expect(tracks).toHaveLength(5);
     expect(tracks.map((guide) => guide.label?.split(" / ")[0])).toEqual(RINGS.map((ring) => ring.label));
+    expect(tracks.map((guide) => guide.ring)).toEqual(RINGS.map((ring) => ring.id));
     for (const [index, guide] of tracks.entries()) {
       layout.nodes.filter((node) => node.id !== ROOT_FILE && node.file.kind !== "area" && ringId(node.file) === RINGS[index].id).forEach((node) => {
         expect(Math.hypot((node.x - 500) / node.ring!.rx, (node.y - 350) / node.ring!.ry)).toBeCloseTo(1);

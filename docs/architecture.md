@@ -242,7 +242,9 @@ documents are initialed area hubs, not synthetic folder records. Size-weighted
 sectors, compact area clouds and overview focus/framing use those same records.
 The 598 actual Markdown references remain distinct from 133 inferred, dashed
 area-membership guides; only actual references contribute to link counts and
-directional signals. Named capability rings,
+directional signals. Clickable capability-ring labels focus their existing
+layer across areas without removing nodes; screen-space label hit-testing and
+keyboard buttons share that client-side focus state. Named capability rings,
 temporary node dragging, directed-reference signal trails, decorative particle
 core, coherent ripples and eased 3D rotation are client-side visualization only,
 not live activity or external execution. The normal map fills the center of

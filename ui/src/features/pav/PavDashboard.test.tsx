@@ -7,18 +7,53 @@ import { filterVault, loadDemoVault } from "./vault";
 const graph = loadDemoVault();
 
 vi.mock("./VaultCanvas", () => ({
-  default: ({ graph, view, selected, onSelect, onInspect, theme, showLinks, showLabels, dotSize }: {
+  default: ({ graph, view, selected, onSelect, onInspect, focusedRing, onFocusRing, theme, showLinks, showLabels, dotSize }: {
     graph: { files: { id: string }[]; links: unknown[] }; view: string; selected: string;
+    focusedRing: string | null; onFocusRing: (ring: "skills" | null) => void;
     onSelect: (id: string) => void; onInspect: () => void; theme: string; showLinks: boolean; showLabels: boolean; dotSize: number;
   }) => <div data-testid="vault-canvas" data-view={view} data-count={graph.files.length} data-theme={theme}
-    data-links={String(showLinks)} data-labels={String(showLabels)} data-selected={selected} data-dot-size={dotSize}>
+    data-links={String(showLinks)} data-labels={String(showLabels)} data-selected={selected} data-dot-size={dotSize} data-ring={focusedRing ?? ""}>
     <button onClick={() => { onSelect("skills/research.md"); onInspect(); }}>Select research dot</button>
     <button onClick={() => { onSelect("content/index.md"); onInspect(); }}>Select content hub</button>
+    <button onClick={() => onFocusRing(focusedRing === "skills" ? null : "skills")}>Focus skills ring</button>
   </div>,
 }));
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe("PAV OS demo dashboard", () => {
+  it("toggles layer focus independently of filters and clears it for Escape, file selection, filters and view changes", () => {
+    render(<PavDashboard theme="dark" />);
+    const canvas = screen.getByTestId("vault-canvas");
+    const focus = screen.getByRole("button", { name: "Focus skills ring" });
+    fireEvent.click(screen.getByRole("button", { name: "Select content hub" }));
+    fireEvent.click(focus);
+    expect(canvas).toHaveAttribute("data-ring", "skills");
+    expect(canvas).toHaveAttribute("data-count", String(graph.files.length));
+    expect(canvas).toHaveAttribute("data-selected", "AGENTS.md");
+    expect(screen.queryByRole("complementary", { name: "Demo file details" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Filter file type")).toHaveValue("all");
+    fireEvent.click(focus);
+    expect(canvas).toHaveAttribute("data-ring", "");
+    fireEvent.click(focus);
+    fireEvent.keyDown(focus, { key: "Escape" });
+    expect(canvas).toHaveAttribute("data-ring", "");
+    fireEvent.click(focus);
+    fireEvent.change(screen.getByLabelText("Jump to file"), { target: { value: "skills/writing.md" } });
+    expect(canvas).toHaveAttribute("data-ring", "");
+    fireEvent.click(focus);
+    fireEvent.change(screen.getByLabelText("Filter demo area"), { target: { value: "content" } });
+    expect(canvas).toHaveAttribute("data-ring", "");
+    fireEvent.click(focus);
+    fireEvent.change(screen.getByLabelText("Filter file type"), { target: { value: "routine" } });
+    expect(canvas).toHaveAttribute("data-ring", "");
+    fireEvent.click(focus);
+    fireEvent.change(screen.getByLabelText("Search demo files"), { target: { value: "publishing" } });
+    expect(canvas).toHaveAttribute("data-ring", "");
+    fireEvent.click(focus);
+    fireEvent.click(screen.getByRole("button", { name: "Areas" }));
+    expect(canvas).toHaveAttribute("data-ring", "");
+  });
+
   it("starts with a real vault, its entry point and all six switchable layouts", () => {
     render(<PavDashboard theme="dark" />);
     expect(screen.getByRole("heading", { name: "PAV OS Agentic OS" })).toBeInTheDocument();

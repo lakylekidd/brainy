@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { createLayout } from "../src/features/pav/layouts";
+import { createLayout, RINGS } from "../src/features/pav/layouts";
 import { buildVault, filterVault } from "../src/features/pav/vault";
 
 function demoGraph() {
@@ -149,6 +149,94 @@ test("PAV OS keeps real file exploration available without Canvas", async ({ pag
   await page.getByRole("combobox", { name: "Jump to file", exact: true }).selectOption("routines/weekly-review.md");
   await expect(page.getByRole("complementary", { name: "Demo file details" }).getByRole("heading", { name: "Weekly review", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Zoom in" })).toBeDisabled();
+});
+
+test("ring labels focus every file on a layer without filtering and remain usable through keyboard, camera and fullscreen changes", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.getByLabel("Admin token").fill(adminToken());
+  await page.getByRole("button", { name: "Sign in to Brain" }).click();
+  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  const canvas = page.locator(".pav-canvas-host canvas");
+  const skills = page.getByRole("button", { name: "Highlight Skills ring" });
+  const clickRing = async (name: string) => {
+    const box = (await page.getByRole("button", { name: `Highlight ${name} ring` }).boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+  const graph = demoGraph();
+  await page.getByRole("checkbox", { name: "Links", exact: true }).uncheck();
+  await page.getByRole("checkbox", { name: "Membership", exact: true }).uncheck();
+  const bounds = (await canvas.boundingBox())!;
+  const layout = createLayout(graph, "Ring", bounds.width, bounds.height);
+  const points = layout.nodes.filter((node) => node.file.kind === "skill" || node.file.kind === "note");
+  const pixels = () => canvas.evaluate((element, locations) => {
+    const bitmap = element as HTMLCanvasElement;
+    const rect = bitmap.getBoundingClientRect();
+    const ctx = bitmap.getContext("2d")!;
+    return Object.fromEntries(locations.map(({ id, x, y }) => [id, Array.from(ctx.getImageData(
+      Math.floor(x * bitmap.width / rect.width), Math.floor(y * bitmap.height / rect.height), 1, 1).data)]));
+  }, points.map(({ id, x, y }) => ({ id, x, y })));
+  const baseline = await pixels();
+  await clickRing("Skills");
+  await expect(skills).toHaveAttribute("aria-pressed", "true");
+  const focused = await pixels();
+  for (const node of points.filter((node) => node.file.kind === "skill")) {
+    for (let channel = 0; channel < 4; channel++) expect(Math.abs(focused[node.id][channel] - baseline[node.id][channel])).toBeLessThanOrEqual(2);
+  }
+  const energy = (sample: number[]) => (sample[0] + sample[1] + sample[2]) * sample[3] / 255;
+  const notes = points.filter((node) => node.file.kind === "note");
+  const sum = (samples: Record<string, number[]>) => notes.reduce((total, node) => total + energy(samples[node.id]), 0);
+  expect(sum(focused)).toBeLessThan(sum(baseline) * 0.7);
+  await expect(canvas).toHaveAttribute("data-node-count", String(graph.files.length));
+  await expect(canvas).toHaveAttribute("data-link-count", String(graph.links.length));
+  await expect(page.getByLabel("Filter file type")).toHaveValue("all");
+  await expect(page.getByRole("complementary", { name: "Demo file details" })).toBeHidden();
+  await page.screenshot({ path: test.info().outputPath("pav-ring-focus.png"), fullPage: true });
+  for (const ring of RINGS) {
+    const label = page.getByRole("button", { name: `Highlight ${ring.label} ring` });
+    if (ring.id !== "skills") await clickRing(ring.label);
+    await expect(label).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toHaveAttribute("data-ring-focus-count", String(graph.files.filter((file) => file.layer === ring.id).length));
+    await expect(canvas).toHaveAttribute("data-node-count", String(graph.files.length));
+  }
+  const apps = page.getByRole("button", { name: "Highlight Applications ring" });
+  await apps.press("Enter");
+  await expect(canvas).toHaveAttribute("data-focused-ring", "");
+  await skills.focus();
+  await page.keyboard.press("Space");
+  await expect(skills).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Escape");
+  await expect(skills).toHaveAttribute("aria-pressed", "false");
+  const beforePan = (await skills.boundingBox())!;
+  await page.mouse.move(bounds.x + 35, bounds.y + bounds.height - 110);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + 105, bounds.y + bounds.height - 90, { steps: 5 });
+  await page.mouse.up();
+  const afterPan = (await skills.boundingBox())!;
+  expect(afterPan.x - beforePan.x).toBeCloseTo(70, 0);
+  expect(afterPan.y - beforePan.y).toBeCloseTo(20, 0);
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await clickRing("Skills");
+  await expect(skills).toHaveAttribute("aria-pressed", "true");
+  await expect(canvas).toHaveAttribute("data-arranged-count", "0");
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await expect(skills).toHaveAttribute("aria-pressed", "true");
+  await page.screenshot({ path: test.info().outputPath("pav-ring-focus-light.png"), fullPage: true });
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await page.getByLabel("Jump to file", { exact: true }).selectOption("skills/research.md");
+  await expect(canvas).toHaveAttribute("data-focused-ring", "");
+  await clickRing("Skills");
+  await page.getByRole("button", { name: "Fit vault" }).click();
+  await page.getByRole("button", { name: "Enter map fullscreen" }).click();
+  await expect(skills).toHaveAttribute("aria-pressed", "true");
+  await clickRing("Skills");
+  await expect(canvas).toHaveAttribute("data-focused-ring", "");
+  await page.getByRole("button", { name: "Exit map fullscreen" }).click();
+  await clickRing("Skills");
+  await page.getByRole("button", { name: "Areas", exact: true }).click();
+  await expect(page.getByRole("group", { name: "Ring focus" })).toHaveCount(0);
+  await expect(canvas).toHaveAttribute("data-focused-ring", "");
 });
 
 test("real node dragging stays on its named ring, works through pan and zoom, and resets free placements", async ({ page }) => {
@@ -388,6 +476,14 @@ test.describe("touch node dragging", () => {
     await page.touchscreen.tap(box.x + destination.x, box.y + destination.y);
     await expect(jump).toHaveValue(node.id);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const skills = page.getByRole("button", { name: "Highlight Skills ring" });
+    const label = (await skills.boundingBox())!;
+    await page.touchscreen.tap(label.x + label.width / 2, label.y + label.height / 2);
+    await expect(skills).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toHaveAttribute("data-ring-focus-count", "5");
+    await page.screenshot({ path: test.info().outputPath("pav-ring-focus-touch.png"), fullPage: true });
+    await page.touchscreen.tap(label.x + label.width / 2, label.y + label.height / 2);
+    await expect(canvas).toHaveAttribute("data-focused-ring", "");
     await session.detach();
   });
 });
