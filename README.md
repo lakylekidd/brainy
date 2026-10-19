@@ -2,7 +2,7 @@
 
 A self-hosted shared information platform for independent AI agents. The Brain provides identity, deterministic permissions, scoped memories, canonical knowledge search, reviewed knowledge changes, and skill/tool discovery. It is a modular .NET 10 application. The optional `brain` client runs on enrolled devices and reports local runtime capabilities.
 
-**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI Milestones 1-4 provide an authenticated operations dashboard, a permission-filtered interactive knowledge graph, configured document links to WebObsidian, and agent/permission inspection and supported access management; canonical Markdown editing remains in WebObsidian.
+**Milestones 1–7.** Agents submit knowledge proposals; the Brain Writer applies approved changes with revision checks and Git commits. A manifest registry supports permission-filtered skill/tool discovery. HTTP and authenticated MCP share the same application services. Metadata scanning generates reviewed frontmatter proposals, with optional structured semantic enrichment. W3C/OpenTelemetry activity tracing correlates requests, discovery, MCP tools, workers and outbound HTTP, with authorized SSE and retained trace inspection. The API mounts the vault read-only; only the worker receives write access. Both hosts mount `agent-platform` read-only. Brain UI foundations include agent/permission inspection and supported access management. The current shell opens the fictional graph demo by default and provides a compact Navigate menu; Dashboard and Knowledge Graph pages are not in the current UI. Canonical Markdown editing remains in WebObsidian.
 
 ## Run locally
 
@@ -19,35 +19,15 @@ Open **http://localhost:5173** and enter the value of `BRAIN_UI_ADMIN_TOKEN` fro
 the ignored `.env` file. No username or agent ID is required. Keep that token
 private; it is a shared administrator credential, not a personal SSO account.
 
-The UI uses the supplied PAV OS reference's night/orange theme, compact top
-navigation, hairline-separated widgets and locally bundled JetBrains Mono /
-Barlow Condensed fonts. Dark mode is the default; the sun/moon button on sign-in
-and in the header retains an optional light mode and remembers only that choice.
-The Dashboard places its authorized knowledge graph and skills deck between
-inventory/health and review/activity columns. On mobile, the graph comes first
-and navigation expands from the menu button.
+The UI uses a night/orange reference theme, compact
+header, hairline-separated widgets and locally bundled JetBrains Mono /
+Barlow Condensed fonts. The header retains the BRAINY brand, shared knowledge /
+independent agents context, signed-in username, theme toggle, and sign-out
+control. The graph demo is the default view after sign-in. Use the **Navigate** menu
+for agent, permission and later-milestone pages. Dark mode is the default; the
+sun/moon button retains an optional light mode and remembers only that choice.
 
-Choose **Knowledge graph** to search/filter documents, skills, tools, agents,
-roles and permissions, inspect canonical source references, focus an entity and
-progressively expand its neighbors. Graph queries are bounded server-side and
-the full-width graph keeps its inspector below the canvas; a compact
-**Inspect entity** selector provides keyboard access without a node list.
-Graph payloads
-exclude document/instruction bodies and arbitrary metadata. Document edges can
-use explicit `graph_references` frontmatter; dependencies and grants derive from
-their existing sources. See [graph usage and contracts](docs/ui.md#knowledge-graph).
-To enable **Open in WebObsidian** for selected documents, add
-`BRAIN_WEB_OBSIDIAN_BASE_URL=https://obsidian.example` to the ignored root
-`.env`, replacing the example with your instance URL, then rebuild the UI with
-`docker compose up -d --build --no-deps ui`. The instance must expose the same
-canonical vault-relative paths at `/note/<path>`. Links open a new tab without
-sending Brain credentials; WebObsidian handles its own authentication.
-Missing or invalid configuration shows an explicit message in the document
-inspector without disabling graph exploration. Native Vite development uses
-`VITE_WEB_OBSIDIAN_BASE_URL` instead. See [configuration and safety](docs/ui.md#webobsidian-linking).
-Semantic graphs and live overlays remain later milestones.
-
-Choose **PAV OS** for a separate D3.js + HTML Canvas demo dashboard with
+The graph demo is a D3.js + HTML Canvas dashboard with
 **Ring, Circle, Areas, Links, Timeline, and 3D Orbit** views. It explores
 134 real Markdown files and 598 directed references in
 [`ui/demo-vault`](ui/demo-vault/AGENTS.md), with
@@ -56,9 +36,11 @@ YouTube, content, career), plus System for shared workspace context.
 Six real overview files form large initialed hubs, with smaller same-color
 files clustered around them. Each interest area has 23-25 documents, including
 related skills and routines; file kind is independent of its owning area.
-The map fills the center of the reference-style three-column layout, with
-demo inventory/clock on the left and routine/context files on the right;
-**Fullscreen** fills the viewport.
+The map fills the center of the reference-style three-column layout, with demo
+inventory/clock on the left and routine cards plus memory/context files on the
+right; **Fullscreen** fills the viewport. Routine cards have
+browser-local model/effort preferences and source-preview timing; they do not
+execute routines or invoke models.
 Select dots or use **Jump to file** to read documents in a dismissible overlay
 and follow their links, without a permanent right-hand inspector.
 Click the selected dot again or empty graph space to deselect and close its
@@ -83,7 +65,7 @@ them. Search, independent area/type filters, zoom/pan, labels and a **Dot size**
 available in both the reference dark theme and optional light mode.
 This is fictional, read-only example data, not the live Brain vault;
 no database, mount, credentials or existing knowledge is changed. See
-[the demo guide](docs/ui.md#pav-os-demo-dashboard) for extending the example.
+[the demo guide](docs/ui.md) for extending the example.
 
 Choose **Agents** to search/filter the returned identity list, inspect roles,
 direct grants and effective permissions, or open an agent-focused graph.
