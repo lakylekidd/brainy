@@ -1,5 +1,4 @@
 {
-  "4": "Guid",
   "7": "KnowledgeGraph.tsx",
   "8": "PavDashboard.tsx",
   "10": "AgentContext",
@@ -15,9 +14,6 @@
   "25": "MetadataApiTests",
   "26": "AgentMemory",
   "29": "BrainDbContext",
-  "32": "system_text_json",
-  "33": "BrainTools",
-  "34": "RegistryApiTests",
   "35": "Device",
   "36": "ProvisioningPlan",
   "40": "McpTests",

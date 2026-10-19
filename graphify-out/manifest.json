@@ -1,7 +1,7 @@
 {
   "HomelabBrain.sln": {
-    "mtime": 1792285835.0789561,
-    "seen": 1792320014.012258,
+    "mtime": 1792422908.9384167,
+    "seen": 1792426641.9984996,
     "ast_hash": "9cb14043803e9eaae96ec76f61bf5e08",
     "semantic_hash": "9cb14043803e9eaae96ec76f61bf5e08"
   },
@@ -42,10 +42,10 @@
     "semantic_hash": "538b458dc15a021e11eb032ecf57d099"
   },
   "scripts/Install-BrainClient.ps1": {
-    "mtime": 1792286894.861235,
-    "seen": 1792320014.012258,
-    "ast_hash": "52142fd20cb3a8b7c0d6211c1b5d8750",
-    "semantic_hash": "52142fd20cb3a8b7c0d6211c1b5d8750"
+    "mtime": 1792422912.2224944,
+    "seen": 1792426641.9984996,
+    "ast_hash": "934f82541440f294d992dd22a1b5b9a2",
+    "semantic_hash": ""
   },
   "scripts/Start-Development.ps1": {
     "mtime": 1792254324.0802054,
@@ -72,34 +72,34 @@
     "semantic_hash": "eb09aa850b2497dca1157c6958eecc57"
   },
   "scripts/install-brain-client.sh": {
-    "mtime": 1792286894.863237,
-    "seen": 1792320014.012258,
-    "ast_hash": "5e3299206654642617cb20e8919ffad8",
-    "semantic_hash": "5e3299206654642617cb20e8919ffad8"
+    "mtime": 1792422912.2341132,
+    "seen": 1792426641.9984996,
+    "ast_hash": "68810152609c44b3de720c2c9631f6ca",
+    "semantic_hash": ""
   },
   "src/Brain.Api/ActivityEndpoints.cs": {
-    "mtime": 1792285804.1683078,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.2577236,
+    "seen": 1792426641.9984996,
     "ast_hash": "a9a4efa6b5a9a95c5e9683516b171357",
     "semantic_hash": "a9a4efa6b5a9a95c5e9683516b171357"
   },
   "src/Brain.Api/AgentAuthentication.cs": {
-    "mtime": 1792285764.783951,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.2814114,
+    "seen": 1792426641.9984996,
     "ast_hash": "0d05bf121e3c40434664c8cfa67c5f02",
     "semantic_hash": "0d05bf121e3c40434664c8cfa67c5f02"
   },
   "src/Brain.Api/Brain.Api.csproj": {
-    "mtime": 1792285764.78234,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.3046522,
+    "seen": 1792426641.9984996,
     "ast_hash": "df788838d6dd8e26a270c454078b3a63",
     "semantic_hash": "df788838d6dd8e26a270c454078b3a63"
   },
   "src/Brain.Api/DeviceEndpoints.cs": {
-    "mtime": 1792287342.477199,
-    "seen": 1792320014.012258,
-    "ast_hash": "015c6168a9a57b6deb8f7397cc31b2ee",
-    "semantic_hash": "015c6168a9a57b6deb8f7397cc31b2ee"
+    "mtime": 1792422912.3194351,
+    "seen": 1792426641.9984996,
+    "ast_hash": "57403ab2fe1d076678fbaabf4190b0a8",
+    "semantic_hash": ""
   },
   "src/Brain.Api/GraphEndpoints.cs": {
     "mtime": 1792266339.4634237,
@@ -108,10 +108,10 @@
     "semantic_hash": "a9e82527d2489f0e282468c9628f135e"
   },
   "src/Brain.Api/Program.cs": {
-    "mtime": 1792287421.5712168,
-    "seen": 1792320014.012258,
-    "ast_hash": "6836ee7d28ed5c62450ee0079929bbdd",
-    "semantic_hash": "6836ee7d28ed5c62450ee0079929bbdd"
+    "mtime": 1792426723.9524915,
+    "seen": 1792426745.3174694,
+    "ast_hash": "4c58873999ccee2ccd4ee404823d5317",
+    "semantic_hash": ""
   },
   "src/Brain.Api/appsettings.json": {
     "mtime": 1792251447.0609648,
@@ -132,34 +132,34 @@
     "semantic_hash": "7808de5b087ccaf50d0d12ee651bd93b"
   },
   "src/Brain.Application/Contracts.cs": {
-    "mtime": 1792285592.4332428,
-    "seen": 1792320014.012258,
-    "ast_hash": "f131c67f8e4d9da83a52206513503bc8",
-    "semantic_hash": "f131c67f8e4d9da83a52206513503bc8"
+    "mtime": 1792426723.9660196,
+    "seen": 1792426745.3174694,
+    "ast_hash": "56e93495ff5f159eca0bb4da640d703f",
+    "semantic_hash": ""
   },
   "src/Brain.Application/DependencyService.cs": {
-    "mtime": 1792286271.8128147,
-    "seen": 1792320014.012258,
-    "ast_hash": "c9f3f469f400620f28d644d04400cf2c",
-    "semantic_hash": "c9f3f469f400620f28d644d04400cf2c"
+    "mtime": 1792422912.3575678,
+    "seen": 1792426641.9984996,
+    "ast_hash": "6bb4cfa61381378f6499a7f24dc6389b",
+    "semantic_hash": ""
   },
   "src/Brain.Application/DeviceContracts.cs": {
-    "mtime": 1792285732.2682137,
-    "seen": 1792320014.012258,
-    "ast_hash": "ad089f016f4aaf603545e46e250de438",
-    "semantic_hash": "ad089f016f4aaf603545e46e250de438"
+    "mtime": 1792422912.3700392,
+    "seen": 1792426641.9984996,
+    "ast_hash": "b32eda65fdef133ab84377dc154abad4",
+    "semantic_hash": ""
   },
   "src/Brain.Application/DeviceService.cs": {
-    "mtime": 1792287561.6483614,
-    "seen": 1792320014.012258,
-    "ast_hash": "22a9a20acbf49919d42902aa6c65292a",
-    "semantic_hash": "22a9a20acbf49919d42902aa6c65292a"
+    "mtime": 1792422912.3982391,
+    "seen": 1792426641.9984996,
+    "ast_hash": "0bd2ca3ef06b16cbb048132393db419b",
+    "semantic_hash": ""
   },
   "src/Brain.Application/DeviceSkillService.cs": {
-    "mtime": 1792286510.384708,
-    "seen": 1792320014.012258,
-    "ast_hash": "c4891340f6e5954b7e86392ee57d19e4",
-    "semantic_hash": "c4891340f6e5954b7e86392ee57d19e4"
+    "mtime": 1792422912.412835,
+    "seen": 1792426641.9984996,
+    "ast_hash": "68c407c0f6f493dd3d0b3e8d046f4d44",
+    "semantic_hash": ""
   },
   "src/Brain.Application/GraphContracts.cs": {
     "mtime": 1792266339.4675272,
@@ -234,10 +234,10 @@
     "semantic_hash": "7ea352482b494dc91009c19f6731c1fc"
   },
   "src/Brain.Application/ProvisioningService.cs": {
-    "mtime": 1792286644.2863588,
-    "seen": 1792320014.012258,
-    "ast_hash": "65ce2a4d4cf8c0b4bfc858e963d5e623",
-    "semantic_hash": "65ce2a4d4cf8c0b4bfc858e963d5e623"
+    "mtime": 1792422912.4247706,
+    "seen": 1792426641.9984996,
+    "ast_hash": "1547b37cf95b044996985db8ddfd7be5",
+    "semantic_hash": ""
   },
   "src/Brain.Application/RegistryAccess.cs": {
     "mtime": 1792266339.4747179,
@@ -246,22 +246,22 @@
     "semantic_hash": "e4f0bf22e9e155b55dd333f78b543061"
   },
   "src/Brain.Application/RegistryContracts.cs": {
-    "mtime": 1792286258.7787764,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.4495697,
+    "seen": 1792426642.0000067,
     "ast_hash": "c660d236c0dfd01f920dd116ba5b123e",
     "semantic_hash": "c660d236c0dfd01f920dd116ba5b123e"
   },
   "src/Brain.Application/RegistryService.cs": {
-    "mtime": 1792286409.6083763,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.4760711,
+    "seen": 1792426642.0000067,
     "ast_hash": "35369a7d6963adb9f80aedb215d8d475",
     "semantic_hash": "35369a7d6963adb9f80aedb215d8d475"
   },
   "src/Brain.Application/RuntimeContracts.cs": {
-    "mtime": 1792286179.0023987,
-    "seen": 1792320014.012258,
-    "ast_hash": "7bd7ad0c11371b9168944515355fd4a1",
-    "semantic_hash": "7bd7ad0c11371b9168944515355fd4a1"
+    "mtime": 1792422912.4890592,
+    "seen": 1792426642.0000067,
+    "ast_hash": "0703db12d5a274fb9f95a6abc9baac55",
+    "semantic_hash": ""
   },
   "src/Brain.Application/SearchService.cs": {
     "mtime": 1792251447.0808237,
@@ -276,70 +276,70 @@
     "semantic_hash": "f710b609af636a1bb1e54c1da6d63ca8"
   },
   "src/Brain.Client/AgentLoop.cs": {
-    "mtime": 1792287629.6454318,
-    "seen": 1792320014.012258,
-    "ast_hash": "96a351ecf92ee677b87541682f44b9b3",
-    "semantic_hash": "96a351ecf92ee677b87541682f44b9b3"
+    "mtime": 1792422912.501657,
+    "seen": 1792426642.0000067,
+    "ast_hash": "10b1270c17ef443a72dddaf453c89e83",
+    "semantic_hash": ""
   },
   "src/Brain.Client/Brain.Client.csproj": {
-    "mtime": 1792285850.3912168,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.5154426,
+    "seen": 1792426642.0000067,
     "ast_hash": "ba84b92cfa1252e33d35fa25dd087c1e",
     "semantic_hash": "ba84b92cfa1252e33d35fa25dd087c1e"
   },
   "src/Brain.Client/ClientState.cs": {
-    "mtime": 1792286472.931131,
-    "seen": 1792320014.012258,
-    "ast_hash": "3ddd328ad43790bc978ed54ad46c50b2",
-    "semantic_hash": "3ddd328ad43790bc978ed54ad46c50b2"
+    "mtime": 1792422912.539374,
+    "seen": 1792426642.0000067,
+    "ast_hash": "f1b084801c5d74f8565b08a313db97c2",
+    "semantic_hash": ""
   },
   "src/Brain.Client/HarnessConnections.cs": {
-    "mtime": 1792287541.5584981,
-    "seen": 1792320014.012258,
-    "ast_hash": "3a75a5db57a965bbaba99b8f336ec997",
-    "semantic_hash": "3a75a5db57a965bbaba99b8f336ec997"
+    "mtime": 1792422912.5520835,
+    "seen": 1792426642.0000067,
+    "ast_hash": "f63570fcd643049495642648ec137d4e",
+    "semantic_hash": ""
   },
   "src/Brain.Client/McpProxy.cs": {
-    "mtime": 1792287477.3351889,
-    "seen": 1792320014.012258,
-    "ast_hash": "2b89525eb6a2bd969c54a1b304c2897c",
-    "semantic_hash": "2b89525eb6a2bd969c54a1b304c2897c"
+    "mtime": 1792422912.564682,
+    "seen": 1792426642.0000067,
+    "ast_hash": "94430561f2d090e2872631b0649eacde",
+    "semantic_hash": ""
   },
   "src/Brain.Client/OidcLogin.cs": {
-    "mtime": 1792286036.6354222,
-    "seen": 1792320014.012258,
-    "ast_hash": "edfdbbb34a301f51e36ae3943fca14bc",
-    "semantic_hash": "edfdbbb34a301f51e36ae3943fca14bc"
+    "mtime": 1792422912.5766132,
+    "seen": 1792426642.0000067,
+    "ast_hash": "4e14405a229f983ff9111900497e025d",
+    "semantic_hash": ""
   },
   "src/Brain.Client/Program.cs": {
-    "mtime": 1792287541.5695217,
-    "seen": 1792320014.012258,
-    "ast_hash": "ed811c19cbba58a7820d4e9be24e3a94",
-    "semantic_hash": "ed811c19cbba58a7820d4e9be24e3a94"
+    "mtime": 1792422912.58893,
+    "seen": 1792426642.0000067,
+    "ast_hash": "6c533f57e4f6a5dfd663dc18725f4d10",
+    "semantic_hash": ""
   },
   "src/Brain.Client/Provisioner.cs": {
-    "mtime": 1792287316.056467,
-    "seen": 1792320014.012258,
-    "ast_hash": "68a058661f4e72e5e472fb715d5504a9",
-    "semantic_hash": "68a058661f4e72e5e472fb715d5504a9"
+    "mtime": 1792422912.6021416,
+    "seen": 1792426642.0000067,
+    "ast_hash": "399a0ac61b530b8dc804ac40c2a5f565",
+    "semantic_hash": ""
   },
   "src/Brain.Client/RuntimeInventory.cs": {
-    "mtime": 1792286275.0353935,
-    "seen": 1792320014.012258,
-    "ast_hash": "04f5dc9933cab1c31d2071075fd7f3ee",
-    "semantic_hash": "04f5dc9933cab1c31d2071075fd7f3ee"
+    "mtime": 1792422912.6155548,
+    "seen": 1792426642.0000067,
+    "ast_hash": "52477f1ecb1ea693a1230aa336819649",
+    "semantic_hash": ""
   },
   "src/Brain.Client/ServiceInstaller.cs": {
-    "mtime": 1792287316.0609396,
-    "seen": 1792320014.012258,
-    "ast_hash": "87fc89da5df0c6ddbc5e7983090669ec",
-    "semantic_hash": "87fc89da5df0c6ddbc5e7983090669ec"
+    "mtime": 1792422912.628684,
+    "seen": 1792426642.0000067,
+    "ast_hash": "c069486a5538faa881a1a8b3ab3cd07d",
+    "semantic_hash": ""
   },
   "src/Brain.Client/SkillSynchronizer.cs": {
-    "mtime": 1792286522.0700822,
-    "seen": 1792320014.012258,
-    "ast_hash": "7afcba5d7763e124601af74c6fe75269",
-    "semantic_hash": "7afcba5d7763e124601af74c6fe75269"
+    "mtime": 1792422912.6411254,
+    "seen": 1792426642.0000067,
+    "ast_hash": "2de4adc419de1a35cbe430241c216bcd",
+    "semantic_hash": ""
   },
   "src/Brain.Domain/Activity.cs": {
     "mtime": 1792251447.083311,
@@ -354,28 +354,28 @@
     "semantic_hash": "e2b260fa9012f472b127d9e2f724cd19"
   },
   "src/Brain.Domain/Device.cs": {
-    "mtime": 1792285713.8706832,
-    "seen": 1792320014.012258,
-    "ast_hash": "27ff5aa6317a1197a0db0d77e6e7f876",
-    "semantic_hash": "27ff5aa6317a1197a0db0d77e6e7f876"
+    "mtime": 1792422912.6532881,
+    "seen": 1792426642.0000067,
+    "ast_hash": "64ea92e212e6fa6c9cbc9f4357c72c32",
+    "semantic_hash": ""
   },
   "src/Brain.Domain/DeviceRuntime.cs": {
-    "mtime": 1792286179.0013816,
-    "seen": 1792320014.012258,
-    "ast_hash": "0337809f7b8a31ef0dc7b0441f2303c8",
-    "semantic_hash": "0337809f7b8a31ef0dc7b0441f2303c8"
+    "mtime": 1792422912.665877,
+    "seen": 1792426642.0000067,
+    "ast_hash": "e82f82ed408c437ce2acc34d7730bcd1",
+    "semantic_hash": ""
   },
   "src/Brain.Domain/DeviceSkill.cs": {
-    "mtime": 1792286510.382194,
-    "seen": 1792320014.012258,
-    "ast_hash": "3b35cd2731459539c99fbb220f13b533",
-    "semantic_hash": "3b35cd2731459539c99fbb220f13b533"
+    "mtime": 1792422912.681,
+    "seen": 1792426642.0000067,
+    "ast_hash": "613851d0178bf6538ebc786189a91f35",
+    "semantic_hash": ""
   },
   "src/Brain.Domain/Identity.cs": {
-    "mtime": 1792285713.8728342,
-    "seen": 1792320014.012258,
-    "ast_hash": "84360f615c4d9a0ef8a39c3b9949b92c",
-    "semantic_hash": "84360f615c4d9a0ef8a39c3b9949b92c"
+    "mtime": 1792426723.979048,
+    "seen": 1792426745.3174694,
+    "ast_hash": "965acf5ca31c3cbf9d68afa67ccce0d7",
+    "semantic_hash": ""
   },
   "src/Brain.Domain/Knowledge.cs": {
     "mtime": 1792266339.4787922,
@@ -402,14 +402,14 @@
     "semantic_hash": "22b142732d0d09bccf33a8e0236ef4c8"
   },
   "src/Brain.Domain/ProvisioningPlan.cs": {
-    "mtime": 1792286612.4986293,
-    "seen": 1792320014.012258,
-    "ast_hash": "5eb716c4856bc6c60f6040c04da8856e",
-    "semantic_hash": "5eb716c4856bc6c60f6040c04da8856e"
+    "mtime": 1792422912.7196922,
+    "seen": 1792426642.0000067,
+    "ast_hash": "9dbf55519e08eae8081bac2dc222c7d0",
+    "semantic_hash": ""
   },
   "src/Brain.Domain/Registry.cs": {
-    "mtime": 1792286258.7777877,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.732193,
+    "seen": 1792426642.0000067,
     "ast_hash": "9e7fafb2e79147b07177e029bc0d313f",
     "semantic_hash": "9e7fafb2e79147b07177e029bc0d313f"
   },
@@ -444,10 +444,10 @@
     "semantic_hash": "e037549902ba841f271390b44d8a694e"
   },
   "src/Brain.Infrastructure/AgentDirectory.cs": {
-    "mtime": 1792285592.4342446,
-    "seen": 1792320014.012258,
-    "ast_hash": "e7cc5e049637e067fb3efa5873cbba00",
-    "semantic_hash": "e7cc5e049637e067fb3efa5873cbba00"
+    "mtime": 1792426723.9908862,
+    "seen": 1792426745.3174694,
+    "ast_hash": "a53b60bdad970422eb47685435a28148",
+    "semantic_hash": ""
   },
   "src/Brain.Infrastructure/AuditLog.cs": {
     "mtime": 1792251447.1034026,
@@ -462,8 +462,8 @@
     "semantic_hash": "dc44ac7dc0261dc6374b1ec9e0234244"
   },
   "src/Brain.Infrastructure/BrainDbContext.cs": {
-    "mtime": 1792286630.3052113,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.7572408,
+    "seen": 1792426642.0000067,
     "ast_hash": "82f82b6547e34091320bfebea0ed8ce3",
     "semantic_hash": "82f82b6547e34091320bfebea0ed8ce3"
   },
@@ -474,10 +474,10 @@
     "semantic_hash": "611949578e1cddbb4514f5964654c122"
   },
   "src/Brain.Infrastructure/DatabaseInitializer.cs": {
-    "mtime": 1792251447.108404,
-    "seen": 1792320014.012258,
-    "ast_hash": "27fa00fc680de791a3c881a47a47ac18",
-    "semantic_hash": "27fa00fc680de791a3c881a47a47ac18"
+    "mtime": 1792426724.003674,
+    "seen": 1792426745.3174694,
+    "ast_hash": "3816f33999344db85a899991509bc1bf",
+    "semantic_hash": ""
   },
   "src/Brain.Infrastructure/DevelopmentEmbeddingProvider.cs": {
     "mtime": 1792251447.1094081,
@@ -486,16 +486,16 @@
     "semantic_hash": "8e13a76138612d01a90047fc9c376fe9"
   },
   "src/Brain.Infrastructure/DeviceSkillStore.cs": {
-    "mtime": 1792286517.716986,
-    "seen": 1792320014.012258,
-    "ast_hash": "69e9af26736d9c37d5d4462b31c1e87d",
-    "semantic_hash": "69e9af26736d9c37d5d4462b31c1e87d"
+    "mtime": 1792422912.7702339,
+    "seen": 1792426642.0000067,
+    "ast_hash": "3d6ed68be2ad498659467cb8541f12cc",
+    "semantic_hash": ""
   },
   "src/Brain.Infrastructure/DeviceStore.cs": {
-    "mtime": 1792287547.495983,
-    "seen": 1792320014.012258,
-    "ast_hash": "31b6670c1664f0fdf494eb762222b994",
-    "semantic_hash": "31b6670c1664f0fdf494eb762222b994"
+    "mtime": 1792422912.7834072,
+    "seen": 1792426642.0000067,
+    "ast_hash": "475d554a076f6ca6075444adcaa17726",
+    "semantic_hash": ""
   },
   "src/Brain.Infrastructure/FileSystemKnowledgeVault.cs": {
     "mtime": 1792251447.110743,
@@ -504,8 +504,8 @@
     "semantic_hash": "30498dd776a174fbcad405b70274d407"
   },
   "src/Brain.Infrastructure/FileSystemRegistrySource.cs": {
-    "mtime": 1792286258.7834053,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.809405,
+    "seen": 1792426642.0000067,
     "ast_hash": "a0a5f2d0dbded9118d616e058665c5a4",
     "semantic_hash": "a0a5f2d0dbded9118d616e058665c5a4"
   },
@@ -648,28 +648,28 @@
     "semantic_hash": "f69e622fdc2d6d7c4af41fb028fa54ca"
   },
   "src/Brain.Infrastructure/Migrations/20261018012541_BrainClientOnboarding.Designer.cs": {
-    "mtime": 1792286741.2865672,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.822566,
+    "seen": 1792426642.0000067,
     "ast_hash": "0dd7c99a5007e85fc541937a213306d9",
     "semantic_hash": "0dd7c99a5007e85fc541937a213306d9"
   },
   "src/Brain.Infrastructure/Migrations/20261018012541_BrainClientOnboarding.cs": {
-    "mtime": 1792286741.2865672,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.8372226,
+    "seen": 1792426642.0000067,
     "ast_hash": "c954e049d43e77f8645329b44f7a3c16",
     "semantic_hash": "c954e049d43e77f8645329b44f7a3c16"
   },
   "src/Brain.Infrastructure/Migrations/BrainDbContextModelSnapshot.cs": {
-    "mtime": 1792286741.2865672,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.8619175,
+    "seen": 1792426642.0000067,
     "ast_hash": "fe8b5b6d877805e4dd32e10d0c2a2c0a",
     "semantic_hash": "fe8b5b6d877805e4dd32e10d0c2a2c0a"
   },
   "src/Brain.Infrastructure/ProvisioningStore.cs": {
-    "mtime": 1792286630.3052113,
-    "seen": 1792320014.012258,
-    "ast_hash": "d6033aca55ff21343a822c478d1e2991",
-    "semantic_hash": "d6033aca55ff21343a822c478d1e2991"
+    "mtime": 1792422912.8758657,
+    "seen": 1792426642.0000067,
+    "ast_hash": "aaa9e6de39d9a30a0406f0dbe09e3b27",
+    "semantic_hash": ""
   },
   "src/Brain.Infrastructure/RegistryIndex.cs": {
     "mtime": 1792251447.1443405,
@@ -678,14 +678,14 @@
     "semantic_hash": "fade24472e7a200e278dd9a888488d36"
   },
   "src/Brain.Infrastructure/RuntimeStore.cs": {
-    "mtime": 1792286188.0149128,
-    "seen": 1792320014.012258,
-    "ast_hash": "d669685cceeafa143a1dbaa63f128034",
-    "semantic_hash": "d669685cceeafa143a1dbaa63f128034"
+    "mtime": 1792422912.8881516,
+    "seen": 1792426642.0000067,
+    "ast_hash": "eb4a50f329b0f4eb2f6aed3ff1b42a38",
+    "semantic_hash": ""
   },
   "src/Brain.Infrastructure/ServiceRegistration.cs": {
-    "mtime": 1792286630.3052113,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.9137137,
+    "seen": 1792426642.0000067,
     "ast_hash": "8922c57d3f4cd02a2c7adf65bdb0481a",
     "semantic_hash": "8922c57d3f4cd02a2c7adf65bdb0481a"
   },
@@ -726,22 +726,22 @@
     "semantic_hash": "e7788039f340f5766c0b633203d7f8cb"
   },
   "tests/Brain.IntegrationTests/ActivityApiTests.cs": {
-    "mtime": 1792287012.7690835,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.9370394,
+    "seen": 1792426642.0000067,
     "ast_hash": "4043b2bf886ed961edb3f83dae87d3ce",
     "semantic_hash": "4043b2bf886ed961edb3f83dae87d3ce"
   },
   "tests/Brain.IntegrationTests/AgentApiTests.cs": {
-    "mtime": 1792285592.4368086,
-    "seen": 1792320014.012258,
-    "ast_hash": "3a6e5d8a6ec39d9f324f0a7b93918566",
-    "semantic_hash": "3a6e5d8a6ec39d9f324f0a7b93918566"
+    "mtime": 1792426724.0172162,
+    "seen": 1792426745.3174694,
+    "ast_hash": "3c6c8010be0fd579144a8023752c1679",
+    "semantic_hash": ""
   },
   "tests/Brain.IntegrationTests/ApiContractTests.cs": {
-    "mtime": 1792285592.4400668,
-    "seen": 1792320014.012258,
-    "ast_hash": "1a38ce84342048827b20895d11aef7c0",
-    "semantic_hash": "1a38ce84342048827b20895d11aef7c0"
+    "mtime": 1792426724.0298877,
+    "seen": 1792426745.3174694,
+    "ast_hash": "3dc32f2e4e73bc7b21298f690b225417",
+    "semantic_hash": ""
   },
   "tests/Brain.IntegrationTests/Brain.IntegrationTests.csproj": {
     "mtime": 1792251447.1548014,
@@ -750,16 +750,16 @@
     "semantic_hash": "1af82b4d9394ccc547fdf2742500861b"
   },
   "tests/Brain.IntegrationTests/BrainFixture.cs": {
-    "mtime": 1792287012.764317,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.9627163,
+    "seen": 1792426642.0000067,
     "ast_hash": "16c8502b2d68c8930de923748878cab6",
     "semantic_hash": "16c8502b2d68c8930de923748878cab6"
   },
   "tests/Brain.IntegrationTests/DeviceApiTests.cs": {
-    "mtime": 1792287552.9342215,
-    "seen": 1792320014.012258,
-    "ast_hash": "af50f0e30476f88c4bb0705b6ce4cbdd",
-    "semantic_hash": "af50f0e30476f88c4bb0705b6ce4cbdd"
+    "mtime": 1792422912.975983,
+    "seen": 1792426642.0000067,
+    "ast_hash": "1c8fe5d58a196c46b5729e3fb22abb87",
+    "semantic_hash": ""
   },
   "tests/Brain.IntegrationTests/GraphApiTests.cs": {
     "mtime": 1792266339.4940577,
@@ -810,8 +810,8 @@
     "semantic_hash": "caa4d8fcdf173eab3d2d6475b2e1e2b8"
   },
   "tests/Brain.IntegrationTests/WorkerReadinessTests.cs": {
-    "mtime": 1792287012.7668867,
-    "seen": 1792320014.012258,
+    "mtime": 1792422912.9893153,
+    "seen": 1792426642.0000067,
     "ast_hash": "46efc2411164d2cb64084e479f44fadf",
     "semantic_hash": "46efc2411164d2cb64084e479f44fadf"
   },
@@ -822,16 +822,16 @@
     "semantic_hash": "d8443880dd949eb71bb767e39b3902df"
   },
   "tests/Brain.UnitTests/Brain.UnitTests.csproj": {
-    "mtime": 1792286074.9904113,
-    "seen": 1792320014.012258,
+    "mtime": 1792422913.0130482,
+    "seen": 1792426642.0000067,
     "ast_hash": "fea4d5921886ca2d5c299b526c2ba5ac",
     "semantic_hash": "fea4d5921886ca2d5c299b526c2ba5ac"
   },
   "tests/Brain.UnitTests/DeviceClientTests.cs": {
-    "mtime": 1792286881.3857937,
-    "seen": 1792320014.012258,
-    "ast_hash": "6c4cf3d279c25ea8e9f2cb744533b53e",
-    "semantic_hash": "6c4cf3d279c25ea8e9f2cb744533b53e"
+    "mtime": 1792426724.0426075,
+    "seen": 1792426745.3174694,
+    "ast_hash": "ac8451a9f6c95028550d25d80159a043",
+    "semantic_hash": ""
   },
   "tests/Brain.UnitTests/GraphTests.cs": {
     "mtime": 1792266339.4973073,
@@ -900,14 +900,14 @@
     "semantic_hash": "ccd805c090bc9c41c04a705c7c7995f9"
   },
   "ui/e2e/pav.spec.ts": {
-    "mtime": 1792417629.9730532,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.06066,
+    "seen": 1792426642.0000067,
     "ast_hash": "bff84477694fda5d470c471ac076da76",
     "semantic_hash": ""
   },
   "ui/e2e/reference-layout.spec.ts": {
-    "mtime": 1792417629.988655,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.0657275,
+    "seen": 1792426642.0000067,
     "ast_hash": "54f2dce4e6ee40c891d9b27ecbee2fc1",
     "semantic_hash": ""
   },
@@ -942,14 +942,14 @@
     "semantic_hash": "2c7aec9cca5bf79a538f70a8d2cfd5b6"
   },
   "ui/src/App.test.tsx": {
-    "mtime": 1792417629.945922,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.0901577,
+    "seen": 1792426642.0000067,
     "ast_hash": "f941944ca9d59ce2a28166a0a25c7602",
     "semantic_hash": ""
   },
   "ui/src/App.tsx": {
-    "mtime": 1792422129.9613464,
-    "seen": 1792422897.3298523,
+    "mtime": 1792422913.1033854,
+    "seen": 1792426642.0000067,
     "ast_hash": "94b6c233306e7374cfccd70cb57aae65",
     "semantic_hash": ""
   },
@@ -972,20 +972,20 @@
     "semantic_hash": "3d229713cc369172f0b0d0e88d783792"
   },
   "ui/src/components/AppShell.test.tsx": {
-    "mtime": 1792421284.178543,
-    "seen": 1792422897.3298523,
+    "mtime": 1792422913.1173916,
+    "seen": 1792426642.0000067,
     "ast_hash": "5ffc91ec6b18af0f106af936080e377a",
     "semantic_hash": ""
   },
   "ui/src/components/AppShell.tsx": {
-    "mtime": 1792422666.5948968,
-    "seen": 1792422897.3298523,
-    "ast_hash": "08fee891c601efd87069983e3ca6308b",
+    "mtime": 1792426724.055776,
+    "seen": 1792426745.3174694,
+    "ast_hash": "9f71dad2e800b7346980b7441f9cce58",
     "semantic_hash": ""
   },
   "ui/src/components/SignIn.tsx": {
-    "mtime": 1792416562.4884343,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.165308,
+    "seen": 1792426642.0000067,
     "ast_hash": "29170803ac059fb19388fb714d927acc",
     "semantic_hash": ""
   },
@@ -1008,28 +1008,28 @@
     "semantic_hash": "61ea4f6d1e4acd77532b0b59e416552e"
   },
   "ui/src/features/agents/AccessForm.tsx": {
-    "mtime": 1792420862.8679595,
-    "seen": 1792422897.3298523,
-    "ast_hash": "ae2562da63c858ff8b730a254a0e61b6",
+    "mtime": 1792426724.0689375,
+    "seen": 1792426745.3174694,
+    "ast_hash": "2ddc2ffd9148ba39a2f0179a9cee1efb",
     "semantic_hash": ""
   },
   "ui/src/features/agents/Agents.test.tsx": {
-    "mtime": 1792422047.2752306,
-    "seen": 1792422897.3298523,
-    "ast_hash": "44e61f1cbcb7101187421ddc5315a1e2",
+    "mtime": 1792426724.0825548,
+    "seen": 1792426745.3174694,
+    "ast_hash": "a3984450868594f6076b567619b5f0eb",
     "semantic_hash": ""
   },
   "ui/src/features/agents/Agents.tsx": {
-    "mtime": 1792422041.6716766,
-    "seen": 1792422897.3298523,
-    "ast_hash": "01c8674ea42d1b7f394b98487d170bdf",
+    "mtime": 1792426724.0965075,
+    "seen": 1792426745.3174694,
+    "ast_hash": "f579e0053e2ac196058bb30bd5c6abd3",
     "semantic_hash": ""
   },
   "ui/src/features/agents/api.ts": {
-    "mtime": 1792285592.715603,
-    "seen": 1792320014.012258,
-    "ast_hash": "379f04fed9e56da45062fd96591e89bf",
-    "semantic_hash": "379f04fed9e56da45062fd96591e89bf"
+    "mtime": 1792426724.1468992,
+    "seen": 1792426745.3174694,
+    "ast_hash": "0a4ad6df9b9fd608f70ec80aac763c0a",
+    "semantic_hash": ""
   },
   "ui/src/features/dashboard/Dashboard.test.tsx": {
     "mtime": 1792285592.7176127,
@@ -1104,8 +1104,8 @@
     "semantic_hash": "5e6738788b355c5735d8ad65458dae17"
   },
   "ui/src/features/pav/PavDashboard.tsx": {
-    "mtime": 1792419313.7900624,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.2655506,
+    "seen": 1792426642.0000067,
     "ast_hash": "14d8617302701df184575e3b82b6b8c3",
     "semantic_hash": ""
   },
@@ -1116,8 +1116,8 @@
     "semantic_hash": "d63dd0e40571d625d3738e113eff3a3e"
   },
   "ui/src/features/pav/VaultCanvas.tsx": {
-    "mtime": 1792418395.0113757,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.2815924,
+    "seen": 1792426642.0000067,
     "ast_hash": "a0ad201786eaf8a01758ae1b9e48ea97",
     "semantic_hash": ""
   },
@@ -1140,8 +1140,8 @@
     "semantic_hash": "29ad92a06e732b891d2de5e8b539f1bf"
   },
   "ui/src/features/pav/layouts.ts": {
-    "mtime": 1792418513.7069864,
-    "seen": 1792419904.1362793,
+    "mtime": 1792422913.2971172,
+    "seen": 1792426642.0000067,
     "ast_hash": "b5c99e75c557d9f1f2d3ce529aa4e62b",
     "semantic_hash": ""
   },
@@ -1218,8 +1218,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1792320114.2584796,
-    "seen": 1792320126.8661056,
+    "mtime": 1792422908.9242032,
+    "seen": 1792426642.0000067,
     "ast_hash": "462662688140e0fc9608242654edc277",
     "semantic_hash": ""
   },
@@ -1230,9 +1230,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792420268.4026022,
-    "seen": 1792420311.7007277,
-    "ast_hash": "7b470d9cc724ad3a7d79803aa8b5c2d7",
+    "mtime": 1792422908.9635994,
+    "seen": 1792426642.0000067,
+    "ast_hash": "5b84c683194f9890b54c34e390a3d021",
     "semantic_hash": ""
   },
   "agent-platform/README.md": {
@@ -1296,15 +1296,15 @@
     "semantic_hash": ""
   },
   "docs/architecture.md": {
-    "mtime": 1792416140.4117634,
-    "seen": 1792419904.1362793,
-    "ast_hash": "9f684cb8e1c7e64c0baa24c461816d04",
+    "mtime": 1792426723.9074783,
+    "seen": 1792426745.3174694,
+    "ast_hash": "c5fef11692182afc7ac17998db921dcb",
     "semantic_hash": ""
   },
   "docs/client-onboarding.md": {
-    "mtime": 1792287657.5659819,
-    "seen": 1792320126.8661056,
-    "ast_hash": "0fc4d0c9016548ffef5347e89d34570c",
+    "mtime": 1792422909.0251231,
+    "seen": 1792426642.0000067,
+    "ast_hash": "c2c5a31242f61205e830448ae5448150",
     "semantic_hash": ""
   },
   "docs/conventions.md": {
@@ -1314,9 +1314,9 @@
     "semantic_hash": ""
   },
   "docs/foundation.md": {
-    "mtime": 1792251447.022328,
-    "seen": 1792320126.8661056,
-    "ast_hash": "60cf258e250bd16d3fb78467ac74e40b",
+    "mtime": 1792426723.9200358,
+    "seen": 1792426745.3174694,
+    "ast_hash": "b26ee49d4c42ecb864ac1293fadee961",
     "semantic_hash": ""
   },
   "docs/knowledge-writes.md": {
@@ -1332,8 +1332,8 @@
     "semantic_hash": ""
   },
   "docs/mcp.md": {
-    "mtime": 1792287305.960773,
-    "seen": 1792320126.8661056,
+    "mtime": 1792422909.0510738,
+    "seen": 1792426642.0000067,
     "ast_hash": "2a27426818465b9633e1dd58ecb3ecc3",
     "semantic_hash": ""
   },
@@ -1344,26 +1344,26 @@
     "semantic_hash": ""
   },
   "docs/skills-and-tools.md": {
-    "mtime": 1792287302.9441042,
-    "seen": 1792320126.8661056,
+    "mtime": 1792422909.0672243,
+    "seen": 1792426642.0000067,
     "ast_hash": "121637b12bdef9426693323f7fe9d2ec",
     "semantic_hash": ""
   },
   "docs/ui-roadmap.md": {
-    "mtime": 1792416144.3809354,
-    "seen": 1792419904.1362793,
-    "ast_hash": "4e23626304d8b6d12f62852d815b8450",
+    "mtime": 1792426723.9350832,
+    "seen": 1792426745.3174694,
+    "ast_hash": "49503b50c9639bd3246290c40b264a72",
     "semantic_hash": ""
   },
   "docs/ui.md": {
-    "mtime": 1792422808.8834057,
-    "seen": 1792422897.3298523,
-    "ast_hash": "185ca879494be064019b7231c0838c13",
+    "mtime": 1792426723.939255,
+    "seen": 1792426745.3174694,
+    "ast_hash": "8c2dcaf9b9a0e6bcfb45e5d0bb410893",
     "semantic_hash": ""
   },
   "docs/verification.md": {
-    "mtime": 1792287556.7309449,
-    "seen": 1792320126.8661056,
+    "mtime": 1792422909.120736,
+    "seen": 1792426642.0000067,
     "ast_hash": "c602ad6a6c0eef089d17ce1cd6367b71",
     "semantic_hash": ""
   },
@@ -2214,27 +2214,39 @@
     "semantic_hash": ""
   },
   "docs/api.md": {
-    "mtime": 1792420047.2827835,
-    "seen": 1792420131.9977589,
-    "ast_hash": "95815bd3dc48cb9d003747e36ee5503c",
+    "mtime": 1792426723.8940706,
+    "seen": 1792426745.3174694,
+    "ast_hash": "08c1a09dc887480055f1982c196634db",
     "semantic_hash": ""
   },
   "docs/development.md": {
-    "mtime": 1792420053.1330829,
-    "seen": 1792420131.9977589,
-    "ast_hash": "204943c9534bca787526eeddb788d319",
+    "mtime": 1792422909.0381916,
+    "seen": 1792426642.0000067,
+    "ast_hash": "7c1fbb5b025130b1b81f77806e251b85",
     "semantic_hash": ""
   },
   "docs/setup.md": {
-    "mtime": 1792420035.4563162,
-    "seen": 1792420132.0025752,
-    "ast_hash": "551fc07fc0fd44756f5495c7ed4b697d",
+    "mtime": 1792422909.0636656,
+    "seen": 1792426642.0000067,
+    "ast_hash": "9315f7a7af057abb4ce1cdf296cd766f",
     "semantic_hash": ""
   },
   "docs/assets/brainy-logo.svg": {
-    "mtime": 1792420263.681501,
-    "seen": 1792420311.7007277,
-    "ast_hash": "012acaea1612abc6431479501c020e0f",
+    "mtime": 1792422909.0135994,
+    "seen": 1792426642.0000067,
+    "ast_hash": "a727808571e09346f5de910a6964ebc7",
+    "semantic_hash": ""
+  },
+  "ui/src/features/agents/RoleForm.tsx": {
+    "mtime": 1792426724.1085014,
+    "seen": 1792426745.3174694,
+    "ast_hash": "40c727967d45f234ba6059cba4809ddf",
+    "semantic_hash": ""
+  },
+  "ui/src/features/agents/SearchMultiSelect.tsx": {
+    "mtime": 1792426724.1207094,
+    "seen": 1792426745.3174694,
+    "ast_hash": "0cfae7d72d45b568dd88110fdc440c4d",
     "semantic_hash": ""
   }
 }
