@@ -1,7 +1,7 @@
 import {
   Activity, Bot, BrainCircuit, Cable, LogOut,
   FileClock, FileText, Fingerprint, Gauge, GitPullRequest,
-  Layers3, Menu, Settings2, Wrench, X,
+  Menu, Settings2, Wrench, X,
 } from "lucide-react";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { AgentProfile } from "../api/client";
@@ -9,13 +9,11 @@ import { Theme } from "../hooks/useTheme";
 import ThemeToggle from "./ThemeToggle";
 
 export type PageId =
-  | "dashboard" | "pav" | "graph" | "agents" | "skills" | "tools" | "connections"
+  | "pav" | "agents" | "skills" | "tools" | "connections"
   | "permissions" | "proposals" | "metadata" | "operations" | "audit" | "settings";
 
 const navigation: { id: PageId; label: string; icon: typeof Gauge; group: string }[] = [
-  { id: "dashboard", label: "Dashboard", icon: Gauge, group: "Workspace" },
-  { id: "pav", label: "PAV OS", icon: BrainCircuit, group: "Workspace" },
-  { id: "graph", label: "Knowledge graph", icon: Layers3, group: "Workspace" },
+  { id: "pav", label: "Dashboard", icon: BrainCircuit, group: "Workspace" },
   { id: "agents", label: "Agents", icon: Bot, group: "Control plane" },
   { id: "skills", label: "Skills", icon: BrainCircuit, group: "Control plane" },
   { id: "tools", label: "Tools", icon: Wrench, group: "Control plane" },
@@ -27,6 +25,7 @@ const navigation: { id: PageId; label: string; icon: typeof Gauge; group: string
   { id: "audit", label: "Audit", icon: FileClock, group: "Governance" },
   { id: "settings", label: "Settings", icon: Settings2, group: "System" },
 ];
+const navigationColumns = [["Workspace", "Governance"], ["Control plane", "System"]] as const;
 
 interface AppShellProps {
   profile: AgentProfile;
@@ -42,11 +41,19 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLElement>(null);
-  const current = navigation.find((item) => item.id === page)!;
-  const groups = [...new Set(navigation.map((item) => item.group))];
 
   useEffect(() => {
     if (menuOpen) menu.current?.querySelector<HTMLButtonElement>('[aria-current="page"]')?.focus();
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function closeOnOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+      if (!menu.current?.contains(target) && !menuButton.current?.contains(target)) closeMenu();
+    }
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
   }, [menuOpen]);
 
   function closeMenu() {
@@ -65,12 +72,14 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
         <a className="skip-link" href="#workspace-content">Skip to content</a>
         <div className="topbar">
           <div className="topbar-left">
-            <button ref={menuButton} className="icon-button mobile-menu" onClick={() => setMenuOpen(!menuOpen)}
-              aria-expanded={menuOpen} aria-controls="main-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
             <span className="shell-brand"><BrainCircuit size={16} /><span>BRAINY</span></span>
             <span className="shell-context">Shared knowledge / Independent agents</span>
+            <button ref={menuButton} className="navigation-trigger" onClick={() => setMenuOpen(!menuOpen)}
+              aria-expanded={menuOpen} aria-controls="main-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
+              <span className={`navigation-icon${menuOpen ? " navigation-icon-open" : ""}`} aria-hidden="true">
+                <Menu className="navigation-icon-menu" size={14} /><X className="navigation-icon-close" size={14} />
+              </span><span>Navigate</span>
+            </button>
           </div>
           <div className="topbar-actions">
             <span className="profile-chip"><span className="status-dot" /><span>{profile.id}</span></span>
@@ -80,46 +89,36 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
         </div>
         <nav ref={menu} id="main-navigation" aria-label="Main navigation" className={`main-nav ${menuOpen ? "main-nav-open" : ""}`}
           onKeyDown={(event) => { if (event.key === "Escape") closeMenu(); }}>
-          {groups.map((group) => (
-            <div className="nav-group" key={group}>
-              <span className="nav-label">{group}</span>
-              {navigation.filter((item) => item.group === group).map(({ id, label, icon: Icon }) => (
-                <button
-                  aria-current={page === id ? "page" : undefined}
-                  className={`nav-item ${page === id ? "nav-item-active" : ""}`}
-                  key={id}
-                  onClick={() => navigate(id)}
-                >
-                  <Icon size={17} strokeWidth={1.8} />
-                  <span>{label}</span>
-                </button>
+          {navigationColumns.map((column, index) => (
+            <div className="nav-column" key={index}>
+              {column.map((group) => (
+                <div className="nav-group" key={group}>
+                  <span className="nav-label">{group}</span>
+                  {navigation.filter((item) => item.group === group).map(({ id, label, icon: Icon }) => (
+                    <button
+                      aria-current={page === id ? "page" : undefined}
+                      className={`nav-item ${page === id ? "nav-item-active" : ""}`}
+                      key={id}
+                      onClick={() => navigate(id)}
+                    >
+                      <Icon size={17} strokeWidth={1.8} />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
               ))}
             </div>
           ))}
         </nav>
       </header>
-      <details className="focus-strip">
-        <summary>Focus <span>/ {current.label}</span></summary>
-        <div className="focus-cards">
-          {([
-            ["graph", "01", "Explore knowledge", "Canonical sources and their explicit relationships."],
-            ["proposals", "02", "Review proposals", "Knowledge changes remain subject to human approval."],
-            ["agents", "03", "Inspect access", "Deterministic grants, resolved by the backend."],
-          ] as const).map(([id, number, title, description]) => <button key={id} onClick={() => navigate(id)}>
-            <span className="focus-rank">{number}</span><span><b>{title}</b><small>{description}</small></span>
-          </button>)}
-        </div>
-      </details>
       <main className="main-area" id="workspace-content" tabIndex={-1}>
-        <div className={`page-content${page === "graph" ? " page-content-graph" : page === "pav" ? " page-content-pav" : ""}`}>
+        <div className={`page-content${page === "pav" ? " page-content-pav" : " page-content-constrained"}`}>
           {children}
         </div>
       </main>
-      <footer className="app-footer">
-        <span className="footer-label">SYSTEM STATUS</span>
-        <span><span className="status-dot" /> Authenticated <b>/</b> {profile.teamId ?? "Independent identity"}</span>
-        <span>Access is permission-scoped <b>/</b> Canonical files + Git</span>
-      </footer>
+      {page !== "pav" && <footer className="workspace-footer">
+        <div className="workspace-footer-content">© {new Date().getFullYear()} Brainy contributors · PolyForm Noncommercial License 1.0.0</div>
+      </footer>}
     </div>
   );
 }

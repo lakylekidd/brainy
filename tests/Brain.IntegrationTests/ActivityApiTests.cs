@@ -167,7 +167,7 @@ public sealed class ActivityApiTests(BrainFixture fixture) : IClassFixture<Brain
         Assert.Equal(": connected", await reader.ReadLineAsync(timeout.Token));
         Assert.Equal("", await reader.ReadLineAsync(timeout.Token));
         using var scope = fixture.Factory.Services.CreateScope();
-        var connection = scope.ServiceProvider.GetRequiredService<BrainDbContext>().Database.GetConnectionString()!;
+        var connection = fixture.ConnectionString;
         await using var workerDataSource = NpgsqlDataSource.Create(connection);
         var workerBus = new ActivityLiveBus(workerDataSource, new() { RetentionDays = 0 },
             NullLogger<ActivityLiveBus>.Instance, new ActivitySanitizer(new ConfigurationBuilder().Build()));
@@ -299,7 +299,7 @@ public sealed class ActivityApiTests(BrainFixture fixture) : IClassFixture<Brain
     public async Task Slow_live_subscriber_is_disconnected_explicitly_instead_of_growing_unbounded()
     {
         using var scope = fixture.Factory.Services.CreateScope();
-        var connection = scope.ServiceProvider.GetRequiredService<BrainDbContext>().Database.GetConnectionString()!;
+        var connection = fixture.ConnectionString;
         await using var dataSource = NpgsqlDataSource.Create(connection);
         var bus = new ActivityLiveBus(dataSource, new() { SubscriberCapacity = 1 }, NullLogger<ActivityLiveBus>.Instance,
             scope.ServiceProvider.GetRequiredService<ActivitySanitizer>());

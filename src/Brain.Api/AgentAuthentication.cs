@@ -12,6 +12,7 @@ namespace Brain.Api;
 public sealed class RequestAgent : ICurrentAgent
 {
     public AgentContext Context { get; set; } = null!;
+    public Guid? DeviceId { get; set; }
 }
 
 public sealed class AgentAuthenticationOptions : AuthenticationSchemeOptions
@@ -24,7 +25,7 @@ public sealed class AgentAuthenticationOptions : AuthenticationSchemeOptions
 
 public sealed class AgentAuthenticationHandler(
     IOptionsMonitor<AgentAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder,
-    IAgentDirectory directory, RequestAgent requestAgent)
+    IAgentDirectory directory, IDeviceStore devices, RequestAgent requestAgent)
     : AuthenticationHandler<AgentAuthenticationOptions>(options, logger, encoder)
 {
     public const string SchemeName = "AgentToken";
@@ -40,6 +41,20 @@ public sealed class AgentAuthenticationHandler(
         string expected;
         if (ids.Count == 0)
         {
+            var candidate = header[7..];
+            if (candidate.StartsWith("bd_", StringComparison.Ordinal))
+            {
+                var device = await devices.AuthenticateAsync(candidate, Context.RequestAborted);
+                if (device is null) return AuthenticateResult.Fail("Invalid device credentials.");
+                var boundAgent = await directory.ResolveAsync(device.AgentId, Context.RequestAborted);
+                if (boundAgent is null) return AuthenticateResult.Fail("Invalid device credentials.");
+                var grants = boundAgent.Permissions.Intersect(device.Scopes, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
+                requestAgent.Context = new AgentContext(boundAgent.Id, boundAgent.TeamId, grants);
+                requestAgent.DeviceId = device.DeviceId;
+                var devicePrincipal = new ClaimsPrincipal(new ClaimsIdentity(
+                    [new Claim(ClaimTypes.NameIdentifier, boundAgent.Id), new Claim("brain_device_id", device.DeviceId.ToString())], SchemeName));
+                return AuthenticateResult.Success(new AuthenticationTicket(devicePrincipal, SchemeName));
+            }
             if (Request.Path.StartsWithSegments("/mcp") ||
                 Options.UiAdminAgentId is not { Length: > 0 } adminId ||
                 Options.UiAdminTokenHash is not { Length: 64 } adminHash)

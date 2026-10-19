@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Brainy logo</title>
+  <desc id="desc">An orange brain circuit mark on a dark background</desc>
+  <rect width="64" height="64" rx="14" fill="#0b1014"/>
+  <g fill="none" stroke="#ff7a2f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.7">
+    <path d="M32 16a8 8 0 1 0-15.99.33 10.7 10.7 0 0 0-6.74 15.39 10.7 10.7 0 0 0 1.48 17.57A10.7 10.7 0 1 0 32 50Z"/>
+    <path d="M24 37a12 12 0 0 0 8-10.67M16 16.33a8 8 0 0 0 1.06 3.67M10.97 31.72a10.7 10.7 0 0 1 1.56-1.06M15 48.75a10.7 10.7 0 0 0 5.25-1.38M32 37h10M32 50h15a5 5 0 0 1 5 5v2M32 26h20M42 26v-8a5 5 0 0 1 5-5"/>
+  </g>
+  <g fill="#ff7a2f">
+    <circle cx="42" cy="37" r="1.3"/><circle cx="47" cy="13" r="1.3"/><circle cx="52" cy="57" r="1.3"/><circle cx="52" cy="26" r="1.3"/>
+  </g>
+</svg>

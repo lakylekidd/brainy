@@ -45,9 +45,19 @@ public static class Permissions
     public const string ActivityLive = "activity.live";
     public const string TracesRead = "traces.read";
     public const string TracesReadAll = "traces.read.all";
+    public const string DevicesRead = "devices.read";
+    public const string DevicesRegister = "devices.register";
+    public const string DevicesManage = "devices.manage";
+    public const string DevicesRevoke = "devices.revoke";
+    public const string HarnessesConnect = "harnesses.connect";
+    public const string HarnessesManage = "harnesses.manage";
+    public const string RuntimeRead = "runtime.read";
+    public const string RuntimeProvision = "runtime.provision";
+    public const string SkillsSync = "skills.sync";
     public static readonly string[] All = [MemoryRead, MemoryWrite, MemoryDelete, MemoryShare, AgentsRead, AgentsAdmin, AuditRead,
         KnowledgeRead, KnowledgeAdmin, KnowledgePropose, RegistryRead, RegistryAdmin,
-        ActivityRead, ActivityLive, TracesRead, TracesReadAll,
+        ActivityRead, ActivityLive, TracesRead, TracesReadAll, DevicesRead, DevicesRegister, DevicesManage,
+        DevicesRevoke, HarnessesConnect, HarnessesManage, RuntimeRead, RuntimeProvision, SkillsSync,
         "infrastructure.read", "infrastructure.write", "deployment.read", "deployment.write", "deployment.staging",
         "deployment.production", "secrets.dev.read", "secrets.production.read"];
 }

@@ -61,7 +61,7 @@ export default function SignIn({ error, onSubmit, theme, onToggleTheme }: SignIn
         </form>
         <div className="signin-security">
           <ShieldCheck size={16} />
-          <span>Credentials stay in this tab and are never saved to this browser.</span>
+          <span>Your token is kept in this tab session and cleared when you sign out.</span>
         </div>
       </section>
       <aside className="signin-aside" aria-label="Platform information">

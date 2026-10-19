@@ -1,5 +1,6 @@
-import { ArrowDownLeft, ArrowUpRight, BrainCircuit, ChevronRight, FileText, Folder, GitBranch, Maximize, Minimize, Search, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, BrainCircuit, CalendarCheck, ChevronRight, Compass, FileText, Folder, GitBranch, Handshake, Maximize, Minimize, PenLine, Play, Search, Settings2, Square, Sunrise, Video, X, type LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { Theme } from "../../hooks/useTheme";
 import Today from "../../components/Today";
 import { VIEWS, type RingId, type ViewMode } from "./layouts";
@@ -7,14 +8,43 @@ import { AREAS, DemoVaultError, FILE_KINDS, KIND_LABELS, areaLabel, fileColor, f
 import VaultCanvas from "./VaultCanvas";
 import "./pav.css";
 
-const VIEW_NOTES: Record<ViewMode, string> = {
-  Ring: "Skills, knowledge, memory, routines, applications. One connected brain.",
-  Circle: "One shared circle. Follow the threads between your ideas.",
-  Areas: "Step back and see the neighborhoods of your workspace.",
-  Links: "Let the connections reveal the shape of your knowledge.",
-  Timeline: "Watch your workspace take shape, one document at a time.",
-  "3D Orbit": "A new perspective on the same connected brain.",
+const ROUTINE_MODELS = ["Haiku", "Sonnet", "Opus", "Fable"] as const;
+const ROUTINE_EFFORTS = ["Low", "Medium", "High", "XHigh", "Max"] as const;
+type RoutineModel = typeof ROUTINE_MODELS[number];
+type RoutineEffort = typeof ROUTINE_EFFORTS[number];
+type RoutinePreference = { model: RoutineModel; effort: RoutineEffort };
+type RoutinePreferences = Record<string, RoutinePreference>;
+const DEFAULT_ROUTINE_PREFERENCE: RoutinePreference = { model: "Sonnet", effort: "Medium" };
+const ROUTINE_ICONS: Record<string, LucideIcon> = {
+  "client-onboarding.md": Handshake,
+  "career-review.md": Compass,
+  "filming.md": Video,
+  "morning-reset.md": Sunrise,
+  "publishing.md": PenLine,
+  "weekly-review.md": CalendarCheck,
 };
+
+function readRoutinePreferences(): RoutinePreferences {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem("pav-routine-preferences") ?? "{}");
+    if (!saved || typeof saved !== "object" || Array.isArray(saved)) return {};
+    return Object.fromEntries(Object.entries(saved).flatMap(([id, value]) => {
+      if (!value || typeof value !== "object") return [];
+      const { model, effort } = value as Record<string, unknown>;
+      if (!ROUTINE_MODELS.includes(model as RoutineModel) || !ROUTINE_EFFORTS.includes(effort as RoutineEffort)) return [];
+      return [[id, { model: model as RoutineModel, effort: effort as RoutineEffort }]];
+    }));
+  } catch {
+    return {};
+  }
+}
+
+function formatElapsed(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
 
 export default function PavDashboard({ theme }: { theme: Theme }) {
   const [source] = useState(() => {
@@ -35,8 +65,15 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
   const [showMemberships, setShowMemberships] = useState(true);
   const [dotSize, setDotSize] = useState(85);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenError, setFullscreenError] = useState("");
+  const [routinePreferences, setRoutinePreferences] = useState(readRoutinePreferences);
+  const [settingsOpenFor, setSettingsOpenFor] = useState<string | null>(null);
+  const [activeRoutinePreview, setActiveRoutinePreview] = useState<{ id: string; startedAt: number } | null>(null);
+  const effortDrag = useRef<{ pointerId: number; routineId: string; panel: HTMLElement } | null>(null);
+  const [previewNow, setPreviewNow] = useState(0);
+  const [lastPreviewDuration, setLastPreviewDuration] = useState<Record<string, number>>({});
   const map = useRef<HTMLElement>(null);
   const detailsButton = useRef<HTMLButtonElement>(null);
   const visible = useMemo(() => source.graph && filterVault(source.graph, query, area, kind), [source, query, area, kind]);
@@ -47,6 +84,57 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
     document.addEventListener("fullscreenchange", update);
     return () => document.removeEventListener("fullscreenchange", update);
   }, []);
+
+  useEffect(() => {
+    if (!activeRoutinePreview) return;
+    const timer = window.setInterval(() => setPreviewNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [activeRoutinePreview]);
+
+  function finishRoutinePreview(closeDetails = true) {
+    if (activeRoutinePreview) {
+      setLastPreviewDuration((current) => ({
+        ...current,
+        [activeRoutinePreview.id]: Date.now() - activeRoutinePreview.startedAt,
+      }));
+      setActiveRoutinePreview(null);
+    }
+    if (closeDetails) {
+      setDetailsOpen(false);
+      setDetailsExpanded(false);
+    }
+  }
+
+  function setRoutinePreference(id: string, preference: RoutinePreference) {
+    const next = { ...routinePreferences, [id]: preference };
+    setRoutinePreferences(next);
+    try {
+      localStorage.setItem("pav-routine-preferences", JSON.stringify(next));
+    } catch (error) {
+      console.warn("Routine preferences could not be saved; the selection will only apply to this page.", error);
+    }
+  }
+
+  function selectEffortAtPointer(event: ReactPointerEvent<HTMLDivElement>, id: string, model: RoutineModel) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (!bounds.width) return;
+    const index = Math.max(0, Math.min(ROUTINE_EFFORTS.length - 1,
+      Math.round((event.clientX - bounds.left) / bounds.width * ROUTINE_EFFORTS.length - 0.5)));
+    setRoutinePreference(id, { model, effort: ROUTINE_EFFORTS[index] });
+  }
+
+  function selectModelEffortAtPointer(event: ReactPointerEvent, id: string, settingsPanel: HTMLElement) {
+    const target = document.elementFromPoint(event.clientX, event.clientY);
+    const row = target?.closest(".pav-effort-track");
+    if (!row || !settingsPanel.contains(row)) return;
+    const model = ROUTINE_MODELS.find((candidate) => row.closest("tr")?.querySelector("th[scope='row']")?.textContent === candidate);
+    if (!model) return;
+    const bounds = row.getBoundingClientRect();
+    if (!bounds.width) return;
+    const index = Math.max(0, Math.min(ROUTINE_EFFORTS.length - 1,
+      Math.round((event.clientX - bounds.left) / bounds.width * ROUTINE_EFFORTS.length - 0.5)));
+    setRoutinePreference(id, { model, effort: ROUTINE_EFFORTS[index] });
+  }
 
   async function toggleFullscreen() {
     setFullscreenError("");
@@ -74,11 +162,14 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
   const relatedIds = new Set([...outgoing.map((link) => link.target), ...incoming.map((link) => link.source)]);
   const related = graph.files.filter((item) => relatedIds.has(item.id));
   const activeGroups = AREAS.filter((area) => graph.files.some((item) => item.area === area.id));
+  const routines = graph.files.filter((item) => item.kind === "routine");
 
   function chooseFile(id: string, inspect = true) {
+    if (activeRoutinePreview && activeRoutinePreview.id !== id) finishRoutinePreview(false);
     if (!visible?.files.some((item) => item.id === id)) { setArea("all"); setQuery(""); setKind("all"); }
     setSelected(id);
     setFocusedRing(null);
+    setDetailsExpanded(false);
     setDetailsOpen(inspect);
   }
 
@@ -86,22 +177,25 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
     setFocusedRing(ring);
     setSelected(null);
     setDetailsOpen(false);
+    setDetailsExpanded(false);
   }
 
   function clearSelection() {
+    if (activeRoutinePreview) finishRoutinePreview(false);
     setSelected(null);
     setFocusedRing(null);
     setDetailsOpen(false);
+    setDetailsExpanded(false);
   }
 
   function closeDetails() {
-    setDetailsOpen(false);
+    clearSelection();
     detailsButton.current?.focus({ preventScroll: true });
   }
 
   return (
     <section className="pav-dashboard" aria-label="PAV OS demo dashboard">
-      <div className="workspace-grid">
+      <div className="workspace-grid pav-workspace-grid">
         <aside className="workspace-left" aria-label="Demo vault overview">
           <Today />
           <section className="pav-inventory">
@@ -121,11 +215,6 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
           <p className="pav-rail-note">Every ordinary dot is a real Markdown file. Trails show reference direction, not live agent activity.</p>
         </aside>
         <div className="workspace-centre">
-      <header className="pav-heading">
-        <h1><BrainCircuit size={17} />PAV OS <em>Agentic OS</em></h1>
-        <p>Studio North <span>/</span> Demo vault / Read only</p>
-      </header>
-
       <div className="pav-workbench">
         <section className="pav-map" aria-label="Demo vault exploration" ref={map}
           onKeyDown={(event) => {
@@ -158,7 +247,10 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
                 {graph.files.map((item) => <option key={item.id} value={item.id}>{item.id}</option>)}
               </select>
             </label>
-            <button className="pav-details-toggle" ref={detailsButton} aria-expanded={detailsOpen} aria-controls="pav-file-details" onClick={() => setDetailsOpen((value) => !value)}>
+            <button className="pav-details-toggle" ref={detailsButton} aria-expanded={detailsOpen} aria-controls="pav-file-details" onClick={() => {
+              if (detailsOpen) finishRoutinePreview();
+              else { setDetailsExpanded(false); setDetailsOpen(true); }
+            }}>
               <FileText size={15} />File details
             </button>
           </div>
@@ -186,8 +278,11 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
               <label title="Dashed area-membership guides, not Markdown references"><input type="checkbox" checked={showMemberships} onChange={(event) => setShowMemberships(event.target.checked)} />Membership</label>
               <label><input type="checkbox" checked={showLabels} onChange={(event) => setShowLabels(event.target.checked)} />Labels</label></div>
           </div>
-          <aside className="pav-inspector" id="pav-file-details" aria-label="Demo file details" hidden={!detailsOpen}>
+          <aside className={`pav-inspector${detailsExpanded ? " pav-inspector-expanded" : ""}`} id="pav-file-details" aria-label="Demo file details" hidden={!detailsOpen}>
             <div className="pav-inspector-header"><span className="pav-eyebrow">SELECTED FILE</span>
+              <button aria-label={detailsExpanded ? "Restore file details size" : "Expand file details"} aria-pressed={detailsExpanded} onClick={() => setDetailsExpanded((expanded) => !expanded)}>
+                {detailsExpanded ? <Minimize size={17} /> : <Maximize size={17} />}
+              </button>
               <button aria-label="Close file details" onClick={closeDetails}><X size={17} /></button>
             </div>
             <div className="pav-file-icon" style={{ color: fileColor(file), borderColor: `${fileColor(file)}55`, background: `${fileColor(file)}12` }}>
@@ -228,26 +323,108 @@ export default function PavDashboard({ theme }: { theme: Theme }) {
           </aside>
         </section>
       </div>
-      <footer className="pav-footnote"><span>{VIEW_NOTES[view]}</span><span>Fictional workspace. Real Markdown files. No live Brain data.</span></footer>
-      <section className="pav-demo-widget">
-        <h2 className="widget-title">Skills deck <small>Example instructions / Read only</small></h2>
-        <div className="pav-skill-deck">
-          {graph.files.filter((item) => item.kind === "skill").map((item) => <button key={item.id} onClick={() => chooseFile(item.id)}>
-            <FileText size={16} /><span><b>{item.title}</b><small>{item.id}</small></span><ArrowUpRight size={13} />
-          </button>)}
+        </div>
+        <aside className="workspace-right pav-workspace-right" aria-label="Demo routines and context">
+      <section className="pav-demo-widget pav-routines-widget" aria-labelledby="pav-routines-heading">
+        <h2 className="widget-title" id="pav-routines-heading">Routines <small>Markdown previews / No execution service</small></h2>
+        <p>Each card shows its local model and effort preference. Play starts a preview timer; select the title to inspect its source. Routines do not execute here.</p>
+        <div className="pav-routine-grid">
+          {routines.map((item) => {
+            const fileName = item.id.slice(item.id.lastIndexOf("/") + 1);
+            const Icon = ROUTINE_ICONS[fileName] ?? CalendarCheck;
+            const preference = routinePreferences[item.id] ?? DEFAULT_ROUTINE_PREFERENCE;
+            const effortIndex = ROUTINE_EFFORTS.indexOf(preference.effort);
+            const isPreviewing = activeRoutinePreview?.id === item.id;
+            const elapsed = isPreviewing ? Math.max(0, previewNow - activeRoutinePreview.startedAt) : null;
+            const lastElapsed = lastPreviewDuration[item.id];
+            const settingsId = `routine-settings-${fileName.replace(/[^a-z0-9-]/gi, "-")}`;
+            return <article className="pav-routine-card" key={item.id}>
+              <div className="pav-routine-card-top">
+                <span className="pav-routine-icon"><Icon size={19} strokeWidth={1.8} /></span>
+                <div className="pav-routine-title">
+                  <h3><button onClick={() => chooseFile(item.id)}>{item.title}</button></h3>
+                  <small>{preference.model.toUpperCase()} <span>×</span> {preference.effort.toUpperCase()}</small>
+                </div>
+              </div>
+              <div className="pav-routine-actions">
+                <button className="pav-routine-play" disabled={isPreviewing}
+                  aria-label={`Preview ${item.title}`} title="Preview routine source only"
+                  onClick={() => {
+                    const startedAt = Date.now();
+                    setPreviewNow(startedAt);
+                    setActiveRoutinePreview({ id: item.id, startedAt });
+                  }}>
+                  <Play size={10} fill="currentColor" />
+                </button>
+                <button className="pav-routine-settings" aria-label={`Configure ${item.title}`}
+                  aria-expanded={settingsOpenFor === item.id} aria-controls={settingsId}
+                  onClick={() => setSettingsOpenFor((open) => open === item.id ? null : item.id)}>
+                  <Settings2 size={10} />
+                </button>
+                {!isPreviewing && lastElapsed !== undefined && <span className="pav-routine-last">Last preview · {formatElapsed(lastElapsed)}</span>}
+              </div>
+              {isPreviewing && elapsed !== null && <div className="pav-routine-preview" role="group" aria-label={`${item.title} source preview in progress`}>
+                <div className="pav-routine-preview-label"><span>Previewing source</span><time aria-live="off">{formatElapsed(elapsed)}</time></div>
+                <div className="pav-routine-progress" role="progressbar" aria-label={`${item.title} preview elapsed`}
+                  aria-valuetext={`${formatElapsed(elapsed)} elapsed`}><span /></div>
+                <button className="pav-routine-stop" onClick={() => finishRoutinePreview()}><Square size={11} fill="currentColor" />Stop preview</button>
+                <small>No routine or model is running.</small>
+              </div>}
+              {settingsOpenFor === item.id && <div className="pav-routine-settings-panel" id={settingsId}>
+                <fieldset>
+                  <legend>Model × effort<button type="button" aria-label={`Close ${item.title} settings`}
+                    onClick={() => setSettingsOpenFor(null)}><X size={13} /></button></legend>
+                  <table><thead><tr><th scope="col">Model</th>
+                    {ROUTINE_EFFORTS.map((effort) => <th scope="col" key={effort}>{effort}</th>)}
+                  </tr></thead><tbody>
+                    {ROUTINE_MODELS.map((model) => {
+                      const selectedModel = preference.model === model;
+                      return <tr className={selectedModel ? "pav-current-model" : undefined} key={model}>
+                        <th scope="row">{model}</th>
+                        <td colSpan={ROUTINE_EFFORTS.length}>
+                          <div className="pav-effort-track" draggable={false} data-effort-index={selectedModel ? effortIndex : undefined}
+                            onPointerDown={(event) => {
+                              if (event.button !== 0) return;
+                              const panel = event.currentTarget.closest<HTMLElement>(".pav-routine-settings-panel");
+                              if (!panel) return;
+                              effortDrag.current = { pointerId: event.pointerId, routineId: item.id, panel };
+                              selectEffortAtPointer(event, item.id, model);
+                            }}
+                            onPointerMove={(event) => {
+                              const drag = effortDrag.current;
+                              if (drag?.pointerId === event.pointerId && event.buttons === 1) {
+                                selectModelEffortAtPointer(event, drag.routineId, drag.panel);
+                              } else if (drag?.pointerId === event.pointerId) {
+                                effortDrag.current = null;
+                              }
+                            }}
+                            onPointerUp={(event) => {
+                              if (effortDrag.current?.pointerId === event.pointerId) {
+                                effortDrag.current = null;
+                              }
+                            }}
+                            onPointerCancel={() => { effortDrag.current = null; }}
+                            onLostPointerCapture={(event) => {
+                              if (effortDrag.current?.pointerId === event.pointerId) effortDrag.current = null;
+                            }}
+                            onDragStart={(event) => event.preventDefault()}>
+                            {ROUTINE_EFFORTS.map((effort) => <label key={effort} aria-label={`${model} ${effort}`}>
+                              <input type="radio" name={settingsId} checked={selectedModel && preference.effort === effort}
+                                onChange={() => setRoutinePreference(item.id, { model, effort })} />
+                              <span />
+                            </label>)}
+                          </div>
+                        </td>
+                      </tr>;
+                    })}
+                  </tbody></table>
+                </fieldset>
+                <p>Saved in this browser only. These choices do not invoke a model.</p>
+              </div>}
+            </article>;
+          })}
         </div>
       </section>
-        </div>
-        <aside className="workspace-right" aria-label="Demo routines and context">
-          <section className="pav-demo-widget">
-            <h2 className="widget-title">Routines <small>Example documents / Not scheduled</small></h2>
-            <p>Repeatable workflows that connect notes to skills. Select one to inspect its real source and references.</p>
-            <div className="pav-rail-files">
-              {graph.files.filter((item) => item.kind === "routine").map((item) => <button key={item.id} onClick={() => chooseFile(item.id)}>
-                <span className="pav-file-dot" style={{ background: fileColor(item) }} />{item.title}<ArrowUpRight size={12} />
-              </button>)}
-            </div>
-          </section>
           <section className="pav-demo-widget">
             <h2 className="widget-title">Working context <small>Example memory files / Not database memories</small></h2>
             <div className="pav-rail-files">

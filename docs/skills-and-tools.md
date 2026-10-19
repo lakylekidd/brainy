@@ -125,7 +125,12 @@ read-only and write-capable tool definitions if different grants are needed.
 
 ## HTTP API
 
-All routes use the existing agent ID header and bound bearer credential.
+These routes accept the existing agent ID header and bound bearer credential.
+They also accept a scoped device credential issued during Brain Client
+registration. Device calls resolve their bound agent on the server and require
+the intersection of current agent grants and device scopes; they do not supply
+an agent ID header. `GET /api/skills/{id}` now returns `instructionsHash` with
+the instruction body so the client can verify a managed local copy.
 
 | Route | Purpose |
 | --- | --- |
@@ -151,6 +156,13 @@ Entries contain `type`, `id`, `title`, description as `content`, cosine `score`,
 relative manifest `source`, and typed `metadata` with requirements and source hash.
 Lists/direct reads have a null score. Skill reads wrap the entry in `skill` and
 include `instructions` separately.
+
+Skill manifests may declare `runtime_requirements` using
+`<environment-kind>:<command>[>=numeric.version]`, where the environment is
+`host`, `container`, `remote` or `harness`. The client reports capabilities
+separately for each environment; the dependency endpoint never infers a
+container or remote command from a host installation. Managed skill copies and
+conflict handling are documented in [client onboarding](client-onboarding.md).
 
 Capability search ranks up to `limit` of each kind and includes **all** tools
 required by returned skills, even if those tools do not match the query tags or

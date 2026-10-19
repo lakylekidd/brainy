@@ -1,6 +1,6 @@
 # Architecture
 
-This is the current architecture of the Milestones 1-7 implementation. The
+This describes Milestones 1-7 and the in-progress Module 19 device client. The
 [foundation design](foundation.md) records the initial slice; the feature guides
 describe individual modules in more detail. See [conventions](conventions.md)
 for rules to preserve when extending the system.
@@ -12,15 +12,18 @@ agents. It provides authenticated identities, deterministic permissions, scoped
 memories, canonical knowledge retrieval, reviewed knowledge changes, and
 permission-filtered skill/tool discovery.
 
-Brain is not an agent runtime or an external tool executor. A skill supplies
-instructions and a tool manifest describes an integration; neither causes Brain
-to execute deployments, contact those systems, or retrieve secrets. Models can
-suggest metadata, but cannot grant access or approve changes.
+The Brain server is not an agent harness or a general external tool executor.
+The separate, optional Brain Client has a bounded Runtime Agent that inventories
+its host and can install only explicitly approved, policy-pinned artifacts. A
+skill supplies instructions and a tool manifest describes an integration;
+neither causes the server to execute arbitrary commands or retrieve secrets.
+Models can suggest metadata, but cannot grant access or approve changes.
 
 ## Code organization
 
-The solution is a modular .NET 10 application with two executable hosts and one
-shared PostgreSQL database, not a set of independently owned microservices.
+The solution is a modular .NET 10 application with two server hosts, a separate
+device client and one shared PostgreSQL database, not a set of independently
+owned microservices.
 
 | Project | Responsibility | Direct project references |
 | --- | --- | --- |
@@ -30,6 +33,7 @@ shared PostgreSQL database, not a set of independently owned microservices.
 | `Brain.Mcp` | Typed MCP tools, strict argument binding and transport registration | Application |
 | `Brain.Api` | HTTP endpoints, authentication, request-scoped identity, OpenAPI, error translation and API composition | Infrastructure, Mcp |
 | `Brain.Worker` | Database readiness and scheduled background jobs, including the canonical writer | Infrastructure |
+| `Brain.Client` | Separate cross-platform `brain` CLI, device onboarding, local MCP proxy, harness adapters, skill copies and host Runtime Agent | None; HTTP contracts with API |
 
 Dependencies point inward through Application to Domain. MCP has no persistence
 or filesystem implementation. HTTP routes and MCP tools reuse the same
@@ -43,6 +47,12 @@ Other repository surfaces are `agent-platform` (sample registry), `sample-vault`
 `docker` and `compose.yaml` (local deployment), and `tests` (unit/Git and
 HTTP/MCP/PostgreSQL coverage). The running development vault is a separate Git
 repository under ignored `.local`, not the application repository.
+
+The client runs outside the server and keeps the device bearer credential in
+the operating system's credential store. Harness adapters configure one named
+MCP entry through supported harness CLIs. The stdio proxy sends outbound
+authenticated requests to the existing `/mcp` route. See
+[client onboarding](client-onboarding.md) for supported platforms and limits.
 
 ## Runtime topology
 
@@ -113,6 +123,7 @@ files against a local editor.
 | Metadata inspection and deduplication state | PostgreSQL | `metadata_scan_states`, linked to generated proposals |
 | Audit history | PostgreSQL | `audit_events` |
 | Bounded trace history | PostgreSQL | `activity_traces`, `activity_events`; configurable retention, not audit data |
+| Devices, capability reports, skill copy state and provisioning | PostgreSQL | `devices`, `device_runtimes`, `device_skills`, `provisioning_plans`; canonical skill content stays in registry files |
 
 The database is not disposable just because search indexes are rebuildable:
 memories, grants, reviews, recovery state and audits are durable application data.
@@ -140,8 +151,16 @@ server-side to a configured existing identity (`Authentication:UiAdminAgentId`).
 Current database grants and enabled state are re-resolved on every request;
 there is no administrator bypass or second permission system. Existing agent
 credentials still require the bound ID/token pair, and MCP rejects the UI token.
-The browser retains its token only in page memory. This shared-token flow does
-not provide personal human identities or SSO. See [the UI guide](ui.md).
+The browser retains its token only in page memory. This shared-token UI flow
+does not provide personal human identities or SSO. Device registration and
+provisioning separately accept OIDC human JWTs from an operator-configured
+authority. An explicit subject binding selects an existing enabled Brain
+identity; a `brain.device` scope and that identity's current grants are
+required. A registered device receives a random scoped bearer credential,
+stored only as a digest server-side. Device grants are the intersection of
+its allowlisted scopes and its agent's current grants. Rotation and revocation
+invalidate prior credentials. See [client onboarding](client-onboarding.md)
+and [the UI guide](ui.md).
 
 Identity inspection reuses `IAgentDirectory`: agents, independent details,
 roles and permission catalogs require `agents.read`; agent responses distinguish
@@ -155,8 +174,9 @@ coordinate concurrent operator edits rather than treating it as a merge. See
 HTTP supplies `RequestAgent.Context`; MCP consumes the same scoped context
 through `ICurrentAgent`. Callers cannot choose ownership, roles or review state
 through a memory/tool input. Operation checks and visibility rules remain active
-regardless of transport. `/health/live` is the only anonymous endpoint; readiness,
-OpenAPI and every MCP request require authentication.
+regardless of transport. `/health/live` and the public OIDC client-discovery
+document are anonymous; readiness, OpenAPI and every MCP request require
+authentication.
 
 MCP uses the official SDK's stateless Streamable HTTP transport at `/mcp`. It
 exposes eight information/proposal tools, no approval or direct writer tool.
@@ -226,14 +246,17 @@ vault. See [WebObsidian linking](ui.md#webobsidian-linking).
 Semantic graph queries and live overlays are not implemented.
 
 **Shared UI shell.** The React application uses the supplied PAV OS reference's
-night/orange palette, locally licensed fonts, compact navigation and responsive
+night/orange palette, locally licensed fonts, a compact header and responsive
 hairline-separated widgets. Dark is the default; the light-mode toggle remains.
-The operations Dashboard reuses the existing bounded, permission-filtered
-Sigma graph in its center column, with API-backed inventory/health and
-review/activity rails. It adds no graph service, canonical data source or
-reference-project integrations. The standalone graph remains available.
+PAV OS is the default authenticated view, and a compact Navigate menu contains
+the other current routes and later-milestone placeholders. The header retains
+the BRAINY brand, shared-knowledge tagline, signed-in username, theme toggle,
+and sign-out control. The Dashboard and Knowledge Graph views are not mounted
+in the current shell; their frontend source and backend graph contracts remain.
+No new graph service, canonical data source or reference-project integration
+was added.
 
-**PAV OS demo.** A separate lazy-loaded UI page uses D3.js with HTML Canvas
+**PAV OS demo.** The default lazy-loaded UI page uses D3.js with HTML Canvas
 to explore six layouts of the fictional `ui/demo-vault` fixture. Raw Markdown
 imports supply its files, creation dates and explicit relative links; there is
 no second graph catalog or backend multi-vault support. Its 134 real files
@@ -255,7 +278,10 @@ context. Repeated node clicks and background taps clear file/ring focus and
 inspection without changing camera/placements; gesture movement and cancellation
 do not clear selection.
 Demo clock/inventory, skills and routine/context widgets use actual local time
-or fixture files, not simulated integrations. The read-only boundary is unchanged.
+or fixture files, not simulated integrations. Routine model/effort choices are
+browser-local preferences; the Play control previews Markdown and times that
+preview without executing a routine or invoking a model. The read-only boundary
+is unchanged.
 The fixture is public
 static build content, contains no private/live data, and is not mounted into the
 API or worker. Existing authorization, canonical sources and writer workflows

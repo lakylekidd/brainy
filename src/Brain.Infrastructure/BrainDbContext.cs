@@ -30,6 +30,10 @@ public sealed class BrainDbContext(DbContextOptions<BrainDbContext> options) : D
     public DbSet<MetadataScanState> MetadataScanStates => Set<MetadataScanState>();
     public DbSet<ActivityTrace> ActivityTraces => Set<ActivityTrace>();
     public DbSet<RetainedActivityEvent> ActivityEvents => Set<RetainedActivityEvent>();
+    public DbSet<Device> Devices => Set<Device>();
+    public DbSet<DeviceRuntime> DeviceRuntimes => Set<DeviceRuntime>();
+    public DbSet<DeviceSkill> DeviceSkills => Set<DeviceSkill>();
+    public DbSet<ProvisioningPlan> ProvisioningPlans => Set<ProvisioningPlan>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -221,6 +225,62 @@ public sealed class BrainDbContext(DbContextOptions<BrainDbContext> options) : D
             e.HasIndex(x => new { x.TraceId, x.AgentId, x.Timestamp });
             e.HasIndex(x => x.SourceEntityId);
             e.HasIndex(x => x.TargetEntityId);
+        });
+        b.Entity<Device>(e =>
+        {
+            e.ToTable("devices"); e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(100);
+            e.HasIndex(x => x.Name).IsUnique();
+            e.Property(x => x.DisplayName).HasMaxLength(200);
+            e.Property(x => x.Hostname).HasMaxLength(255);
+            e.Property(x => x.OperatingSystem).HasMaxLength(20);
+            e.Property(x => x.Architecture).HasMaxLength(20);
+            e.Property(x => x.ClientVersion).HasMaxLength(100);
+            e.Property(x => x.RuntimeAgentVersion).HasMaxLength(100);
+            e.Property(x => x.Status).HasConversion(v => EnumName(v), v => ParseEnum<DeviceStatus>(v)).HasMaxLength(20);
+            e.Property(x => x.RegisteredBy).HasMaxLength(500);
+            e.Property(x => x.AgentId).HasMaxLength(100);
+            e.HasOne<Agent>().WithMany().HasForeignKey(x => x.AgentId).OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.CredentialHash).HasMaxLength(64);
+            e.HasIndex(x => x.CredentialHash).IsUnique();
+            e.Property(x => x.MetadataJson).HasColumnType("jsonb");
+            e.HasIndex(x => x.AgentId);
+        });
+        b.Entity<DeviceRuntime>(e =>
+        {
+            e.ToTable("device_runtimes"); e.HasKey(x => new { x.DeviceId, x.EnvironmentId });
+            e.HasOne<Device>().WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.EnvironmentId).HasMaxLength(100);
+            e.Property(x => x.Kind).HasConversion(v => EnumName(v), v => ParseEnum<ExecutionEnvironmentKind>(v)).HasMaxLength(20);
+            e.Property(x => x.OperatingSystem).HasMaxLength(100);
+            e.Property(x => x.Architecture).HasMaxLength(20);
+            e.Property(x => x.CommandsJson).HasColumnType("jsonb");
+        });
+        b.Entity<DeviceSkill>(e =>
+        {
+            e.ToTable("device_skills"); e.HasKey(x => new { x.DeviceId, x.Harness, x.SkillId });
+            e.HasOne<Device>().WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Harness).HasMaxLength(20);
+            e.Property(x => x.SkillId).HasMaxLength(100);
+            e.Property(x => x.SourceHash).HasMaxLength(64);
+            e.Property(x => x.Status).HasConversion(v => EnumName(v), v => ParseEnum<DeviceSkillStatus>(v)).HasMaxLength(20);
+        });
+        b.Entity<ProvisioningPlan>(e =>
+        {
+            e.ToTable("provisioning_plans"); e.HasKey(x => x.Id);
+            e.HasOne<Device>().WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Requirement).HasMaxLength(200);
+            e.Property(x => x.PackageId).HasMaxLength(100);
+            e.Property(x => x.PackageVersion).HasMaxLength(100);
+            e.Property(x => x.WheelUrl).HasMaxLength(2000);
+            e.Property(x => x.Sha256).HasMaxLength(64);
+            e.Property(x => x.OperatingSystem).HasMaxLength(20);
+            e.Property(x => x.Architecture).HasMaxLength(20);
+            e.Property(x => x.Status).HasConversion(v => EnumName(v), v => ParseEnum<ProvisioningStatus>(v)).HasMaxLength(20);
+            e.Property(x => x.RequestedBy).HasMaxLength(100);
+            e.Property(x => x.ApprovedBy).HasMaxLength(500);
+            e.Property(x => x.Result).HasMaxLength(200);
+            e.HasIndex(x => new { x.DeviceId, x.Status });
         });
         // Keep the PostgreSQL schema readable without an extra conventions package.
         foreach (var entity in b.Model.GetEntityTypes())

@@ -7,7 +7,7 @@ vi.mock("./features/pav/PavDashboard", () => ({
 }));
 
 describe("Brain UI shell", () => {
-  it("authenticates, loads the dashboard, and keeps credentials out of browser storage", async () => {
+  it("authenticates, loads the dashboard, and keeps credentials only in tab session storage", async () => {
     const responses: Record<string, unknown> = {
       "/api/agents/me": { id: "codex", teamId: "platform", permissions: ["registry.read"] },
       "/health/ready": { status: "ready" },
@@ -53,18 +53,19 @@ describe("Brain UI shell", () => {
     ));
     expect(fetchMock.mock.calls[0]).toHaveLength(2);
     expect(Object.entries(localStorage)).toEqual([["brain-theme", "dark"]]);
-    expect(sessionStorage.length).toBe(0);
+    expect(sessionStorage.getItem("brain-ui-admin-token")).toBe("private-token");
     expect(screen.getByRole("button", { name: "Switch to light mode" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Knowledge graph" }));
     expect(await screen.findByRole("heading", { name: "Knowledge graph" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "PAV OS" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dashboard" }));
     expect(await screen.findByRole("heading", { name: "PAV OS demo vault" })).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByTitle("Sign out")[0]);
     expect(await screen.findByText("A clearer view of your Brain.")).toBeInTheDocument();
     expect(screen.queryByText("Incident triage")).not.toBeInTheDocument();
+    expect(sessionStorage.getItem("brain-ui-admin-token")).toBeNull();
     expect(document.documentElement.dataset.theme).toBe("dark");
     fireEvent.click(screen.getByRole("button", { name: "Switch to light mode" }));
     expect(document.documentElement.dataset.theme).toBe("light");

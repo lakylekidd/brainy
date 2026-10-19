@@ -4,6 +4,7 @@
     <Compile Include="../VaultSandbox.cs" Link="VaultSandbox.cs" />
     <Compile Include="../TestGit.cs" Link="TestGit.cs" />
     <ProjectReference Include="../../src/Brain.Infrastructure/Brain.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Brain.Client/Brain.Client.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all" />

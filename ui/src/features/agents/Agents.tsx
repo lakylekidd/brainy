@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { AgentProfile, ApiError, Credentials } from "../../api/client";
 import AccessForm from "./AccessForm";
 import { AgentDetails, loadAgent, loadDirectory } from "./api";
@@ -6,23 +7,23 @@ import "./agents.css";
 
 type Directory = Awaited<ReturnType<typeof loadDirectory>>;
 
-export default function Agents({ credentials, profile, mode, onUnauthorized, onFocus }: {
+export default function Agents({ credentials, profile, mode, onUnauthorized }: {
   credentials: Credentials; profile: AgentProfile; mode: "agents" | "permissions";
-  onUnauthorized: () => void; onFocus: (id: string) => void;
+  onUnauthorized: () => void;
 }) {
   const [directory, setDirectory] = useState<Directory | null>(null);
   const [selected, setSelected] = useState("");
   const [loadedDetail, setDetail] = useState<AgentDetails | null>(null);
   const [roleId, setRoleId] = useState("");
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("all");
   const [error, setError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<"create" | "access" | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [version, setVersion] = useState(0);
-  const [detailVersion, setDetailVersion] = useState(0);
+  const detailsDialog = useRef<HTMLDialogElement>(null);
   const detail = loadedDetail?.id === selected ? loadedDetail : null;
   const unauthorized = useRef(onUnauthorized);
   unauthorized.current = onUnauthorized;
@@ -63,7 +64,23 @@ export default function Agents({ credentials, profile, mode, onUnauthorized, onF
       }
     });
     return () => controller.abort();
-  }, [credentials, selected, directory, detailVersion]);
+  }, [credentials, selected, directory]);
+
+  useEffect(() => {
+    const element = detailsDialog.current;
+    if (!element) return;
+    if (detailsOpen && !element.open) {
+      if (typeof element.showModal === "function") element.showModal();
+      else element.setAttribute("open", "");
+    } else if (!detailsOpen && element.open && typeof element.close === "function") {
+      element.close();
+    }
+  }, [detailsOpen]);
+
+  function closeDetails() {
+    setDetailsOpen(false);
+    setSelected("");
+  }
 
   function saved(agent: AgentDetails) {
     setEditing(null);
@@ -73,14 +90,13 @@ export default function Agents({ credentials, profile, mode, onUnauthorized, onF
   }
 
   function denied(status: number) {
-    setEditing(null); setDetail(null); setDirectory(null);
+    setEditing(null); setDetailsOpen(false); setSelected(""); setDetail(null); setDirectory(null);
     if (status === 401) unauthorized.current();
     else setError("Permission required. Your management access may have changed. Refresh to resolve current access.");
   }
 
   const agents = directory?.agents.filter((agent) =>
-    `${agent.id} ${agent.name} ${agent.teamId ?? ""}`.toLowerCase().includes(query.toLowerCase()) &&
-    (filter === "all" || (filter === "enabled" ? agent.enabled : !agent.enabled))) ?? [];
+    `${agent.id} ${agent.name} ${agent.teamId ?? ""}`.toLowerCase().includes(query.toLowerCase())) ?? [];
   const selectedRole = directory?.roles.find((role) => role.id === roleId);
   return <div className="identity-feature">
     <section className="page-heading">
@@ -96,26 +112,11 @@ export default function Agents({ credentials, profile, mode, onUnauthorized, onF
     {loading && <p role="status">Loading agents and grants...</p>}
     {error && <p className="inline-error" role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
-    <section className="panel identity-panel" aria-label="Current identity">
-      <h2>Current identity</h2><p>{identity.id} - permissions resolved at {directory ? "the latest directory refresh" : "sign-in"}.</p>
-      <p>{identity.permissions.join(", ") || "No grants"}</p>
-      {!directory && <p>Reload the page to resolve newly granted access; a failed refresh does not verify this sign-in summary.</p>}
-      <p>Grants are an exact union, not wildcards or a role-name bypass. Enabled state, resource visibility and operation rules still apply.</p>
-    </section>
     {directory && <>
       <section className="panel identity-panel" aria-label="Agent directory">
-        <h2>Agent directory</h2>
-        <p>Up to 1,000 identities, including disabled agents. Search and filters apply to this returned list.</p>
-        {directory.agents.length === 1000 && <p role="status">The directory limit was reached; this may not be the complete inventory. Independent detail lookup remains available.</p>}
-        <div className="identity-fields">
+        {directory.agents.length === 1000 && <p role="status">The directory limit was reached; this may not be the complete inventory.</p>}
+        <div className="identity-directory-search">
           <label>Search agents<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-          <label>Agent status<select aria-label="Agent status" value={filter} onChange={(event) => setFilter(event.target.value)}>
-            <option value="all">All statuses</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option>
-          </select></label>
-          <label>Inspect agent<select aria-label="Inspect agent" value={agents.some((agent) => agent.id === selected) ? selected : ""} onChange={(event) => { setSelected(event.target.value); setNotice(null); }}>
-            <option value="">Select an agent...</option>
-            {agents.map((agent) => <option value={agent.id} key={agent.id}>{agent.name} ({agent.id}) - {agent.enabled ? "Enabled" : "Disabled"}</option>)}
-          </select></label>
         </div>
         {agents.length === 0 && <p>No agents match this view.</p>}
         {agents.length > 0 && <div className="identity-table-scroll" role="region" aria-label="Agent list" tabIndex={0}>
@@ -123,49 +124,56 @@ export default function Agents({ credentials, profile, mode, onUnauthorized, onF
             <thead><tr><th scope="col">Agent</th><th scope="col">Team</th><th scope="col">Status</th><th scope="col">Roles</th><th scope="col">Details</th></tr></thead>
             <tbody>{agents.map((agent) => <tr key={agent.id}><th scope="row">{agent.name}<br /><small>{agent.id}</small></th>
               <td>{agent.teamId ?? "None"}</td><td>{agent.enabled ? "Enabled" : "Disabled"}</td><td>{agent.roles.join(", ") || "None"}</td>
-              <td><button className="secondary-button" aria-label={`Inspect ${agent.id}`} onClick={() => { setSelected(agent.id); setNotice(null); }}>Inspect</button></td>
+              <td><button className="secondary-button" aria-label={`Inspect ${agent.id}`} onClick={() => { setSelected(agent.id); setDetailsOpen(true); setNotice(null); }}>Inspect</button></td>
             </tr>)}</tbody>
           </table>
         </div>}
-        <form className="identity-lookup" onSubmit={(event) => {
-          event.preventDefault();
-          const id = new FormData(event.currentTarget).get("id");
-          if (typeof id === "string") { setSelected(id.trim()); setDetailVersion((current) => current + 1); }
-        }}>
-          <label>Look up agent ID<input name="id" required maxLength={100} pattern="[a-z0-9][a-z0-9-]{0,99}" /></label>
-          <button className="secondary-button">Inspect by ID</button>
-        </form>
       </section>
-      {selected && <section className="panel identity-panel" aria-label="Agent details" aria-busy={!detail && !detailError}>
+      {selected && <dialog ref={detailsDialog} className="identity-dialog identity-panel identity-details-dialog" aria-label="Agent details" aria-busy={!detail && !detailError}
+        onCancel={(event) => { event.preventDefault(); closeDetails(); }}
+        onMouseDown={(event) => { if (event.target === event.currentTarget) closeDetails(); }}>
+        <header className="identity-dialog-header">
+          <h2>{detail?.name ?? "Agent details"}</h2>
+          <button type="button" className="identity-dialog-close" aria-label="Close agent details" onClick={closeDetails}><X size={16} /></button>
+        </header>
         {!detail && !detailError && <p role="status">Loading agent details...</p>}
         {detailError && <p role="alert">{detailError}</p>}
         {detail && <>
-          <h2>{detail.name}</h2><p>{detail.description}</p>
+          <p>{detail.description}</p>
           <dl><dt>Agent ID</dt><dd>{detail.id}</dd><dt>Team</dt><dd>{detail.teamId ?? "None"}</dd>
             <dt>Status</dt><dd>{detail.enabled ? "Enabled" : "Disabled - cannot authenticate"}</dd>
             <dt>Roles</dt><dd>{detail.roles.join(", ") || "None"}</dd>
-            <dt>Direct grants</dt><dd>{detail.directPermissions.join(", ") || "None"}</dd>
-            <dt>Effective permissions</dt><dd>{detail.permissions.join(", ") || "None"}</dd>
             <dt>Updated</dt><dd>{detail.updatedAt}</dd></dl>
           <div className="identity-actions">
-            <button className="secondary-button" onClick={() => onFocus(`agent:${detail.id}`)}>Focus agent graph</button>
             {canManage && detail.id !== profile.id && <button className="secondary-button" onClick={() => { setEditing("access"); setNotice(null); }}>Edit access</button>}
           </div>
           {detail.id === profile.id && <p>Your own access cannot be changed through this endpoint.</p>}
           {!canManage && <p>Read-only access. agents.admin is required for management.</p>}
-          <div className="identity-table-scroll" role="region" aria-label="Agent permission matrix" tabIndex={0}>
-            <table><caption>Agent permission matrix</caption>
-              <thead><tr><th scope="col">Permission</th><th scope="col">Inherited from roles</th><th scope="col">Direct</th><th scope="col">Effective</th></tr></thead>
-              <tbody>{directory.permissions.map((permission) => <tr key={permission.id}>
-                <th scope="row">{permission.id}</th>
-                <td>{directory.roles.filter((role) => detail.roles.includes(role.id) && role.permissions.includes(permission.id)).map((role) => role.id).join(", ") || "None"}</td>
-                <td>{detail.directPermissions.includes(permission.id) ? "Granted" : "Not granted"}</td>
-                <td>{detail.permissions.includes(permission.id) ? "Granted" : "Not granted"}</td>
-              </tr>)}</tbody>
-            </table>
+          <div className="identity-permission-list" role="region" aria-label="Granted permissions">
+            <h3>Granted permissions</h3>
+            <div className="identity-permission-chips">
+              {directory.permissions.filter((permission) => detail.permissions.includes(permission.id) && directory.roles.some((role) => detail.roles.includes(role.id) && role.permissions.includes(permission.id))).map((permission) => {
+                const inherited = directory.roles.filter((role) => detail.roles.includes(role.id) && role.permissions.includes(permission.id)).map((role) => role.id);
+                const source = inherited.length > 0 ? inherited.join(", ") : "Direct";
+                return <span className="identity-permission-chip" key={permission.id}>
+                  <span className="identity-permission-dot" aria-hidden="true" />
+                  <span>{permission.id}</span><span className="identity-permission-separator">:</span><span className="identity-permission-source">{source}</span>
+                </span>;
+              })}
+              {!directory.permissions.some((permission) => detail.permissions.includes(permission.id) && directory.roles.some((role) => detail.roles.includes(role.id) && role.permissions.includes(permission.id))) && <span className="identity-permission-empty">No role-inherited permissions</span>}
+            </div>
           </div>
+          {detail.directPermissions.length > 0 && <div className="identity-permission-list" role="region" aria-label="Direct grants">
+            <h3>Direct grants</h3>
+            <div className="identity-permission-chips">
+              {detail.directPermissions.map((permission) => <span className="identity-permission-chip" key={permission}>
+                <span className="identity-permission-dot" aria-hidden="true" />
+                <span>{permission}</span><span className="identity-permission-separator">:</span><span className="identity-permission-source">Direct</span>
+              </span>)}
+            </div>
+          </div>}
         </>}
-      </section>}
+      </dialog>}
       {editing && (editing === "create" || detail) && <AccessForm key={editing === "create" ? "create" : detail?.id} credentials={credentials}
         agent={editing === "access" ? detail : null} roles={directory.roles} permissions={directory.permissions}
         onSaved={saved} onCancel={() => setEditing(null)} onDenied={denied} />}
