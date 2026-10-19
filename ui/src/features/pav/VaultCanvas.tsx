@@ -10,6 +10,28 @@ import { drawSignal, flowProgress, signalDuration, signalPath } from "./flow";
 import { drawCore, drawFields, drawGround, MAP_MOTION, rippleLayout, transitionLayout } from "./motion";
 import { areaLabel, fileColor, ROOT_FILE, type VaultGraph } from "./vault";
 
+function defaultCamera(view: ViewMode, layout: Layout, width: number, height: number): ZoomTransform {
+  if (!(view === "Areas" || view === "Links" || view === "3D Orbit") || !layout.nodes.length) return zoomIdentity;
+  const points = [
+    ...layout.nodes.flatMap((node) => [
+      { x: node.x - node.radius, y: node.y - node.radius },
+      { x: node.x + node.radius, y: node.y + node.radius },
+    ]),
+    ...layout.guides.flatMap((guide) => guide.points ?? []),
+  ];
+  const x0 = Math.min(...points.map((point) => point.x));
+  const x1 = Math.max(...points.map((point) => point.x));
+  const y0 = Math.min(...points.map((point) => point.y));
+  const y1 = Math.max(...points.map((point) => point.y));
+  const padding = view === "3D Orbit" ? 48 : 32;
+  const scale = Math.max(0.45, Math.min(4,
+    (width - padding * 2) / Math.max(1, x1 - x0),
+    (height - padding * 2) / Math.max(1, y1 - y0)));
+  return zoomIdentity
+    .translate(width / 2 - (x0 + x1) / 2 * scale, height / 2 - (y0 + y1) / 2 * scale)
+    .scale(scale);
+}
+
 export default function VaultCanvas({ graph, view, selected, onSelect, onInspect, onClearSelection, focusedRing, onFocusRing, theme, showLinks, showLabels, showMemberships = true, dotSize = 85 }: {
   graph: VaultGraph; view: ViewMode; selected: string | null; onSelect: (id: string) => void; onClearSelection: () => void;
   focusedRing: RingId | null; onFocusRing: (ring: RingId | null) => void;
@@ -22,6 +44,9 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   const behavior = useRef<ZoomBehavior<HTMLCanvasElement, unknown> | null>(null);
   const paintRef = useRef<() => void>(() => {});
   const clock = useRef({ elapsed: 0, sceneElapsed: 0, rotation: 0, sway: 0, velocity: 0 });
+  const animatedFocus = useRef<string | null>(null);
+  const animatedReset = useRef(false);
+  const previousSelected = useRef(selected);
   const previousView = useRef(view);
   const transition = useRef<{ from: Map<string, { x: number; y: number }>; started: number } | null>(null);
   const signals = useRef(new Map<string, { progress: number; elapsed: number }>());
@@ -62,7 +87,7 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     }
     let layout = placeNodes(view === "3D Orbit"
       ? createLayout(graph, view, size.width, size.height, clock.current.rotation, clock.current.sway)
-      : baseLayout, edits.current.get(view) ?? new Map(), size.width, size.height);
+      : baseLayout, edits.current.get(view) ?? new Map(), size.width, size.height, view);
     if (transition.current) {
       const age = clock.current.elapsed - transition.current.started;
       if (!motionActive || age >= MAP_MOTION.transition + 160) transition.current = null;
@@ -393,9 +418,9 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     const selection = select(canvas.current);
     selection.call(controller).on("dblclick.zoom", null);
     behavior.current = controller;
-    selection.call(controller.transform, zoomIdentity);
+    selection.call(controller.transform, defaultCamera(view, baseLayout, size.width, size.height));
     return () => { selection.on(".zoom", null); behavior.current = null; };
-  }, [size, view]);
+  }, [baseLayout, size, view]);
 
   useEffect(() => {
     if (selected === null) {
@@ -405,11 +430,22 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   }, [selected, focusedRing]);
 
   useEffect(() => {
+    const wasSelected = previousSelected.current !== null;
+    previousSelected.current = selected;
+    if (!canvas.current || !behavior.current) return;
+    if (selected === null && (animatedReset.current || wasSelected)) {
+      const selection = select(canvas.current);
+      const target = defaultCamera(view, baseLayout, size.width, size.height);
+      if (reducedMotion) selection.interrupt("camera-focus").call(behavior.current.transform, target);
+      else selection.interrupt("camera-focus").transition("camera-focus").duration(700).call(behavior.current.transform, target);
+      animatedReset.current = false;
+      return;
+    }
     const hub = graph.files.find((file) => file.id === selected && file.kind === "area");
-    if (!hub || drag.current?.moved || !canvas.current || !behavior.current) return;
+    if (!hub || drag.current?.moved) return;
     const target = view === "3D Orbit"
       ? createLayout(graph, view, size.width, size.height, clock.current.rotation, clock.current.sway) : baseLayout;
-    const members = placeNodes(target, edits.current.get(view) ?? new Map(), size.width, size.height)
+    const members = placeNodes(target, edits.current.get(view) ?? new Map(), size.width, size.height, view)
       .nodes.filter((node) => node.file.area === hub.area);
     if (!members.length) return;
     const x0 = Math.min(...members.map((node) => node.x - node.radius));
@@ -418,8 +454,14 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
     const y1 = Math.max(...members.map((node) => node.y + node.radius));
     const scale = Math.max(1.05, Math.min(2.2, Math.min((size.width - 100) / Math.max(40, x1 - x0), (size.height - 100) / Math.max(40, y1 - y0))));
     const transform = zoomIdentity.translate(size.width / 2 - (x0 + x1) / 2 * scale, size.height / 2 - (y0 + y1) / 2 * scale).scale(scale);
-    select(canvas.current).call(behavior.current.transform, transform);
-  }, [selected, graph, size, view, baseLayout]);
+    const selection = select(canvas.current);
+    if (animatedFocus.current === selected && !reducedMotion) {
+      selection.interrupt("camera-focus").transition("camera-focus").duration(700).call(behavior.current.transform, transform);
+    } else {
+      selection.interrupt("camera-focus").call(behavior.current.transform, transform);
+    }
+    animatedFocus.current = null;
+  }, [selected, graph, size, view, baseLayout, reducedMotion]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -601,12 +643,13 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   function clearSelection() {
     setHovered(null);
     setHoveredRing(null);
+    animatedReset.current = selected !== null;
     onClearSelection();
   }
 
   function activateNode(id: string) {
     if (id === selected) clearSelection();
-    else { onSelect(id); onInspect?.(); }
+    else { animatedReset.current = false; animatedFocus.current = id; onSelect(id); onInspect?.(); }
   }
 
   function changeZoom(factor: number) {
@@ -614,7 +657,9 @@ export default function VaultCanvas({ graph, view, selected, onSelect, onInspect
   }
 
   function fit() {
-    if (canvas.current && behavior.current) select(canvas.current).call(behavior.current.transform, zoomIdentity);
+    if (canvas.current && behavior.current) {
+      select(canvas.current).call(behavior.current.transform, defaultCamera(view, baseLayout, size.width, size.height));
+    }
   }
 
   function reset() {

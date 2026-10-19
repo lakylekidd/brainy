@@ -1,7 +1,18 @@
 .identity-feature { display: grid; gap: 18px; }
 .identity-feature .page-heading { margin-bottom: 0; }
 .identity-panel { padding: 18px 0; min-width: 0; border-top: 1px solid var(--line); }
+.identity-dialog.identity-panel { border: 1px solid var(--line2); padding: 20px 24px; }
+.identity-feature > .identity-panel[aria-label="Agent directory"] { border-top: 0; }
+.identity-dialog { width: min(760px, calc(100vw - 32px)); max-height: min(90dvh, 900px); overflow: visible; margin: auto; padding: 20px 24px; border: 1px solid var(--line2); border-radius: 6px; color: var(--ink); background: var(--panel); box-shadow: 0 18px 70px #0009; }
+.identity-dialog::backdrop { background: #05080bcc; backdrop-filter: blur(3px); }
+.identity-details-dialog { max-height: min(90dvh, 900px); overflow: auto; }
+.identity-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.identity-dialog-header h2 { margin: 0; font-size: 15px; font-weight: 500; }
+.identity-dialog-close { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 4px; color: var(--mute); background: transparent; cursor: pointer; }
+.identity-dialog-close:hover { color: var(--ink); background: var(--raise); }
+.identity-dialog-close:focus-visible { outline: 2px solid var(--h); outline-offset: 2px; }
 .identity-panel h2 { font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.identity-dialog-header h2 { margin: 0; font-size: 15px; letter-spacing: 0; text-transform: none; }
 .identity-panel p { margin: 10px 0; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
 .identity-panel label { display: grid; gap: 8px; font-size: 12px; min-width: 0; }
 .identity-panel input:not([type="checkbox"]), .identity-panel select, .identity-panel textarea {
@@ -12,17 +23,37 @@
   outline: 2px solid var(--h); outline-offset: 3px;
 }
 .identity-fields, .identity-grants { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
-.identity-actions, .identity-lookup { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
-.identity-lookup label { flex: 1; }
+.identity-directory-search { display: flex; justify-content: flex-end; margin: 18px 0; }
+.identity-directory-search label { width: min(320px, 100%); }
+.identity-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 .identity-panel dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px; font-size: 12px; }
 .identity-panel dt { font-weight: 600; }
 .identity-panel dd { margin: 0; overflow-wrap: anywhere; line-height: 1.6; }
 .identity-form > fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .identity-grants fieldset { min-width: 0; border: 1px solid var(--line2); border-radius: 3px; padding: 14px; }
 .identity-grants legend { padding: 0 5px; font-size: 12px; font-weight: 600; }
+.identity-multiselect { position: relative; min-width: 0; }
+.identity-multiselect-input { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 42px; padding: 5px 8px; border: 1px solid var(--line2); border-radius: 3px; background: var(--bg); }
+.identity-panel .identity-multiselect-input input[type="search"] { flex: 1 1 120px; width: auto; min-width: 100px; min-height: 28px; padding: 4px; border: 0; outline: 0; background: transparent; }
+.identity-panel .identity-multiselect-input input[type="search"]:focus-visible { outline: 0; }
+.identity-chip { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 4px 6px 4px 8px; border: 1px solid var(--line2); border-radius: 3px; color: var(--ink); background: var(--raise); font-size: 10px; overflow-wrap: anywhere; }
+.identity-chip button { display: grid; place-items: center; flex: 0 0 auto; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 3px; color: var(--mute); background: transparent; cursor: pointer; }
+.identity-chip button:hover { color: var(--ink); background: var(--line); }
+.identity-multiselect-options { position: absolute; z-index: 20; top: calc(100% + 4px); right: 0; left: 0; display: grid; max-height: 190px; overflow: auto; padding: 4px; border: 1px solid var(--line2); border-radius: 3px; background: var(--panel); box-shadow: 0 8px 24px #0008; }
+.identity-multiselect-options button { padding: 8px; border: 0; border-radius: 2px; color: var(--ink); background: transparent; text-align: left; font: inherit; cursor: pointer; }
+.identity-multiselect-options button:hover, .identity-multiselect-options button:focus-visible { outline: 0; background: var(--raise); }
+.identity-multiselect-empty { padding: 8px; color: var(--mute); font-size: 10px; }
 .identity-panel .identity-check { display: flex; align-items: center; margin: 10px 0; overflow-wrap: anywhere; }
 .identity-check input { flex-shrink: 0; }
 .identity-table-scroll { overflow: auto; max-height: 540px; margin-top: 18px; }
+.identity-permission-list { margin-top: 18px; }
+.identity-permission-list h3 { margin: 0 0 10px; font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.identity-permission-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.identity-permission-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 7px 9px; border: 1px solid var(--line2); border-radius: 999px; color: var(--ink); background: var(--raise); font-size: 10px; }
+.identity-permission-dot { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--good); box-shadow: 0 0 7px color-mix(in srgb, var(--good) 60%, transparent); }
+.identity-permission-separator { color: var(--mute); }
+.identity-permission-source { color: var(--ink2); }
+.identity-permission-empty { color: var(--mute); font-size: 11px; }
 .identity-panel table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
 .identity-panel caption { text-align: left; padding: 10px 0; font-weight: 600; }
 .identity-panel th, .identity-panel td { border-bottom: 1px solid var(--line); padding: 12px; white-space: nowrap; }
@@ -32,6 +63,7 @@
 @media (max-width: 700px) {
   .identity-fields, .identity-grants { grid-template-columns: minmax(0, 1fr); }
   .identity-panel { padding: 16px 0; }
+  .identity-dialog.identity-panel { padding: 16px; }
   .identity-panel dl { grid-template-columns: minmax(0, 1fr); gap: 5px; }
   .identity-panel dd { margin-bottom: 8px; }
 }

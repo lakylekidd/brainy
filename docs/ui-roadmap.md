@@ -34,14 +34,14 @@ behavior and current API coverage.
 
 | Milestone | Status | Current position |
 | --- | --- | --- |
-| 1. Shell + Dashboard | Complete | Authenticated reference-style shell, API-backed three-column dashboard with an embedded authorized graph, responsive navigation, reference dark default and optional saved light mode are implemented. |
-| 2. Knowledge Graph | Complete | Stable source-derived entities/edges, bounded authorized graph APIs, Sigma/Graphology exploration, search/filters, independent details, focus and progressive expansion are implemented. |
+| 1. Shell + Dashboard | Complete; Dashboard view removed from the current shell | Dashboard implementation remains in source, but the authenticated shell now defaults to PAV OS and uses a compact Navigate menu. The BRAINY header row and optional saved light mode remain. |
+| 2. Knowledge Graph | Complete; graph view removed from the current shell | Graph implementation and bounded authorized APIs remain in source, but no current UI route mounts the graph. |
 | 3. WebObsidian Integration | Complete | Document inspection links canonical source paths to an operator-configured WebObsidian `/note/<path>` route, with safe encoding and explicit unavailable configuration states. |
-| 4. Agents + Permissions | Complete | Dedicated agent listing/details, direct/inherited/effective grant matrices, role inspection, reviewed supported registration/access replacement, and authorized agent-focused graphs are implemented. Role definitions and credentials remain operator-managed. |
-| 5. Skills + Tools | Partial foundations | Registry APIs feed the dashboard and the generic graph shows authorized dependencies. Dedicated lists/detail and safe Git-backed management remain unimplemented. |
+| 4. Agents + Permissions | Complete | Dedicated agent listing/details, direct/inherited/effective grant matrices, role inspection, and reviewed supported registration/access replacement remain available. The agent-focused graph shortcut is not in the current UI. Role definitions and credentials remain operator-managed. |
+| 5. Skills + Tools | Partial foundations | Registry APIs and graph dependencies remain implemented foundations; the Dashboard and Knowledge Graph views that displayed them are not mounted in the current shell. Dedicated lists/detail and safe Git-backed management remain unimplemented. |
 | 6. Connections | Planned | No connection catalog, configuration, health, or test UI/API is established. |
-| 7. Proposals + Metadata | Partial foundations | The dashboard reads pending proposals and metadata issues. Review diffs, conflict handling, approval, and a dedicated review experience remain to be built against the safe writer workflow. |
-| 8. Operations + Audit | Partial foundations | The dashboard shows bounded recent audit and trace activity. Job/sync diagnostics and a full audit experience are not implemented. |
+| 7. Proposals + Metadata | Partial foundations | Dashboard data-loading code reads pending proposals and metadata issues but is not mounted. Review diffs, conflict handling, approval, and a dedicated review experience remain to be built against the safe writer workflow. |
+| 8. Operations + Audit | Partial foundations | Dashboard data-loading code reads bounded audit and trace activity but is not mounted. Job/sync diagnostics and a full audit experience are not implemented. |
 | 9. Semantic Graph | Planned | Knowledge semantic search and deterministic graph exploration exist, but there is no graph semantic-query or temporary semantic-subgraph API. |
 | 10. Live Activity Graph | Planned; graph and backend foundations exist | Milestone 2 provides the static renderer; Brain Milestone 7 provides activity tracing and retained trace inspection. Confirm an authorized live stream and graph-entity correlation contract before implementation. |
 
@@ -52,8 +52,9 @@ known gaps.
 
 ## Milestone 2 — Knowledge Graph
 
-The additional **PAV OS demo dashboard** is separate from the milestone
-implementation and does not change its scope or completion status. It explores
+The **PAV OS demo dashboard** is now the default authenticated view; it remains
+separate from the numbered milestone implementation and does not change its
+scope or completion status. It explores
 the public, fictional `ui/demo-vault` fixture using D3.js + Canvas in Ring,
 Circle, Areas, Links, Timeline and 3D Orbit layouts. Named capability rings,
 temporary dragging, reference-direction particles and automatic rotation are
@@ -65,6 +66,8 @@ knowledge records. A subsequent whole-app refinement adapts the reference's
 layout, exact dark palette and licensed fonts, retaining optional light mode.
 The reference-style rails are existing Brain metrics or explicit demo-file
 widgets, not new calendar, mail, routine execution or application integrations.
+Its routine cards show browser-local model/effort preferences and a timed source
+preview; neither control invokes a model or executes the fixture routines.
 The area-hub refinement expands only the public fixture to 134 real files:
 six file-backed overview hubs, independent area/kind/layer classification,
 size-weighted Ring sectors, dense Areas clouds and area focus/framing.

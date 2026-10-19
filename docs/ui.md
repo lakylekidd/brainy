@@ -21,15 +21,20 @@ ui/src/
   styles.css
 ```
 
-The shell exposes the dashboard, knowledge graph, agents, permissions and a
-separate PAV OS demo dashboard,
-including configured WebObsidian links for document nodes; later milestone routes are
-explicit placeholders. The dashboard reads existing authenticated API endpoints
-for agent, skill, tool, pending-proposal, metadata-issue, audit, trace, and
-readiness data. Counts reflect the API response visible to the current identity;
-the UI does not fabricate counts for missing data. The current API has no
-dedicated totals for knowledge documents or memories and no connection catalog
-or job-status endpoint, so those metrics are identified as unavailable.
+The current shell opens PAV OS by default. Its compact Navigate menu labels
+that page **Dashboard** and places Workspace and Governance in a left stack,
+with Control plane and System in a right stack. It also contains Agents,
+Permissions and the later-milestone placeholders. The header retains
+the BRAINY brand, shared-knowledge tagline, signed-in username, theme toggle,
+and sign-out control. Dashboard and Knowledge Graph views are not mounted in
+the current shell. The underlying dashboard and graph feature code and API
+contracts remain in the repository for possible future use; canonical document
+editing remains in WebObsidian.
+
+The PAV OS dashboard keeps its full-width layout. Other shell pages use a
+centered content column capped at 1360 pixels with 50 pixels of space below the
+header, plus a footer showing the current year, Brainy contributors, and the
+PolyForm Noncommercial License 1.0.0.
 
 The status of later UI milestones, their scope, acceptance criteria,
 dependencies, and safety constraints are tracked in the
@@ -51,29 +56,31 @@ the frontend. Vite proxies `/api` and `/health` to `http://localhost:5080`.
 Production hosting should use the same origin for UI and API or a deliberately
 configured, trusted CORS policy.
 
+## UI development guidelines
+
+Brainy is developed mobile-first. Every UI change must be designed and checked
+at narrow mobile widths before it is considered complete, including navigation,
+dialogs, forms, tables, labels, spacing, and touch targets. Preserve the
+desktop layout while ensuring content remains readable, usable, and free of
+horizontal overflow on small screens. Add or update responsive tests when a
+change affects a shared shell or reusable component.
+
 ## Appearance
 
 The entire UI adapts the supplied AI OS Dashboard Current 1.1.1 reference:
-its night/live/orange-core palette, compact grouped top navigation, initially
-collapsed Focus disclosure, hairline separators and small control radii.
+its night/live/orange-core palette, compact header with a popover navigation
+menu, hairline separators and small control radii.
 Dark surfaces use `hsl(205 22% 6%)` / `hsl(205 25% 9%)`, the accent is
 `#f07a2e`, secondary text `#b0bec8` and muted text `#81919b`.
 JetBrains Mono and Barlow Condensed are bundled under `ui/public/fonts`;
 their SIL Open Font Licenses and original source/hash provenance are adjacent.
 There are no remote font requests or new font dependencies.
 
-The Dashboard follows the reference's 20% / 60% / 20% desktop composition:
-real local clock, permission-scoped inventory and health on the left; the
-existing bounded Sigma knowledge graph and registry skills deck in the center;
-review queue and recent activity on the right. Dashboard Refresh reloads both
-metrics and its embedded graph. The standalone Knowledge graph retains its
-full-width exploration and independent inspector. Focus contains navigation
-shortcuts, not invented priorities or live task data.
-
-Below 1000px the graph occupies the first row and the rails follow; below
-760px they stack. Mobile navigation is a nonmodal disclosure: opening focuses
-the active route, and Escape or route selection closes it and returns focus
-to the menu button. All existing routes, authorization and placeholders remain.
+Navigation opens from the Navigate button on desktop and mobile. Opening moves
+focus to the active route; Escape or route selection closes the menu and returns
+focus to its trigger. The compact top row remains visible at narrow widths.
+Navigation uses URL paths such as `/dashboard`, `/agents`, `/skills`, and
+`/tools`; refreshing the browser preserves the current page.
 The reference's calendar, mail, execution and other integrations are not added.
 
 The sun/moon button on the sign-in screen and in the shell header switches
@@ -84,8 +91,13 @@ supports keyboard focus and activation.
 Without a saved choice, the UI defaults to the reference dark theme, regardless
 of `prefers-color-scheme` or subsequent system changes. An explicit choice persists as
 only `brain-theme=light` or `brain-theme=dark` in local storage, across reloads
-and sign-out. Credentials are never stored with this preference. Removing that
-entry returns to dark mode on the next reload. If the browser blocks
+and sign-out. The administrator token is stored separately in tab-scoped
+`sessionStorage` so a reload in the same tab can restore the sign-in. The app
+revalidates it with `GET /api/agents/me` before showing authenticated content;
+sign-out or a rejected token clears it. Closing the tab normally ends that
+session. Since same-origin JavaScript can read session storage, treat the
+token as a secret and keep the UI protected from untrusted scripts. Removing
+the theme entry returns to dark mode on the next reload. If the browser blocks
 storage, switching still works for the current page and a console warning
 explains that the preference cannot be saved.
 
@@ -96,8 +108,7 @@ the existing reduced-motion behavior is preserved.
 
 ## PAV OS demo dashboard
 
-**PAV OS** is an additional authenticated-shell page, not a replacement for
-the operations dashboard or the authorized Sigma knowledge graph. It is an
+**PAV OS** is the default authenticated-shell page. It is an
 explicitly fictional, read-only example of a personal operating system named
 Studio North. It makes no graph API calls, does not change the configured
 canonical vault, and adds no multi-vault backend or write capability.
@@ -132,20 +143,39 @@ The six views use D3 layouts/forces/scales and a high-DPI HTML Canvas 2D rendere
 
 | View | Arrangement |
 | --- | --- |
-| Ring | Anchored `AGENTS.md` at the center of five named tracks: Skills, Knowledge, Memory, Routines and Applications. Real overview hubs sit inside their notes; size-weighted area sectors pack knowledge into up to four rows. Other kinds stay on their own tracks. Portrait ellipses preserve mobile label spacing. |
+| Ring | Anchored `AGENTS.md` at the center of five named tracks: Skills, Knowledge, Memory, Routines and Applications. Real overview hubs sit inside their notes; size-weighted area sectors pack knowledge into up to four rows. Other kinds stay on their own tracks. The layout uses a 28px vertical inset to enlarge the tracks while retaining space for outer nodes and labels. Portrait ellipses preserve mobile label spacing. |
 | Circle | Area-grouped perimeter sectors, with curved connections bowed toward the center |
-| Areas | A deterministic D3 force layout groups files into compact same-color clouds around real initialed overview hubs; applications stay near the nucleus |
-| Links | A deterministic D3 force layout emphasizes actual references while retaining weaker area/membership anchors |
+| Areas | A deterministic D3 force layout groups files into compact same-color clouds around real initialed overview hubs; applications stay near the nucleus. Entering this view automatically fits the layout inside the chart with 32px of breathing room. |
+| Links | A deterministic D3 force layout emphasizes actual references while retaining weaker area/membership anchors. Entering this view automatically fits the full layout with 32px of breathing room. |
 | Timeline | Kind/layer lanes and a UTC date scale use each document's `created` frontmatter, not fabricated file activity; same-day files stack within their lane |
-| 3D Orbit | Depth-sorted Canvas 2D projection: skills in an inner shell, knowledge/memory in a middle shell, routines outside, applications on an equatorial ring; area sectors determine longitude. Guides and nodes turn together (roughly 57 seconds per revolution), with a gentle 27-second tilt sway and manual controls; not WebGL |
+| 3D Orbit | Depth-sorted Canvas 2D projection: skills in an inner shell, knowledge/memory in a middle shell, routines outside, applications on an equatorial ring; area sectors determine longitude. Guides and nodes turn together (roughly 57 seconds per revolution), with a gentle 27-second tilt sway and manual controls; it enters fitted to the chart with 48px of breathing room; not WebGL |
 
 The page uses the same reference three-column composition: local clock, demo
-inventory and the entry-point guide on the left; the graph and example skills
-deck in the center; actual routine and memory/context file links on the right.
-These widgets read the bundled fixture, not live schedules, database memories
-or external applications. The map fills its center column with no permanent
-"In your orbit" inspector. Its normal Canvas height is 490px on desktop and
-440px on mobile. **Fullscreen** uses the browser Fullscreen API to
+inventory and the entry-point guide on the left; the graph in the center; and
+routine cards plus example memory/context file links on the right. The Skills
+deck is removed. These widgets read the bundled fixture, not live schedules,
+database memories or external applications. Each routine card shows its
+fixture-specific icon and title with a per-routine model/effort preference.
+The settings matrix offers Haiku, Sonnet, Opus and Fable across Low, Medium,
+High, XHigh and Max effort; the selected model row has a blue range spanning
+Low through the active effort cell, with a white knob and orange center marker.
+The range appears only in the settings panel, which has a close button. Choose
+effort by clicking or dragging horizontally across the model row; keyboard radio
+selection remains available.
+Selections are saved in browser local storage and are not sent to a model.
+Clicking a routine title opens its source in the chart inspector. Play starts a
+demo-only preview timer without opening the inspector, disables that card's
+play control while active, and shows elapsed time. Stopping the preview records
+its elapsed display for that page session next to the card controls without
+increasing card height. No routine or model executes, and the progress animation
+does not represent task progress.
+The centered PAV OS title, page note, and global shell status footer are omitted
+to give the map more room below the persistent BRAINY shell header. Side rails
+are kept narrow so the map gets more horizontal space, and it has no permanent
+"In your orbit" inspector.
+Its normal Canvas height fills more of the viewport (viewport height minus
+275px, clamped to 560–960px on desktop; 58dvh, clamped to 440–620px on mobile).
+**Fullscreen** uses the browser Fullscreen API to
 fill the viewport, hiding the surrounding shell while keeping graph controls.
 Exit using its button or the browser's Escape action. Resizing/fullscreen keeps
 temporary node placements. Unsupported or rejected fullscreen requests show an
@@ -164,15 +194,19 @@ the keyboard-accessible **Jump to file** selector opens its source path, date,
 body and actual connected files in a dismissible overlay, initially closed.
 Dragging selects without opening the overlay; **File details** can reopen it.
 Click the selected dot again, tap empty graph space or press **Escape** in the
-map to clear file/ring focus and close the overlay. This also clears stale hover
-highlighting, without resetting the camera or temporary placements. Initial
+map to clear file/ring focus and close the overlay. The camera smoothly returns
+to the view's default framing without changing temporary placements. Initial
 and cleared graph selection is empty; `AGENTS.md` remains the entry-point
 context, not an implicitly selected dot. Clicking it still selects and opens
 its document, and clicking it again clears it like any other node. The Jump
 selector and details control fall back to `AGENTS.md` when nothing is selected.
 Explicit navigation through Jump, widgets and document links always selects
-the destination rather than toggling it. The overlay's close button only
-closes details, preserving selection and returning focus to the details control.
+the destination rather than toggling it. The overlay's close button clears the
+selection, closes details, and returns focus to the details control while the
+camera returns to the view's default framing.
+The overlay's expand/restore control lets the selected document fill the chart
+panel for reading its full details, with its own scrolling area; selecting a
+different node returns the inspector to its compact position.
 Escape also returns that focus when invoked from the open inspector.
 Following a connected file outside a filter
 clears the filter to reveal it. The chart uses an orange entry-point particle network,
@@ -198,7 +232,9 @@ The ordinary **Labels** toggle controls file names, not these ring controls.
 Drag a node to rearrange it. In **Ring**, dragging changes only its angle:
 skills stay on the Skills ring, routines on Routines, and notes stay on their
 assigned knowledge row. The central
-`AGENTS.md` stays anchored. Other views allow free placement. Drag empty
+`AGENTS.md` stays anchored. In **Areas**, its overview hub gently pushes nearby
+member nodes aside; if dragged farther away, the cluster follows it. Other
+views allow free placement. Drag empty
 space to pan; pans, node drags, cancelled presses and multi-pointer background
 gestures do not clear selection. Scroll/button zoom keeps hit-testing and dragging in graph
 coordinates. Select a file using **Jump to file**, focus the canvas and use
@@ -207,6 +243,9 @@ restores the current view's layout and camera; **Fit vault** resets only the
 camera. Positions are temporary, per-view page state: filters, resizing and
 theme changes preserve them, while leaving/reloading the page clears them.
 Dragging never edits a file or its creation date/relationships.
+Selecting an area overview in Areas or Links smoothly frames its member files,
+and deselecting smoothly restores that view's default camera. Both transitions
+are immediate when reduced motion is enabled.
 
 Links retain static arrowheads and animate bounded glowing signal trails from
 the source document toward the referenced document, followed by a soft arrival
@@ -523,15 +562,16 @@ both themes, mobile layout, reduced-motion operation and the no-WebGL inspector.
 
 **Agents** lists up to 1,000 enabled/disabled identities with name, ID, team,
 status and roles. Search and status filters narrow the returned inventory, not
-the entire database. A limit notice avoids implying a complete inventory;
-**Look up agent ID** fetches a record independently even beyond the list.
-Selection loads authorized details independently before exposing controls.
-Details explicitly render description, team, enabled state, roles, direct
-grants, effective permissions and update time, never arbitrary agent metadata.
+the entire database. A limit notice avoids implying a complete inventory.
+Selecting an agent or clicking **Inspect** opens its authorized details in a
+modal. Details explicitly render description, team, enabled state, roles,
+granted permissions and update time, never arbitrary agent
+metadata.
 
-The agent permission matrix distinguishes grants inherited through each role,
-direct grants, and the effective union reported by the backend. A permission
-can be both direct and inherited without being counted twice. An enabled
+The agent details modal shows role-inherited permissions as compact labels, with
+a live status dot and the role source after a colon. Direct grants appear in
+their own section below the granted permissions, using the same label format. A permission can be both direct and
+inherited without being counted twice. An enabled
 identity, exact permission IDs and each operation's visibility/ownership rules
 still apply: role names confer no implicit authority, disabling prevents
 authentication, and grants do not bypass private memory or source constraints.

@@ -25,16 +25,16 @@ function show(mode: "agents" | "permissions" = "agents", grants = profile.permis
   const original = vi.mocked(fetch).getMockImplementation()!;
   vi.mocked(fetch).mockImplementation((input, options) => String(input) === "/api/agents/me"
     ? Promise.resolve(response({ ...profile, permissions: grants })) : original(input, options));
-  const onUnauthorized = vi.fn(), onFocus = vi.fn();
+  const onUnauthorized = vi.fn();
   const result = render(<Agents credentials={credentials} profile={{ ...profile, permissions: grants }} mode={mode}
-    onUnauthorized={onUnauthorized} onFocus={onFocus} />);
-  return { ...result, onUnauthorized, onFocus };
+    onUnauthorized={onUnauthorized} />);
+  return { ...result, onUnauthorized };
 }
 
 async function inspect() {
-  await screen.findByRole("option", { name: "Helper (helper) - Enabled" });
-  fireEvent.change(screen.getByLabelText("Inspect agent"), { target: { value: "helper" } });
-  return screen.findByRole("region", { name: "Agent permission matrix" });
+  await screen.findByRole("button", { name: "Inspect helper" });
+  fireEvent.click(screen.getByRole("button", { name: "Inspect helper" }));
+  return screen.findByRole("region", { name: "Granted permissions" });
 }
 
 function editAccess() {
@@ -55,17 +55,27 @@ describe("agent identities and permission management", () => {
     }));
   });
 
+  it("keeps the directory filters without the current identity summary", async () => {
+    show();
+    await screen.findByRole("button", { name: "Inspect helper" });
+    expect(screen.queryByRole("region", { name: "Current identity" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Search agents")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Agent status")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Inspect agent")).not.toBeInTheDocument();
+  });
+
   it("loads independent agent details and separates direct, inherited and effective permissions without arbitrary metadata", async () => {
-    const { onFocus } = show();
+    show();
     const matrix = await inspect();
     expect(fetch).toHaveBeenCalledWith("/api/agents/helper/details", expect.anything());
-    const read = within(matrix).getByRole("row", { name: "memory.read member Granted Granted" });
-    expect(read).toBeInTheDocument();
-    expect(within(matrix).getByRole("row", { name: "memory.write member Not granted Granted" })).toBeInTheDocument();
-    expect(within(matrix).getByRole("row", { name: "agents.admin None Not granted Not granted" })).toBeInTheDocument();
+    expect(within(matrix).getByText("memory.read")).toBeInTheDocument();
+    expect(within(matrix).getByText("memory.write")).toBeInTheDocument();
+    expect(within(matrix).getAllByText("member")).toHaveLength(2);
+    expect(within(matrix).queryByText("agents.admin")).not.toBeInTheDocument();
+    const direct = screen.getByRole("region", { name: "Direct grants" });
+    expect(within(direct).getByText("memory.read")).toBeInTheDocument();
+    expect(within(direct).getByText("Direct")).toBeInTheDocument();
     expect(screen.queryByText("DO_NOT_RENDER")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Focus agent graph" }));
-    expect(onFocus).toHaveBeenCalledWith("agent:helper");
   });
 
   it("inspects unassigned roles and the role permission matrix", async () => {
@@ -78,19 +88,19 @@ describe("agent identities and permission management", () => {
     expect(screen.queryByRole("button", { name: "Edit role" })).not.toBeInTheDocument();
   });
 
-  it("filters the returned directory and supports independent lookup outside the listed inventory", async () => {
+  it("filters the returned directory and opens agent inspection in a modal", async () => {
     show();
     await screen.findByRole("button", { name: "Inspect helper" });
     fireEvent.change(screen.getByLabelText("Search agents"), { target: { value: "missing" } });
     expect(screen.getByText("No agents match this view.")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Search agents"), { target: { value: "platform" } });
     expect(screen.getByRole("button", { name: "Inspect helper" })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Agent status"), { target: { value: "disabled" } });
-    expect(screen.getByText("No agents match this view.")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Look up agent ID"), { target: { value: "outside-list" } });
-    fireEvent.click(screen.getByRole("button", { name: "Inspect by ID" }));
-    await screen.findByRole("region", { name: "Agent permission matrix" });
-    expect(fetch).toHaveBeenCalledWith("/api/agents/outside-list/details", expect.anything());
+    expect(screen.queryByLabelText("Look up agent ID")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Inspect helper" }));
+    expect(await screen.findByRole("dialog", { name: "Agent details" })).toBeInTheDocument();
+    await screen.findByRole("region", { name: "Granted permissions" });
+    fireEvent.click(screen.getByRole("button", { name: "Close agent details" }));
+    expect(screen.queryByRole("dialog", { name: "Agent details" })).not.toBeInTheDocument();
   });
 
   it("requires read permission without requesting catalogs or offering management", () => {
@@ -105,7 +115,6 @@ describe("agent identities and permission management", () => {
     await inspect();
     expect(screen.queryByRole("button", { name: "Edit access" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Register agent" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Focus agent graph" })).toBeEnabled();
   });
 
   it("prevents self-access changes in the UI", async () => {
@@ -116,8 +125,8 @@ describe("agent identities and permission management", () => {
       return response({ ...agent, id: "operator" });
     });
     show();
-    await screen.findByRole("option", { name: "Helper (operator) - Enabled" });
-    fireEvent.change(screen.getByLabelText("Inspect agent"), { target: { value: "operator" } });
+    await screen.findByRole("button", { name: "Inspect operator" });
+    fireEvent.click(screen.getByRole("button", { name: "Inspect operator" }));
     await screen.findByText("Your own access cannot be changed through this endpoint.");
     expect(screen.queryByRole("button", { name: "Edit access" })).not.toBeInTheDocument();
   });
@@ -126,9 +135,10 @@ describe("agent identities and permission management", () => {
     show();
     await inspect();
     const form = editAccess();
-    expect(form.getByRole("checkbox", { name: "memory.read" })).toBeChecked();
-    expect(form.getByRole("checkbox", { name: "memory.write" })).not.toBeChecked();
-    fireEvent.click(form.getByRole("checkbox", { name: "member" }));
+    expect(form.getByRole("button", { name: "Remove memory.read" })).toBeInTheDocument();
+    expect(form.queryByRole("button", { name: "Remove memory.write" })).not.toBeInTheDocument();
+    expect(form.getByRole("button", { name: "Remove member" })).toBeInTheDocument();
+    fireEvent.click(form.getByRole("button", { name: "Remove member" }));
     fireEvent.click(form.getByRole("checkbox", { name: "Agent enabled" }));
     fireEvent.click(form.getByRole("button", { name: "Review changes" }));
     expect(fetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: "PUT" }));
@@ -144,16 +154,21 @@ describe("agent identities and permission management", () => {
   it("registers an identity only after review without requesting or storing credentials", async () => {
     show();
     await screen.findByRole("button", { name: "Register agent" });
+    expect(screen.queryByRole("dialog", { name: "Register agent" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Register agent" }));
-    const form = within(screen.getByRole("region", { name: "Register agent" }));
+    const form = within(screen.getByRole("dialog", { name: "Register agent" }));
     fireEvent.change(form.getByLabelText("Agent ID"), { target: { value: "new-agent" } });
     fireEvent.change(form.getByLabelText("Name"), { target: { value: "New Agent" } });
-    fireEvent.click(form.getByRole("checkbox", { name: "member" }));
+    fireEvent.change(form.getByRole("searchbox", { name: "Search roles" }), { target: { value: "mem" } });
+    fireEvent.click(form.getByRole("option", { name: "member" }));
+    expect(form.getByRole("button", { name: "Remove member" })).toBeInTheDocument();
+    fireEvent.change(form.getByRole("searchbox", { name: "Search direct permissions" }), { target: { value: "memory.write" } });
+    fireEvent.click(form.getByRole("option", { name: "memory.write" }));
     fireEvent.click(form.getByRole("button", { name: "Review changes" }));
     expect(form.getByText(/without a credential/)).toBeInTheDocument();
     fireEvent.click(form.getByRole("button", { name: "Confirm registration" }));
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/agents", expect.objectContaining({
-      method: "POST", body: JSON.stringify({ id: "new-agent", name: "New Agent", description: "", teamId: null, roles: ["member"], permissions: [] }),
+      method: "POST", body: JSON.stringify({ id: "new-agent", name: "New Agent", description: "", teamId: null, roles: ["member"], permissions: ["memory.write"] }),
     })));
     expect(localStorage.length).toBe(0);
     expect(sessionStorage.length).toBe(0);
@@ -183,7 +198,7 @@ describe("agent identities and permission management", () => {
     fireEvent.click(form.getByRole("button", { name: "Review changes" }));
     fireEvent.click(form.getByRole("button", { name: "Confirm replacement" }));
     await waitFor(() => expect(screen.queryByRole("region", { name: "Edit access" })).not.toBeInTheDocument());
-    expect(screen.queryByRole("region", { name: "Agent details" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Agent details" })).not.toBeInTheDocument();
     if (status === 401) expect(onUnauthorized).toHaveBeenCalledOnce();
     else expect(screen.getByRole("alert")).toHaveTextContent("management access may have changed");
   });
@@ -229,7 +244,6 @@ describe("agent identities and permission management", () => {
     fireEvent.click(screen.getByRole("button", { name: "Inspect helper" }));
     await screen.findByRole("alert");
     expect(screen.queryByRole("button", { name: "Edit access" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Focus agent graph" })).not.toBeInTheDocument();
   });
 
   it("clears authentication on expired directory credentials", async () => {
@@ -243,6 +257,7 @@ describe("agent identities and permission management", () => {
     let finish: ((value: Response) => void) | undefined;
     const original = vi.mocked(fetch).getMockImplementation()!;
     vi.mocked(fetch).mockImplementation(async (input, options) => {
+      if (String(input) === "/api/agents") return response([agent, { ...agent, id: "second", name: "Second" }]);
       if (String(input) === "/api/agents/helper/details") return new Promise<Response>((resolve) => { finish = resolve; });
       if (String(input) === "/api/agents/second/details") return response({ ...agent, id: "second", name: "Second" });
       return original(input, options);
@@ -251,8 +266,7 @@ describe("agent identities and permission management", () => {
     await screen.findByRole("button", { name: "Inspect helper" });
     fireEvent.click(screen.getByRole("button", { name: "Inspect helper" }));
     await waitFor(() => expect(finish).toBeDefined());
-    fireEvent.change(screen.getByLabelText("Look up agent ID"), { target: { value: "second" } });
-    fireEvent.click(screen.getByRole("button", { name: "Inspect by ID" }));
+    fireEvent.click(screen.getByRole("button", { name: "Inspect second" }));
     await screen.findByRole("heading", { name: "Second" });
     await act(async () => finish?.(response(agent)));
     expect(screen.queryByRole("heading", { name: "Helper" })).not.toBeInTheDocument();

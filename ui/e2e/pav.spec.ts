@@ -33,7 +33,7 @@ test("PAV OS renders six file-backed Canvas layouts and supports inspection, fil
   await expect(page.locator(".graph-canvas canvas").first()).toBeVisible();
   const graphRequests: string[] = [];
   page.on("request", (request) => { if (new URL(request.url()).pathname.startsWith("/api/graph")) graphRequests.push(request.url()); });
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   await expect(page.getByRole("heading", { name: "PAV OS Agentic OS" })).toBeVisible();
   const canvas = page.locator(".pav-canvas-host canvas");
   const jump = page.getByRole("combobox", { name: "Jump to file", exact: true });
@@ -105,7 +105,7 @@ test("the graph fills the viewport in fullscreen and retains placement, inspecti
   await page.goto("/");
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   const map = page.getByRole("region", { name: "Demo vault exploration" });
   const canvas = page.locator(".pav-canvas-host canvas");
   const jump = page.getByRole("combobox", { name: "Jump to file", exact: true });
@@ -144,7 +144,7 @@ test("PAV OS keeps real file exploration available without Canvas", async ({ pag
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
   await expect(page.getByRole("heading", { name: "Good to see you." })).toBeVisible();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "Canvas rendering is unavailable" })).toBeVisible();
   await page.getByRole("combobox", { name: "Jump to file", exact: true }).selectOption("routines/weekly-review.md");
   await expect(page.getByRole("complementary", { name: "Demo file details" }).getByRole("heading", { name: "Weekly review", exact: true })).toBeVisible();
@@ -157,7 +157,7 @@ test("ring labels focus every file on a layer without filtering and remain usabl
   await page.goto("/");
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   const canvas = page.locator(".pav-canvas-host canvas");
   const skills = page.getByRole("button", { name: "Highlight Skills ring" });
   const clickRing = async (name: string) => {
@@ -245,7 +245,7 @@ test("node and background clicks clear selection and actual highlights without i
   await page.goto("/");
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   const canvas = page.locator(".pav-canvas-host canvas");
   const inspector = page.getByRole("complementary", { name: "Demo file details" });
   await page.getByRole("checkbox", { name: "Links", exact: true }).uncheck();
@@ -331,7 +331,7 @@ test("real node dragging stays on its named ring, works through pan and zoom, an
   await page.goto("/");
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   const canvas = page.locator(".pav-canvas-host canvas");
   const jump = page.getByRole("combobox", { name: "Jump to file", exact: true });
   await expect(canvas).toHaveAttribute("data-node-count", String(demoGraph().files.length));
@@ -410,7 +410,7 @@ test("directed link flow and the entire orbit animate automatically and obey pau
   await page.goto("/");
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   const canvas = page.locator(".pav-canvas-host canvas");
   await expect(canvas).toHaveAttribute("data-motion", "running");
   await page.clock.install();
@@ -456,7 +456,7 @@ test("real overview hubs frame dense Areas clusters, expose their files and keep
   await page.goto("/");
   await page.getByLabel("Admin token").fill(adminToken());
   await page.getByRole("button", { name: "Sign in to Brain" }).click();
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   await page.getByRole("button", { name: "Areas", exact: true }).click();
   const canvas = page.locator(".pav-canvas-host canvas");
   const jump = page.getByRole("combobox", { name: "Jump to file", exact: true });
@@ -535,7 +535,7 @@ test.describe("touch node dragging", () => {
     await page.getByLabel("Admin token").fill(adminToken());
     await page.getByRole("button", { name: "Sign in to Brain" }).click();
     await page.getByRole("button", { name: "Open navigation" }).click();
-    await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+    await page.getByRole("button", { name: "Dashboard", exact: true }).click();
     const canvas = page.locator(".pav-canvas-host canvas");
     const jump = page.getByRole("combobox", { name: "Jump to file", exact: true });
     await expect(canvas).toHaveAttribute("data-node-count", String(demoGraph().files.length));

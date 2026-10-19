@@ -57,7 +57,7 @@ test("the whole Brain workspace uses the reference palette, fonts and hairline l
   await page.getByRole("button", { name: "Agents", exact: true }).click();
   await expect(page.getByRole("region", { name: "Agent directory" })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("reference-brain-agents.png"), fullPage: true });
-  await page.getByRole("button", { name: "PAV OS", exact: true }).click();
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
   await expect(page.locator(".pav-canvas-host canvas")).toHaveAttribute("data-node-count", "134");
   await expect.poll(() => page.locator(".pav-canvas-host canvas").evaluate((element) => {
     const canvas = element as HTMLCanvasElement;
@@ -73,7 +73,7 @@ test("the whole Brain workspace uses the reference palette, fonts and hairline l
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeHidden();
   await page.getByRole("button", { name: "Open navigation" }).click();
-  await expect(page.getByRole("button", { name: "PAV OS", exact: true })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Dashboard", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Open navigation" })).toBeFocused();
   await page.getByRole("button", { name: "Open navigation" }).click();

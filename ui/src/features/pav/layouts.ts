@@ -57,8 +57,9 @@ export function areaSectors(graph: VaultGraph) {
 export function createLayout(graph: VaultGraph, view: ViewMode, width: number, height: number, rotation = 0, sway = 0): Layout {
   const cx = width / 2;
   const cy = height / 2;
-  const radius = Math.max(50, Math.min(width / 2 - (width < 500 ? 24 : 55), height / 2 - 62));
-  const ringHeight = view === "Ring" ? Math.max(radius, Math.min(height / 2 - 62, radius * 1.9)) : radius;
+  const verticalInset = view === "Ring" ? 28 : 62;
+  const radius = Math.max(50, Math.min(width / 2 - (width < 500 ? 24 : 55), height / 2 - verticalInset));
+  const ringHeight = view === "Ring" ? Math.max(radius, Math.min(height / 2 - verticalInset, radius * 1.9)) : radius;
   const groups = areaSectors(graph);
   const nodes: PlotNode[] = graph.files.map((file) => ({
     id: file.id, file, x: cx, y: cy, radius: file.id === ROOT_FILE
@@ -254,18 +255,50 @@ export function createLayout(graph: VaultGraph, view: ViewMode, width: number, h
   return { nodes, guides };
 }
 
-export function placeNodes(layout: Layout, placements: ReadonlyMap<string, Placement>, width: number, height: number): Layout {
+export function placeNodes(layout: Layout, placements: ReadonlyMap<string, Placement>, width: number, height: number, view?: ViewMode): Layout {
+  const areaOffsets = new Map<string, { x: number; y: number; hubX: number; hubY: number; hubRadius: number }>();
+  if (view === "Areas") layout.nodes.forEach((node) => {
+    const placement = placements.get(node.id);
+    if (node.file.kind === "area" && placement?.kind === "offset" && node.file.area) {
+      const deltaX = placement.x * width;
+      const deltaY = placement.y * height;
+      const distance = Math.hypot(deltaX, deltaY);
+      const follow = Math.max(0, Math.min(1, (distance - 48) / 120));
+      areaOffsets.set(node.file.area, {
+        x: deltaX * follow,
+        y: deltaY * follow,
+        hubX: node.x + deltaX,
+        hubY: node.y + deltaY,
+        hubRadius: node.radius,
+      });
+    }
+  });
   return {
     ...layout,
     nodes: layout.nodes.map((node) => {
       const placement = placements.get(node.id);
-      if (!placement) return node;
-      if (placement.kind === "angle" && node.ring) return {
+      if (placement?.kind === "angle" && node.ring) return {
         ...node, x: width / 2 + Math.cos(placement.angle) * node.ring.rx,
         y: height / 2 + Math.sin(placement.angle) * node.ring.ry,
         ring: { ...node.ring, angle: placement.angle },
       };
-      if (placement.kind === "offset") return { ...node, x: node.x + placement.x * width, y: node.y + placement.y * height };
+      const groupOffset = node.file.kind === "area" || !node.file.area ? undefined : areaOffsets.get(node.file.area);
+      if (placement?.kind === "offset" || groupOffset) {
+        let x = node.x + (placement?.kind === "offset" ? placement.x * width : 0) + (groupOffset?.x ?? 0);
+        let y = node.y + (placement?.kind === "offset" ? placement.y * height : 0) + (groupOffset?.y ?? 0);
+        if (groupOffset) {
+          const dx = x - groupOffset.hubX;
+          const dy = y - groupOffset.hubY;
+          const distance = Math.hypot(dx, dy);
+          const minimum = groupOffset.hubRadius + node.radius + 12;
+          if (distance < minimum) {
+            const angle = distance > 0.001 ? Math.atan2(dy, dx) : node.id.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) % (Math.PI * 2);
+            x += Math.cos(angle) * (minimum - distance);
+            y += Math.sin(angle) * (minimum - distance);
+          }
+        }
+        return { ...node, x, y };
+      }
       return node;
     }),
   };

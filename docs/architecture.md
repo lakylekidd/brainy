@@ -246,14 +246,17 @@ vault. See [WebObsidian linking](ui.md#webobsidian-linking).
 Semantic graph queries and live overlays are not implemented.
 
 **Shared UI shell.** The React application uses the supplied PAV OS reference's
-night/orange palette, locally licensed fonts, compact navigation and responsive
+night/orange palette, locally licensed fonts, a compact header and responsive
 hairline-separated widgets. Dark is the default; the light-mode toggle remains.
-The operations Dashboard reuses the existing bounded, permission-filtered
-Sigma graph in its center column, with API-backed inventory/health and
-review/activity rails. It adds no graph service, canonical data source or
-reference-project integrations. The standalone graph remains available.
+PAV OS is the default authenticated view, and a compact Navigate menu contains
+the other current routes and later-milestone placeholders. The header retains
+the BRAINY brand, shared-knowledge tagline, signed-in username, theme toggle,
+and sign-out control. The Dashboard and Knowledge Graph views are not mounted
+in the current shell; their frontend source and backend graph contracts remain.
+No new graph service, canonical data source or reference-project integration
+was added.
 
-**PAV OS demo.** A separate lazy-loaded UI page uses D3.js with HTML Canvas
+**PAV OS demo.** The default lazy-loaded UI page uses D3.js with HTML Canvas
 to explore six layouts of the fictional `ui/demo-vault` fixture. Raw Markdown
 imports supply its files, creation dates and explicit relative links; there is
 no second graph catalog or backend multi-vault support. Its 134 real files
@@ -275,7 +278,10 @@ context. Repeated node clicks and background taps clear file/ring focus and
 inspection without changing camera/placements; gesture movement and cancellation
 do not clear selection.
 Demo clock/inventory, skills and routine/context widgets use actual local time
-or fixture files, not simulated integrations. The read-only boundary is unchanged.
+or fixture files, not simulated integrations. Routine model/effort choices are
+browser-local preferences; the Play control previews Markdown and times that
+preview without executing a routine or invoking a model. The read-only boundary
+is unchanged.
 The fixture is public
 static build content, contains no private/live data, and is not mounted into the
 API or worker. Existing authorization, canonical sources and writer workflows
