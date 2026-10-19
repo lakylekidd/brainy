@@ -46,6 +46,7 @@ Invoke-RestMethod "$baseUrl/api/memories/$($memory.id)" -Headers $headers
 | `GET /api/agents` | `agents.read`, up to 1,000 agents |
 | `GET /api/agents/{id}/details` | `agents.read`, direct and effective grants |
 | `GET /api/roles`, `GET /api/permissions` | `agents.read`, role grants and permission catalog |
+| `POST /api/roles` | `agents.admin`, create a role with known permission grants; audited |
 | `POST /api/agents` | `agents.admin`, register an identity and known grants |
 | `PUT /api/agents/{id}/access` | `agents.admin`, replace another agent's roles/grants and enabled state |
 | `POST /api/memories` | `memory.write`; shared visibility also needs `memory.share` |

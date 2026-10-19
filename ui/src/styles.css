@@ -66,7 +66,7 @@ input[type="checkbox"], input[type="range"] { accent-color: var(--h); }
 ::selection { background: var(--h-soft); color: var(--ink); }
 h1, h2, h3, p { margin: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.app-shell { max-width: 1800px; min-height: 100dvh; margin: 0 auto; padding: 12px 24px 24px; display: flex; flex-direction: column; }
+.app-shell { max-width: 1800px; height: 100dvh; min-height: 100dvh; margin: 0 auto; padding: 12px 24px 24px; display: flex; flex-direction: column; overflow: hidden; }
 .skip-link { position: absolute; top: -100px; z-index: 20; padding: 10px; color: var(--bg); background: var(--h); }
 .skip-link:focus { top: 8px; }
 .workspace-header { position: relative; border-bottom: 1px solid var(--line); }
@@ -99,9 +99,10 @@ h1, h2, h3, p { margin: 0; }
 .nav-item:hover { color: var(--ink); background: var(--raise); }
 .nav-item-active { color: var(--ink); border-bottom-color: var(--h); }
 .nav-item-active > svg { color: var(--h); }
-.main-area { flex: 1; min-width: 0; }
+.main-area { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .page-content { width: 100%; padding: 0; min-width: 0; }
 .page-content-constrained { max-width: 1360px; margin-inline: auto; padding-top: 50px; }
+.page-content-permissions { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .workspace-footer { width: 100%; max-width: 1360px; margin: auto auto 0; padding-top: 14px; border-top: 1px solid var(--line); color: var(--mute); font-size: 9px; }
 .workspace-footer-content { padding-bottom: 4px; }
 .status-dot, .live-mark { display: inline-block; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--good); }

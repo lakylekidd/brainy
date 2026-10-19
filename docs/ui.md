@@ -581,13 +581,17 @@ snapshot. Reload after newly granting directory access to a session that lacked
 `agents.read` at sign-in.
 
 **Permissions** also includes all configured roles (including unassigned
-roles), their descriptions/grants and a role-by-permission matrix. Tables use
-text rather than color to identify grants, keyboard-focusable scroll regions,
-and horizontally bounded overflow on mobile. Light/dark themes, native keyboard
-controls, loading, empty, offline, forbidden and missing-record states are
-supported. Pending detail requests are cancelled when selection changes;
+roles), their descriptions/grants and a role inspector. The role selector and
+role description appear above a scrollable permission table with a permission
+ID and a user-facing description for each grant. Those descriptions come from
+the permission definitions and are refreshed for existing catalog rows during
+application initialization in every environment.
+Light/dark themes, native keyboard controls, loading, empty, offline, forbidden
+and missing-record states are supported. Pending detail requests are cancelled when selection changes;
 stale responses cannot expose another agent's controls. A 401 signs out.
 A 403 clears affected data/forms rather than retaining old management controls.
+The Permissions view contains only the role and permission catalog; the agent
+directory, search, details and registration controls remain in the Agents view.
 
 ### Identity read contracts
 
@@ -602,6 +606,7 @@ so a caller without the read grant cannot distinguish a missing identity.
 | `GET /api/agents/{id}/details` | Independent `AgentView`, including disabled identities; 404 when missing |
 | `GET /api/roles` | `{ id, description, permissions: string[] }[]`, including roles with no members |
 | `GET /api/permissions` | `{ id, description }[]` from the database catalog, not a hard-coded browser list |
+| `POST /api/roles` | `agents.admin`, `{ id, description, permissions: string[] }`; creates a role from known permission IDs and records an audit event |
 
 `AgentView.permissions` remains the sorted, deduplicated effective union for
 compatibility. The additive `directPermissions: string[]` field identifies only
@@ -621,8 +626,12 @@ use the existing `PUT /api/agents/{id}/access` with
 `{ roles, permissions, enabled }`; its `permissions` are **direct grants**, not
 the effective union. Only controls backed by these operations are exposed.
 Both require `agents.admin` server-side; the inspection-based UI additionally
-requires `agents.read`. Role/permission definitions and credentials remain
-operator-managed with no invented write or token-issuance API.
+requires `agents.read`. `POST /api/roles` creates a lowercase role ID,
+description and up to 100 known permissions; it does not assign the role to any
+agents. The Permissions page exposes creation only with `agents.admin` and
+reviews the ID, description and selected permissions before confirmation.
+Existing role editing, permission-catalog changes and credential issuance
+remain operator-managed.
 
 The form first shows an explicit review, exact replacement roles/direct grants,
 enabled state and a catalog-derived effective-access preview. A separate

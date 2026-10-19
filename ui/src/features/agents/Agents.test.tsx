@@ -78,13 +78,25 @@ describe("agent identities and permission management", () => {
     expect(screen.queryByText("DO_NOT_RENDER")).not.toBeInTheDocument();
   });
 
-  it("inspects unassigned roles and the role permission matrix", async () => {
+  it("inspects role permissions in a readable table", async () => {
     show("permissions");
-    await screen.findByRole("region", { name: "Role permission matrix" });
+    await screen.findByRole("region", { name: "Permissions for selected role" });
+    expect(screen.getByText("Inspect role grants and effective access.")).toBeInTheDocument();
+    expect(screen.queryByText(/The backend enforces every operation/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Agent directory" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Search agents")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Register agent" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Inspect role"), { target: { value: "member" } });
+    expect(screen.getByText("Scoped memory access")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "member" })).not.toBeInTheDocument();
+    expect(screen.getByText("memory.read")).toBeInTheDocument();
+    expect(screen.getByText("Read scoped memories")).toBeInTheDocument();
+    expect(screen.getByText("memory.write")).toBeInTheDocument();
+    expect(screen.getByText("Write own memories")).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "memory.read Read scoped memories" })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Inspect role"), { target: { value: "unassigned" } });
     expect(screen.getByText("No members yet")).toBeInTheDocument();
-    const matrix = within(screen.getByRole("region", { name: "Role permission matrix" }));
-    expect(matrix.getByRole("row", { name: "memory.read Read scoped memories Granted Not granted" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Role permission matrix" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edit role" })).not.toBeInTheDocument();
   });
 
@@ -217,7 +229,9 @@ describe("agent identities and permission management", () => {
   it("reports an empty directory, roles and permissions explicitly", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => response([])));
     show("permissions");
-    await screen.findByText("No agents match this view.");
+    await screen.findByRole("region", { name: "Permissions for selected role" });
+    expect(screen.queryByText("No agents match this view.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Agent directory" })).not.toBeInTheDocument();
     expect(screen.getByText("No roles configured.")).toBeInTheDocument();
     expect(screen.getByText("No permissions configured.")).toBeInTheDocument();
   });

@@ -112,7 +112,7 @@ export default function AppShell({ profile, page, children, onNavigate, onSignOu
         </nav>
       </header>
       <main className="main-area" id="workspace-content" tabIndex={-1}>
-        <div className={`page-content${page === "pav" ? " page-content-pav" : " page-content-constrained"}`}>
+        <div className={`page-content${page === "pav" ? " page-content-pav" : " page-content-constrained"}${page === "permissions" ? " page-content-permissions" : ""}`}>
           {children}
         </div>
       </main>

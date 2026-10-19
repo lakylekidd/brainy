@@ -52,6 +52,7 @@ public sealed record AgentView(string Id, string Name, string Description, strin
     bool Enabled, string[] Roles, string[] Permissions, JsonElement Metadata,
     DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string[] DirectPermissions);
 public sealed record RoleView(string Id, string Description, string[] Permissions);
+public sealed record CreateRoleRequest(string Id, string Description, string[] Permissions);
 public sealed record PermissionView(string Id, string Description);
 public sealed record CreateAgentRequest(string Id, string Name, string Description = "", string? TeamId = null,
     string[]? Roles = null, string[]? Permissions = null, JsonElement? Metadata = null);
@@ -63,6 +64,7 @@ public interface IAgentDirectory
     Task<IReadOnlyList<AgentView>> ListAsync(AgentContext actor, CancellationToken ct);
     Task<AgentView> GetAsync(AgentContext actor, string id, CancellationToken ct);
     Task<IReadOnlyList<RoleView>> ListRolesAsync(AgentContext actor, CancellationToken ct);
+    Task<RoleView> CreateRoleAsync(AgentContext actor, CreateRoleRequest request, CancellationToken ct);
     Task<IReadOnlyList<PermissionView>> ListPermissionsAsync(AgentContext actor, CancellationToken ct);
     Task<AgentView> CreateAsync(AgentContext actor, CreateAgentRequest request, CancellationToken ct);
     Task<AgentView> UpdateAccessAsync(AgentContext actor, string id, UpdateAccessRequest request, CancellationToken ct);

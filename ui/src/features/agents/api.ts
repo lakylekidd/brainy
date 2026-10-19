@@ -16,6 +16,12 @@ export interface Role {
   permissions: string[];
 }
 
+export interface CreateRoleInput {
+  id: string;
+  description: string;
+  permissions: string[];
+}
+
 export interface Permission {
   id: string;
   description: string;
@@ -53,4 +59,8 @@ export async function loadDirectory(credentials: Credentials, signal: AbortSigna
 export function saveAgent(credentials: Credentials, input: CreateInput | AccessInput, id: string | null, signal: AbortSignal) {
   return request<AgentDetails>(id === null ? "/api/agents" : `/api/agents/${encodeURIComponent(id)}/access`,
     credentials, signal, { method: id === null ? "POST" : "PUT", body: JSON.stringify(input) });
+}
+
+export function createRole(credentials: Credentials, input: CreateRoleInput, signal: AbortSignal) {
+  return request<Role>("/api/roles", credentials, signal, { method: "POST", body: JSON.stringify(input) });
 }

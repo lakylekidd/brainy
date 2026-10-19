@@ -157,6 +157,11 @@ app.MapGet("/api/agents/{id}/details", (string id, RequestAgent agent, IAgentDir
     directory.GetAsync(agent.Context, id, ct));
 app.MapGet("/api/roles", (RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
     directory.ListRolesAsync(agent.Context, ct));
+app.MapPost("/api/roles", async (CreateRoleRequest request, RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
+{
+    var result = await directory.CreateRoleAsync(agent.Context, request, ct);
+    return Results.Json(result, statusCode: StatusCodes.Status201Created);
+});
 app.MapGet("/api/permissions", (RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>
     directory.ListPermissionsAsync(agent.Context, ct));
 app.MapPost("/api/agents", async (CreateAgentRequest request, RequestAgent agent, IAgentDirectory directory, CancellationToken ct) =>

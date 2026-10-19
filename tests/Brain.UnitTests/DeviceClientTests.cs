@@ -69,6 +69,7 @@ public sealed class DeviceClientTests
         public Task<IReadOnlyList<AgentView>> ListAsync(AgentContext actor, CancellationToken ct) => throw new NotImplementedException();
         public Task<AgentView> GetAsync(AgentContext actor, string id, CancellationToken ct) => throw new NotImplementedException();
         public Task<IReadOnlyList<RoleView>> ListRolesAsync(AgentContext actor, CancellationToken ct) => throw new NotImplementedException();
+        public Task<RoleView> CreateRoleAsync(AgentContext actor, CreateRoleRequest request, CancellationToken ct) => throw new NotImplementedException();
         public Task<IReadOnlyList<PermissionView>> ListPermissionsAsync(AgentContext actor, CancellationToken ct) => throw new NotImplementedException();
         public Task<AgentView> CreateAsync(AgentContext actor, CreateAgentRequest request, CancellationToken ct) => throw new NotImplementedException();
         public Task<AgentView> UpdateAccessAsync(AgentContext actor, string id, UpdateAccessRequest request, CancellationToken ct) => throw new NotImplementedException();

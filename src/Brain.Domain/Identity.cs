@@ -60,6 +60,43 @@ public static class Permissions
         DevicesRevoke, HarnessesConnect, HarnessesManage, RuntimeRead, RuntimeProvision, SkillsSync,
         "infrastructure.read", "infrastructure.write", "deployment.read", "deployment.write", "deployment.staging",
         "deployment.production", "secrets.dev.read", "secrets.production.read"];
+
+    public static readonly IReadOnlyDictionary<string, string> Descriptions = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        [MemoryRead] = "Read memories allowed by their private, team, or organization visibility.",
+        [MemoryWrite] = "Create memories. Sharing them with a team or organization also requires memory.share.",
+        [MemoryDelete] = "Delete memories owned by this agent.",
+        [MemoryShare] = "Create team or organization memories, subject to the normal visibility rules.",
+        [AgentsRead] = "View the agent directory, agent details, roles, and permission catalog.",
+        [AgentsAdmin] = "Register agents and manage other agents' roles, direct grants, and enabled state.",
+        [AuditRead] = "Read the Brain audit event history.",
+        [KnowledgeRead] = "Search and read documents in the shared knowledge vault.",
+        [KnowledgeAdmin] = "Review and decide knowledge change proposals, including proposals from other agents.",
+        [KnowledgePropose] = "Submit proposed knowledge or metadata changes for review; does not write canonical files directly.",
+        [RegistryRead] = "Discover and read skills and tools whose required permissions are granted.",
+        [RegistryAdmin] = "Run registry scans that refresh the searchable skills and tools index.",
+        [ActivityRead] = "Use the activity stream; activity.live is also required to receive live events.",
+        [ActivityLive] = "Subscribe to live activity within the caller's trace visibility scope.",
+        [TracesRead] = "Inspect this agent's retained trace summaries and events.",
+        [TracesReadAll] = "Inspect retained traces and live activity across all agents.",
+        [DevicesRead] = "View devices owned by this agent and their reported status.",
+        [DevicesRegister] = "Enroll a device bound to this agent identity.",
+        [DevicesManage] = "Manage this agent's devices, including viewing, renaming, rotating credentials, and reporting status.",
+        [DevicesRevoke] = "Revoke another agent's device; managing another agent's device also requires agents.admin.",
+        [HarnessesConnect] = "Connect supported local harnesses to Brain's MCP service.",
+        [HarnessesManage] = "Manage agent harness connection settings.",
+        [RuntimeRead] = "Inspect runtime and dependency reports for this agent's devices.",
+        [RuntimeProvision] = "Request or approve an eligible, operator-approved runtime package installation.",
+        [SkillsSync] = "Report skill synchronization status for the device bound to this agent.",
+        ["infrastructure.read"] = "Meet a skill or tool requirement for infrastructure access; the grant alone does not execute actions.",
+        ["infrastructure.write"] = "Meet a skill or tool requirement for infrastructure changes; the grant alone does not execute actions.",
+        ["deployment.read"] = "Meet a skill or tool requirement for deployment reads; the grant alone does not deploy anything.",
+        ["deployment.write"] = "Meet a skill or tool requirement for deployment changes; the grant alone does not deploy anything.",
+        ["deployment.staging"] = "Meet a skill or tool requirement for staging deployments; the grant alone does not deploy anything.",
+        ["deployment.production"] = "Meet a skill or tool requirement for production deployments; the grant alone does not deploy anything.",
+        ["secrets.dev.read"] = "Meet a skill or tool requirement to reference development secrets; secret values remain outside Brain.",
+        ["secrets.production.read"] = "Meet a skill or tool requirement to reference production secrets; secret values remain outside Brain."
+    };
 }
 
 public sealed record AgentContext(string Id, string? TeamId, IReadOnlySet<string> Permissions)

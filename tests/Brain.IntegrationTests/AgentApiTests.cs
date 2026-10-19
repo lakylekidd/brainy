@@ -91,6 +91,32 @@ public sealed class AgentApiTests(BrainFixture fixture) : IClassFixture<BrainFix
     }
 
     [Fact]
+    public async Task Role_creation_requires_admin_validates_known_grants_and_audits_atomically()
+    {
+        using var admin = fixture.Factory.Agent("willem-de-jong");
+        using var reader = fixture.Factory.Agent("codex");
+        Assert.Equal(HttpStatusCode.Forbidden, (await reader.PostAsJsonAsync("/api/roles",
+            new CreateRoleRequest("reviewer", "Review knowledge", [Permissions.KnowledgeRead]))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/roles",
+            new CreateRoleRequest("invalid role", "Invalid", []))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsJsonAsync("/api/roles",
+            new CreateRoleRequest("reviewer", "Invalid grant", ["unknown.permission"]))).StatusCode);
+
+        var response = await admin.PostAsJsonAsync("/api/roles",
+            new CreateRoleRequest("reviewer", "Review knowledge", [Permissions.KnowledgeRead]));
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = (await response.Content.ReadFromJsonAsync<RoleView>())!;
+        Assert.Equal("reviewer", created.Id);
+        Assert.Equal([Permissions.KnowledgeRead], created.Permissions);
+        Assert.Equal(HttpStatusCode.Conflict, (await admin.PostAsJsonAsync("/api/roles",
+            new CreateRoleRequest("reviewer", "Duplicate", []))).StatusCode);
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BrainDbContext>();
+        Assert.Equal(1, await db.AuditEvents.CountAsync(a => a.Resource == "reviewer" && a.Action == "brain.role.created"));
+    }
+
+    [Fact]
     public async Task Supported_management_replaces_grants_reports_disabled_details_and_audits_atomically()
     {
         using var admin = fixture.Factory.Agent("willem-de-jong");

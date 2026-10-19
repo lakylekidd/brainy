@@ -37,7 +37,7 @@ behavior and current API coverage.
 | 1. Shell + Dashboard | Complete; Dashboard view removed from the current shell | Dashboard implementation remains in source, but the authenticated shell now defaults to PAV OS and uses a compact Navigate menu. The BRAINY header row and optional saved light mode remain. |
 | 2. Knowledge Graph | Complete; graph view removed from the current shell | Graph implementation and bounded authorized APIs remain in source, but no current UI route mounts the graph. |
 | 3. WebObsidian Integration | Complete | Document inspection links canonical source paths to an operator-configured WebObsidian `/note/<path>` route, with safe encoding and explicit unavailable configuration states. |
-| 4. Agents + Permissions | Complete | Dedicated agent listing/details, direct/inherited/effective grant matrices, role inspection, and reviewed supported registration/access replacement remain available. The agent-focused graph shortcut is not in the current UI. Role definitions and credentials remain operator-managed. |
+| 4. Agents + Permissions | Extended; role creation verified (19 October 2026) | Dedicated agent listing/details, reviewed registration/access replacement, role inspection, and reviewed role creation from known permissions are available. The agent-focused graph shortcut is not in the current UI. Existing role editing, permission-catalog changes and credentials remain operator-managed. The full UI suite still has unrelated failures in app shell and PAV dashboard/canvas expectations. |
 | 5. Skills + Tools | Partial foundations | Registry APIs and graph dependencies remain implemented foundations; the Dashboard and Knowledge Graph views that displayed them are not mounted in the current shell. Dedicated lists/detail and safe Git-backed management remain unimplemented. |
 | 6. Connections | Planned | No connection catalog, configuration, health, or test UI/API is established. |
 | 7. Proposals + Metadata | Partial foundations | Dashboard data-loading code reads pending proposals and metadata issues but is not mounted. Review diffs, conflict handling, approval, and a dedicated review experience remain to be built against the safe writer workflow. |
@@ -163,19 +163,24 @@ WebObsidian.
 
 ## Milestone 4 — Agents + Permissions
 
-**Status: Complete (17 October 2026).** Existing registration and full-access
+**Status: Extended (19 October 2026); original scope completed 17 October 2026.** Existing registration and full-access
 replacement operations were verified and reused. Added authorized independent
 agent details, role grants and permission catalog reads; `permissions` retains
 its effective-union meaning and additive `directPermissions` preserves grant
 provenance. Dedicated Agents/Permissions pages add search/status filtering,
 independent lookup, role inspection, matrices and bounded agent-focused graphs.
 Management requires existing backend grants, an explicit replacement review and
-confirmation; self-access editing is prohibited. Role definitions, catalog
+confirmation; self-access editing is prohibited. The milestone was extended to
+include reviewed creation of new roles from known permission grants, backed by
+an audited `agents.admin` API operation. Editing existing roles, catalog
 definitions and credential provisioning remain operator-managed. The existing
 access endpoint has no concurrency token, so the UI explicitly warns that
-concurrent edits are not merged. Frontend, focused backend and real-Compose
-Chromium checks pass. See [contracts and boundaries](ui.md#agents-and-permissions)
-and [verification evidence](verification.md#ui-agents-and-permissions-17-october-2026).
+concurrent edits are not merged. The role-creation integration coverage passed,
+as did all 24 Agents feature tests and the API/UI builds. The full UI suite had
+9 failures across unrelated AppShell and PAV dashboard/canvas tests (161 passed).
+The original milestone verification predates this extension. See
+[contracts and boundaries](ui.md#agents-and-permissions) and [historical
+verification evidence](verification.md#ui-agents-and-permissions-17-october-2026).
 No later-milestone feature or new credential/write workflow was introduced.
 
 **Goal:** Inspect and manage agent identities, roles, and effective permissions.
@@ -188,16 +193,23 @@ No later-milestone feature or new credential/write workflow was introduced.
 - First verify which read and mutation contracts already exist. Add any
   missing backend contracts before wiring management actions; keep
   authorization and validation server-side.
+- Allow an `agents.admin` operator to create a role with a unique role ID,
+  description and up to 100 existing permission IDs using an explicit review
+  and confirmation flow. Creating a role does not assign it to agents; editing
+  roles and changing the permission catalog remain out of scope.
 
 **Acceptance criteria**
 
 - The user can inspect an agent's roles and effective access.
 - Any management action is exposed only where a backend operation with
   deterministic authorization exists.
+- Role creation revalidates `agents.admin`, known permissions and uniqueness on
+  the server, and commits an audit event with the new role.
 - A focused graph view shows only entities and relationships that the current
   identity is authorized to see.
 - Tests cover role/permission display, relevant permission cases, and
-  unauthorized actions.
+  unauthorized actions. Role-creation authorization, validation, uniqueness
+  and audit behavior are covered by the focused API integration test.
 
 ## Milestone 5 — Skills + Tools
 

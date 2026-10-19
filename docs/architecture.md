@@ -166,8 +166,10 @@ Identity inspection reuses `IAgentDirectory`: agents, independent details,
 roles and permission catalogs require `agents.read`; agent responses distinguish
 direct grants from the effective role/direct union. The UI exposes only existing
 `agents.admin` registration/full-access replacement operations with explicit
-review and server-side validation/self-edit protection. Role definitions and
-credentials remain operator-managed. Access replacement has no revision token;
+review and server-side validation/self-edit protection. New roles can be created
+through an audited `agents.admin` operation using known permission IDs; existing
+role edits, permission-catalog changes and credentials remain operator-managed.
+Access replacement has no revision token;
 coordinate concurrent operator edits rather than treating it as a merge. See
 [identity contracts and boundaries](ui.md#agents-and-permissions).
 

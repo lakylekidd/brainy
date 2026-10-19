@@ -8,15 +8,28 @@ public static class DatabaseInitializer
     public static async Task InitializeAsync(BrainDbContext db, bool seedDevelopment, CancellationToken ct = default)
     {
         await db.Database.MigrateAsync(ct);
-        if (!seedDevelopment) return;
         await using var tx = await db.Database.BeginTransactionAsync(ct);
-        // Serialize the idempotent development seed if two API instances start together.
-        await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(601104201)", ct);
+        if (seedDevelopment)
+            // Serialize the idempotent development seed if two API instances start together.
+            await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(601104201)", ct);
         var permissions = await db.Permissions.ToListAsync(ct);
-        foreach (var id in Permissions.All.Where(id => permissions.All(p => p.Id != id)))
+        foreach (var id in Permissions.All)
         {
-            var permission = new Permission { Id = id, Description = id };
-            db.Permissions.Add(permission); permissions.Add(permission);
+            var permission = permissions.SingleOrDefault(p => p.Id == id);
+            if (permission is null)
+            {
+                if (!seedDevelopment) continue;
+                permission = new Permission { Id = id };
+                db.Permissions.Add(permission);
+                permissions.Add(permission);
+            }
+            permission.Description = Permissions.Descriptions[id];
+        }
+        if (!seedDevelopment)
+        {
+            await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+            return;
         }
         var admin = await db.Roles.Include(r => r.Permissions).SingleOrDefaultAsync(r => r.Id == "administrator", ct);
         if (admin is null)

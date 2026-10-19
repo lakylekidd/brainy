@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { AgentProfile, ApiError, Credentials } from "../../api/client";
 import AccessForm from "./AccessForm";
-import { AgentDetails, loadAgent, loadDirectory } from "./api";
+import RoleForm from "./RoleForm";
+import { AgentDetails, loadAgent, loadDirectory, Role } from "./api";
 import "./agents.css";
 
 type Directory = Awaited<ReturnType<typeof loadDirectory>>;
@@ -21,6 +22,7 @@ export default function Agents({ credentials, profile, mode, onUnauthorized }: {
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<"create" | "access" | null>(null);
+  const [creatingRole, setCreatingRole] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [version, setVersion] = useState(0);
   const detailsDialog = useRef<HTMLDialogElement>(null);
@@ -95,6 +97,13 @@ export default function Agents({ credentials, profile, mode, onUnauthorized }: {
     else setError("Permission required. Your management access may have changed. Refresh to resolve current access.");
   }
 
+  function roleSaved(role: Role) {
+    setCreatingRole(false);
+    setRoleId(role.id);
+    setNotice(`Created role ${role.id}.`);
+    setVersion((current) => current + 1);
+  }
+
   const agents = directory?.agents.filter((agent) =>
     `${agent.id} ${agent.name} ${agent.teamId ?? ""}`.toLowerCase().includes(query.toLowerCase())) ?? [];
   const selectedRole = directory?.roles.find((role) => role.id === roleId);
@@ -102,10 +111,11 @@ export default function Agents({ credentials, profile, mode, onUnauthorized }: {
     <section className="page-heading">
       <div><div className="eyebrow heading-eyebrow">DETERMINISTIC ACCESS</div>
         <h1>{mode === "agents" ? "Agents" : "Roles & permissions"}</h1>
-        <p>Inspect identities, role grants and effective access. The backend enforces every operation.</p></div>
+        <p>{mode === "agents" ? "Inspect identities, role grants and effective access. The backend enforces every operation." : "Inspect role grants and effective access."}</p></div>
       <div className="identity-actions">
         <button className="secondary-button" disabled={loading || !canRead} onClick={() => { setNotice(null); setVersion((current) => current + 1); }}>Refresh directory</button>
-        {canManage && directory && <button className="primary-button" onClick={() => { setEditing("create"); setNotice(null); }}>Register agent</button>}
+        {mode === "agents" && canManage && directory && <button className="primary-button" onClick={() => { setEditing("create"); setNotice(null); }}>Register agent</button>}
+        {mode === "permissions" && canManage && directory && <button className="primary-button" onClick={() => { setCreatingRole(true); setNotice(null); }}>Create a new role</button>}
       </div>
     </section>
     {!canRead && <p role="alert">Permission required: agents.read. Your own effective permissions remain available below.</p>}
@@ -113,7 +123,7 @@ export default function Agents({ credentials, profile, mode, onUnauthorized }: {
     {error && <p className="inline-error" role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
     {directory && <>
-      <section className="panel identity-panel" aria-label="Agent directory">
+      {mode === "agents" && <section className="panel identity-panel" aria-label="Agent directory">
         {directory.agents.length === 1000 && <p role="status">The directory limit was reached; this may not be the complete inventory.</p>}
         <div className="identity-directory-search">
           <label>Search agents<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
@@ -128,8 +138,8 @@ export default function Agents({ credentials, profile, mode, onUnauthorized }: {
             </tr>)}</tbody>
           </table>
         </div>}
-      </section>
-      {selected && <dialog ref={detailsDialog} className="identity-dialog identity-panel identity-details-dialog" aria-label="Agent details" aria-busy={!detail && !detailError}
+      </section>}
+      {mode === "agents" && selected && <dialog ref={detailsDialog} className="identity-dialog identity-panel identity-details-dialog" aria-label="Agent details" aria-busy={!detail && !detailError}
         onCancel={(event) => { event.preventDefault(); closeDetails(); }}
         onMouseDown={(event) => { if (event.target === event.currentTarget) closeDetails(); }}>
         <header className="identity-dialog-header">
@@ -174,27 +184,33 @@ export default function Agents({ credentials, profile, mode, onUnauthorized }: {
           </div>}
         </>}
       </dialog>}
-      {editing && (editing === "create" || detail) && <AccessForm key={editing === "create" ? "create" : detail?.id} credentials={credentials}
+      {mode === "agents" && editing && (editing === "create" || detail) && <AccessForm key={editing === "create" ? "create" : detail?.id} credentials={credentials}
         agent={editing === "access" ? detail : null} roles={directory.roles} permissions={directory.permissions}
         onSaved={saved} onCancel={() => setEditing(null)} onDenied={denied} />}
       {mode === "permissions" && <section className="panel identity-panel" aria-label="Roles and permission catalog">
-        <h2>Role inspection</h2><p>Role definitions and permission catalog entries are operator-managed; no edit operation is exposed.</p>
-        <label>Inspect role<select aria-label="Inspect role" value={roleId} onChange={(event) => setRoleId(event.target.value)}>
-          <option value="">Select a role...</option>
-          {directory.roles.map((role) => <option key={role.id} value={role.id}>{role.id}</option>)}
-        </select></label>
+        <h2>Role inspection</h2><p>Create roles using known permissions. Existing roles and permission catalog entries cannot be edited here.</p>
+        <div className="role-inspection-row">
+          <label className="role-inspection-select">Inspect role<select aria-label="Inspect role" value={roleId} onChange={(event) => setRoleId(event.target.value)}>
+            <option value="">Select a role...</option>
+            {directory.roles.map((role) => <option key={role.id} value={role.id}>{role.id}</option>)}
+          </select></label>
+          {selectedRole && <p className="role-inspection-description">{selectedRole.description}</p>}
+        </div>
         {directory.roles.length === 0 && <p>No roles configured.</p>}
-        {selectedRole && <div><h3>{selectedRole.id}</h3><p>{selectedRole.description}</p>
-          <p>{selectedRole.permissions.join(", ") || "No grants"}</p></div>}
-        <div className="identity-table-scroll" role="region" aria-label="Role permission matrix" tabIndex={0}>
-          <table><caption>Role permission matrix</caption><thead><tr><th scope="col">Permission</th><th scope="col">Description</th>
-            {directory.roles.map((role) => <th scope="col" key={role.id}>{role.id}</th>)}</tr></thead>
-            <tbody>{directory.permissions.map((permission) => <tr key={permission.id}><th scope="row">{permission.id}</th><td>{permission.description}</td>
-              {directory.roles.map((role) => <td key={role.id}>{role.permissions.includes(permission.id) ? "Granted" : "Not granted"}</td>)}</tr>)}</tbody>
+        <div className="role-permission-table" role="region" aria-label="Permissions for selected role" tabIndex={0}>
+          <table><thead><tr><th scope="col">Permission</th><th scope="col">Description</th></tr></thead>
+            <tbody>{selectedRole?.permissions.map((permissionId) => {
+              const permission = directory.permissions.find((item) => item.id === permissionId);
+              return <tr key={permissionId}><th scope="row">{permissionId}</th><td>{permission?.description ?? "Description unavailable."}</td></tr>;
+            })}</tbody>
           </table>
+          {!selectedRole && <p className="identity-multiselect-empty">Select a role to view permissions</p>}
+          {selectedRole && selectedRole.permissions.length === 0 && <p className="identity-multiselect-empty">No permissions assigned</p>}
         </div>
         {directory.permissions.length === 0 && <p>No permissions configured.</p>}
       </section>}
+      {mode === "permissions" && creatingRole && <RoleForm credentials={credentials} permissions={directory.permissions}
+        onSaved={roleSaved} onCancel={() => setCreatingRole(false)} onDenied={denied} />}
     </>}
   </div>;
 }

@@ -35,6 +35,24 @@ public sealed partial class AgentDirectory(BrainDbContext db, TimeProvider time)
         return roles.Select(r => new RoleView(r.Id, r.Description, r.Permissions.Select(p => p.Id).Order().ToArray())).ToArray();
     }
 
+    public async Task<RoleView> CreateRoleAsync(AgentContext actor, CreateRoleRequest request, CancellationToken ct)
+    {
+        actor.Require(Permissions.AgentsAdmin);
+        Validation.Require(request.Id is not null && AgentIdPattern().IsMatch(request.Id), "Role id must be 1–100 lowercase letters, digits or hyphens.");
+        Validation.Require(request.Description is not null && request.Description.Length <= 2000, "Description is too long.");
+        Validation.Require(request.Permissions is not null && request.Permissions.Length <= 100
+            && request.Permissions.Distinct(StringComparer.Ordinal).Count() == request.Permissions.Length, "Invalid permissions.");
+        var permissionRows = await db.Permissions.Where(p => request.Permissions!.Contains(p.Id)).ToListAsync(ct);
+        Validation.Require(permissionRows.Count == request.Permissions!.Length, "Unknown permission.");
+        var role = new Role { Id = request.Id!, Description = request.Description!, Permissions = permissionRows };
+        db.Roles.Add(role);
+        Audit(actor.Id, "brain.role.created", role.Id);
+        try { await db.SaveChangesAsync(ct); }
+        catch (DbUpdateException e) when (e.InnerException is Npgsql.PostgresException { SqlState: "23505" })
+        { throw new BrainException(409, "Role already exists."); }
+        return new RoleView(role.Id, role.Description, permissionRows.Select(p => p.Id).Order().ToArray());
+    }
+
     public async Task<IReadOnlyList<PermissionView>> ListPermissionsAsync(AgentContext actor, CancellationToken ct)
     {
         actor.Require(Permissions.AgentsRead);
